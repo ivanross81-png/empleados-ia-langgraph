@@ -1,0 +1,329 @@
+# Digital Employee Platform — Runtime & Execution Architecture
+
+**Version:** 0.1.0  
+**Status:** Normative
+
+## 1. Fundamental execution model
+
+```text
+Trigger
+  ↓
+Execution Request
+  ↓
+Temporal Workflow
+  ↓
+LangGraph Agent Runtime
+  ↓
+Plan → Policy → Action → Tool → External System
+  ↓                         ↑
+Observation ←───────────────┘
+  ↓
+Decision / Approval / Retry / Compensation
+  ↓
+Outcome
+```
+
+## 2. Temporal versus LangGraph
+
+**Temporal** owns durable workflow lifecycle:
+
+- retries;
+- timers;
+- cancellation;
+- signals;
+- heartbeats;
+- recovery;
+- long-running execution;
+- human waits;
+- compensation orchestration.
+
+**LangGraph** owns agent cognition:
+
+- stateful reasoning;
+- planning;
+- tool-oriented graph execution;
+- observation/decision loops;
+- bounded agent state.
+
+Neither component replaces the other. The durability boundary is explicit: LangGraph's own persistence (checkpointer) is confined to the short cycle of one agent run inside an activity; Temporal remains the only authority for the durability of the execution (see §21).
+
+**Temporal** is the only authority for orchestration durability. Within an execution, agent-run state may be persisted by the agent runtime for resume inside a single run, but that state is never the source of truth for the execution lifecycle, for approvals, or for business results.
+
+## 3. Temporal workflow
+
+A Workflow coordinates activities and durable state. External calls belong in Activities or dedicated service calls, not in workflow code that must remain deterministic.
+
+Typical Activities:
+
+- load execution context;
+- construct model context;
+- call LLM Gateway;
+- evaluate policy;
+- request approval;
+- invoke MCP Gateway;
+- persist result;
+- emit audit event;
+- perform compensation.
+
+## 4. Agent state
+
+LangGraph AgentState must be explicit and serializable. It should contain references to durable objects rather than uncontrolled copies of secrets or huge documents.
+
+If the agent runtime persists this state between steps (checkpointer), that persistence is a **runtime store**, not the execution system of record, and is governed by §21.
+
+Example conceptual state:
+
+```yaml
+execution_id: UUID
+employee_version_id: UUID
+task_version_id: UUID
+goal: string
+plan: object
+observations: list
+pending_action: object|null
+risk_context: object
+approval_state: object|null
+context_refs: list
+budgets: object
+iteration: integer
+```
+
+## 5. Plan versus Action
+
+The LLM may propose a plan such as:
+
+1. inspect overdue invoices;
+2. classify accounts;
+3. draft communications;
+4. send approved communications.
+
+The plan is not authorization. Each side-effecting action must pass validation, policy, risk and capability enforcement.
+
+## 6. Tool execution pipeline
+
+```text
+Model Tool Request
+ → Schema Validation
+ → Normalization
+ → Identity / Scope Check
+ → OPA Policy
+ → Risk Evaluation
+ → Approval if required
+ → Credential Resolution
+ → Rate Limit
+ → Circuit Breaker
+ → MCP Invocation
+ → Result Validation
+ → Audit
+ → Observation
+```
+
+## 7. MCP Gateway
+
+The gateway should be stateless and horizontally scalable. Responsibilities include authorization, schema validation, policy enforcement, credential resolution, rate/concurrency limiting, circuit breaking, retries, timeouts, idempotency, audit and observability.
+
+## 8. Secrets flow
+
+```text
+Tool Request
+ → MCP Gateway
+ → Vault/KMS
+ → Short-lived Credential
+ → External API
+```
+
+Credentials must not be copied into prompts, LangGraph state, persistent memory or normal logs.
+
+## 9. Context lifecycle
+
+```text
+Raw State
+ → Task Context
+ → Memory
+ → RAG
+ → Tool Results
+ → History
+ → Relevance Filtering
+ → Deduplication
+ → Compression
+ → DLP/PII Controls
+ → Token Budget
+ → LLM
+```
+
+## 10. DLP
+
+Data sent to external models is classified before transmission. Rules can block external transfer, redact data, prohibit persistence or require human approval.
+
+## 11. Human-in-the-loop
+
+Temporal waits for a durable signal. The process survives worker restarts. Approval must reference the exact action/version/context needed for the decision.
+
+A `REQUIRE_APPROVAL` decision **suspends** the execution; it does not fail the action and it does not roll it back. The runtime resumes the same execution with the human decision as input.
+
+Human-in-the-loop has a second, internal form: the agent runtime may pause its own graph to ask for data or a decision. In that case the runtime may re-execute the node that requested it when work resumes; therefore every side effect performed before an in-graph pause must be idempotent or deferred until after the decision (see §21 and §12).
+
+## 12. Idempotency
+
+A recommended key is:
+
+`tenant_id + execution_id + action_id + attempt`
+
+External APIs should use provider idempotency keys where supported.
+
+## 13. Failure handling
+
+Failure categories:
+
+- validation failure;
+- authentication/authorization failure;
+- transient network failure;
+- rate limit;
+- external service outage;
+- business rejection;
+- policy denial;
+- model failure;
+- malformed tool output;
+- unrecoverable state corruption.
+
+Retries are only applied to errors classified as retryable.
+
+## 14. Saga and compensation
+
+A multi-system operation is not treated as an ACID transaction. If step A succeeds and step B fails, the workflow uses compensation where the external system provides a valid inverse operation. Otherwise it moves to reconciliation/manual recovery.
+
+## 15. DLQ
+
+Unrecoverable executions enter a durable DLQ with:
+
+- failure reason;
+- attempts;
+- last activity;
+- relevant references;
+- suggested recovery;
+- operator actions.
+
+Operators can inspect, retry, cancel, compensate or reconcile.
+
+## 16. Runtime budgets
+
+Every execution should have limits for:
+
+- total duration;
+- iterations;
+- tool calls;
+- LLM calls;
+- tokens;
+- estimated cost;
+- concurrent actions.
+
+## 17. Prompt injection
+
+External content, retrieved documents and tool outputs are untrusted. They may contain instructions that attempt to change agent behavior. The runtime must keep data and control instructions structurally separate and never grant authority merely because text says it should be granted.
+
+## 18. Cancellation
+
+Cancellation is a first-class execution operation. Activities must honor cancellation where possible, and external side effects must use idempotency/reconciliation because cancellation cannot guarantee rollback of already completed external actions.
+
+## 19. Observability
+
+Each execution carries:
+
+- execution ID;
+- correlation ID;
+- causation ID;
+- tenant ID;
+- employee/task versions;
+- trace context.
+
+Metrics, logs and audit events are separate concerns.
+
+## 20. Runtime invariants
+
+- Every external action is attached to an Execution.
+- Every external action has a policy decision.
+- Every mutable action is idempotent where possible.
+- Every execution is recoverable after worker restart.
+- No secret is part of model context.
+- Tool outputs are untrusted.
+- Version references are immutable.
+
+## 21. LangGraph integration, checkpoints and state boundary
+
+*Added 2026-10-19 — closes gap C-1 of `docs/reference/KORTIX-CROSS-MATRIX.md` (finding K-L1/K-L2/K-L3).*
+
+### 21.1 Responsibilities
+
+The agent runtime is invoked **inside a durable activity**. It receives a bounded input (goal, context references, budgets, tool grants) and returns a structured result (plan, observations, proposed actions, outcome). It does not decide authorization, does not resolve credentials and does not manage timers, cancellations or human waits.
+
+### 21.2 Checkpoint store
+
+Agent-run state may be persisted between steps to allow resume inside a single run and to support inspection. That store is a **runtime store**:
+
+1. It is **not** the system of record for the Execution (`05` §1). Execution status, results and artifacts live in the domain store.
+2. It is confined to the **short cycle** of one agent run. If a run must survive a long wait (approval, external outage, days of delay), durability is Temporal's responsibility, not the checkpointer's.
+3. It is subject to the same data classification, DLP and retention rules as any other store. No secret, credential, raw token or full external document may be persisted in it; large payloads are stored by reference (`04` §4, `05` §3, `06` §7).
+4. It must have a **retention and deletion policy** per classification: checkpoint history is deleted after the execution reaches a terminal state plus the configured retention window, unless the environment explicitly requires longer retention for audit purposes (in which case the audit record is the artifact, not the checkpoint).
+5. The durability mode of the runtime must be chosen explicitly and documented; a mode that persists only on exit is not sufficient for executions that may wait for a human.
+
+### 21.3 Re-execution on resume
+
+When an agent run resumes after an in-graph pause, the runtime may re-execute the node from its beginning, not from the exact pause point. Therefore:
+
+- side effects must be deferred until after the decision, or be idempotent (keyed like §12);
+- an in-graph pause must not be captured by generic error handling or converted into a retry;
+- pause and resume must be recorded as execution events (audit and telemetry), with the requesting identity and the decision.
+
+### 21.4 Graph versioning and in-flight executions
+
+A published definition is immutable (`03` §12), but the **graph that is executing** must remain resolvable while an execution is paused:
+
+- the behaviour version in use is recorded in the execution state at the start of the run;
+- conditional routing may branch on that recorded version so that executions started under an older definition finish under that definition;
+- renaming or removing a node while executions may be paused at it requires either a compatible migration or the completion/cancellation of those executions before deploying the change.
+
+## 22. Runtime control operations
+
+*Added 2026-10-19 — closes finding K-15/K-16 in the cross matrix.*
+
+An execution is not write-only. The following operations are part of the runtime contract, each with authorization, audit and idempotency semantics:
+
+| Operation | Semantics | Who may request | Notes |
+|---|---|---|---|
+| Pause | The execution stops advancing steps; state is preserved; timers keep running | operator, task owner, or an approver with scope | A paused execution is still open and counts for concurrency |
+| Resume | Continues from preserved state | same as pause | Must be idempotent for repeated requests |
+| Inject directive | Adds a human instruction/observation to the running agent at its next step, without ending the run | execution owner or operator with scope | The directive is untrusted input: it cannot grant permissions and cannot bypass policy |
+| Interrupt turn | Ends the current agent turn after the in-flight action completes, then re-plans | execution owner | Used to stop a wrong plan without cancelling the execution |
+| Cancel | First-class cancellation (`§18`) | operator, execution owner, policy | External side effects already performed are not rolled back; reconciliation applies |
+| Terminate | Immediate stop; the execution moves to a terminal failed/cancelled state with reason | operator only, and only for containment | Must be auditable as an operator action |
+
+Every control operation produces an auditable event with actor, execution, previous state, requested change and outcome. A control operation never grants new capability to the agent.
+
+## 23. Delegation (sub-agents, sub-graphs)
+
+*Added 2026-10-19 — closes finding K-03 in the cross matrix.*
+
+If the agent runtime supports delegating work to a sub-graph or sub-agent, delegation is allowed only under these rules:
+
+- the delegated work runs **inside** the same execution and the same enforcement path; it cannot create a new execution or a new identity;
+- the delegated context inherits the **intersection** of the parent's tool grants, budgets and policy scope — never a superset;
+- maximum delegation depth and maximum concurrent delegates are configured per task and enforced by the runtime;
+- the parent remains responsible for the outcome; delegated reasoning is untrusted model output like any other;
+- delegation is fully traced (which delegate, which context, which tool calls) so the execution can be reconstructed.
+
+## 24. Workflow and worker versioning
+
+*Added 2026-10-19 — closes finding K-T2 in the cross matrix.*
+
+- Durable workflow definitions are code and evolve; a change that alters the sequence of commands of an open execution must be handled by an explicit strategy: compatible change, version branching, or a new workflow version for new executions while old ones finish on the previous one.
+- Activity and workflow changes that can break replay must be covered by a replay/regression test before release (`09` §8, `docs/development/TESTING-STRATEGY.md`).
+- Worker deployments are versioned so that an execution is not silently served by incompatible code.
+- Workflow history growth is bounded (§`10` §6); long-lived executions must roll over their history rather than grow indefinitely.
+
+## 25. Open questions (documented, not decided)
+
+*Recorded 2026-10-19. These are gaps with no closed design; they must not be resolved implicitly by an implementation.*
+
+1. **Employee execution environment.** This architecture gives the employee capabilities exclusively through governed tools; it does not define an environment where an employee can *compute* (generate a file, build a spreadsheet, run a script) to produce a deliverable. Whether such an environment is needed, and under which isolation rules (ephemeral, network-restricted, no credential exposure, artifacts governed by `05` §21), is an open product decision (finding K-12/K-21; see `docs/reference/DECISIONES-PENDIENTES.md`).
+2. **Channel surfaces.** When the first conversational channel is implemented, minimum requirements are: identity linking of the human sender, access policy for the session/thread, per-action authorization, ability to stop a run from the channel, and audit of every message that reached the agent (finding K-40).
+3. **Cost and quota enforcement.** Which quotas (tenant, employee, task) hard-stop an execution, and what the execution does when a quota is exhausted (finding K-42).
