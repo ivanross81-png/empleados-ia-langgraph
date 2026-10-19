@@ -1,7 +1,9 @@
 # Digital Employee Platform — Runtime & Execution Architecture
 
 **Version:** 0.1.0  
-**Status:** Normative
+**Status:** Normative  
+**Created:** 2026-09-21  
+**Updated:** 2026-10-19
 
 ## 1. Fundamental execution model
 
@@ -264,7 +266,17 @@ Agent-run state may be persisted between steps to allow resume inside a single r
 2. It is confined to the **short cycle** of one agent run. If a run must survive a long wait (approval, external outage, days of delay), durability is Temporal's responsibility, not the checkpointer's.
 3. It is subject to the same data classification, DLP and retention rules as any other store. No secret, credential, raw token or full external document may be persisted in it; large payloads are stored by reference (`04` §4, `05` §3, `06` §7).
 4. It must have a **retention and deletion policy** per classification: checkpoint history is deleted after the execution reaches a terminal state plus the configured retention window, unless the environment explicitly requires longer retention for audit purposes (in which case the audit record is the artifact, not the checkpoint).
-5. The durability mode of the runtime must be chosen explicitly and documented; a mode that persists only on exit is not sufficient for executions that may wait for a human.
+5. Durability of the runtime is a **bounded, declared choice**, not an implicit one. The five notions that must not be confused:
+
+| Notion | Owner | What it covers |
+|---|---|---|
+| Recovery of a **cognitive run** | Agent runtime store (this section) | Re-entering an agent run inside the same activity after a crash of the process that was executing it, within the short cycle |
+| **Durable human wait** | Temporal (workflow timers + signals) | An execution waiting hours or days for a person: the workflow is suspended durably and the approval is a `05` §10 record |
+| Recovery of the **whole workflow** | Temporal | Replaying the workflow history after worker/process restarts, with timers, retries and signals intact |
+| Recovery of a **failed activity** | Temporal retry policy (`§13`) | Re-scheduling the activity that failed, with the classification of retryable vs non-retryable errors |
+| Persistence of **business results** | Domain store (PostgreSQL, `05` §1) | Execution status, outcomes, artifacts and audit records |
+
+The checkpoint store therefore never carries a human wait and never carries business state: if a pause must survive longer than the run itself, the runtime returns control to the activity, which waits on a durable signal (`§11`). The durability mode chosen for the agent runtime is documented per deployment and covered by DP-1 in `docs/reference/DECISIONES-PENDIENTES.md` (still pending the comparative test).
 
 ### 21.3 Re-execution on resume
 
@@ -299,6 +311,12 @@ An execution is not write-only. The following operations are part of the runtime
 
 Every control operation produces an auditable event with actor, execution, previous state, requested change and outcome. A control operation never grants new capability to the agent.
 
+**Read versus command (durable layer contract).** The agent runtime and the API layer interact with the durable workflow in two different ways and must not mix them:
+
+- **Reading state and progress** uses **queries**: they do not mutate the workflow and can be issued repeatedly (this is how the event stream of `05` §20 and the approval queue of `05` §10.1 are fed).
+- **Ordering a change** uses **signals** (asynchronous, no return value) or **updates** (synchronous, validated): a control operation of the table above carries a validated payload, is idempotent for repeated delivery, and is recorded as an execution event.
+- An operation that mutates the execution must never be implemented as a query, and a read must never be implemented as a signal.
+
 ## 23. Delegation (sub-agents, sub-graphs)
 
 *Added 2026-10-19 — closes finding K-03 in the cross matrix.*
@@ -316,6 +334,7 @@ If the agent runtime supports delegating work to a sub-graph or sub-agent, deleg
 *Added 2026-10-19 — closes finding K-T2 in the cross matrix.*
 
 - Durable workflow definitions are code and evolve; a change that alters the sequence of commands of an open execution must be handled by an explicit strategy: compatible change, version branching, or a new workflow version for new executions while old ones finish on the previous one.
+- The concrete mechanisms of the durable engine are the reference implementation of that rule: in-workflow *patching* (a version gate inside the workflow that branches behaviour for old and new histories) for small compatible changes, and a **new workflow type or version** for changes that cannot be patched; worker deployments are versioned so that a Task Queue serves compatible code, with cutover per version rather than an in-place replacement.
 - Activity and workflow changes that can break replay must be covered by a replay/regression test before release (`09` §8, `docs/development/TESTING-STRATEGY.md`).
 - Worker deployments are versioned so that an execution is not silently served by incompatible code.
 - Workflow history growth is bounded (§`10` §6); long-lived executions must roll over their history rather than grow indefinitely.

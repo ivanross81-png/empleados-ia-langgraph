@@ -1,6 +1,7 @@
 # ADR-008 — Puerta de enlace DLP/PII previa a la transferencia a LLM externo
 
-**Estado:** Aceptado
+**Estado:** Aceptado  
+**Fecha:** línea base v0.1.0 — fecha exacta no registrada (ver auditoría 2026-10-19)
 
 ## Contexto
 Los proveedores de modelos externos pueden recibir información empresarial que contiene datos personales, financieros o restringidos.

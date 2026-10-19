@@ -1,7 +1,9 @@
 # Digital Employee Platform — Memoria, Conocimiento y Contexto
 
 **Versión:** 0.1.0  
-**Estado:** Normativa
+**Estado:** Normativa  
+**Creado:** 2026-09-21  
+**Actualizado:** 2026-10-19
 
 ## 1. Propósito
 

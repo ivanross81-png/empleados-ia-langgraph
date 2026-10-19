@@ -1,6 +1,7 @@
 # ADR-011 — Free-licence-only stack
 
-**Status:** Proposed (awaiting product-owner acceptance)
+**Status:** Proposed (awaiting product-owner acceptance)  
+**Date:** 2026-10-19
 
 ## Context
 The platform is sold as a closed proprietary product, both as multi-tenant SaaS and as a private installation delivered to the customer. Enterprise buyers (banks, insurers, regulated sectors) audit the stack. The current reference stack contains components whose licences are **not free**: Redis 8 (RSALv2/SSPLv1/AGPLv3 tri-licence), HashiCorp Vault (BUSL-1.1), and optional components under AGPL-3.0 (Grafana, Loki, MinIO) which are free but impose obligations on a closed distributed bundle.
@@ -46,6 +47,20 @@ Rules that follow:
 - Normative documents that name a replaced component must be updated in the same revision: `00-INDEX.md`, `02` §4, `05` §1, `09` §2, `ADR-007` (implementation note: Vault → free MPL equivalent), and the `docs/es/` mirrors.
 - A capability that only exists in a non-free or AGPL component requires a new ADR with the exception, the obligation assumed and the exit plan. Without that ADR, the capability is not delivered.
 - Legal review is still required for the licence *variants* picked at packaging time (container image digests may differ from the source repository).
+
+## Status of this decision (layers kept separate)
+
+This ADR mixes a product decision, a formal acceptance act and several technical/legal verifications. They are tracked separately and **none of them implies the next one**:
+
+| Layer | State on 2026-10-19 | Where |
+|---|---|---|
+| **Product decision** (owner: free licences exclusively) | **Taken** — directive of the product owner, 2026-10-19 | This ADR, *Context*; `docs/reference/REGISTRO-CAMBIOS-DOCUMENTALES-2026-10-19.md` §4.1 |
+| **Formal acceptance of this ADR** | **Pending** — requires the explicit acceptance of the product owner, which changes the status from `Proposed` to `Accepted` | This ADR's status field; DP-17 |
+| **Technical compatibility of the substitutions** | **Pending** — Valkey and OpenBao are API-compatible for our use; Perses, VictoriaLogs/OpenSearch and SeaweedFS require an operational evaluation | DP-5, DP-6 |
+| **Licence verification** | **Done** for the direct components listed in `docs/reference/STACK-LICENCIAS.md`; **open for the transitive tree** until the SBOM/licence gate exists | `STACK-LICENCIAS` §0.bis, §4 |
+| **Legal validation** | **Pending** — the licence variant of the packaged artifact (image digests, bundled notices) has not been reviewed | DP-6 |
+
+Until this ADR is `Accepted`, the renames in the normative documents are **annotations** ("outgoing component / reference substitute"), not silent substitutions: no component is removed from the architecture by this document alone. Verification of a licence is **not** technical validation of a substitution, and neither of the two is a product decision.
 
 ## Alternatives considered
 - **Keep Redis/Vault and accept AGPL or BUSL**: rejected — restricts the hosted-service model and adds audit findings for a component that has a free, API-compatible replacement.

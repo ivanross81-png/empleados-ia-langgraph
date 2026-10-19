@@ -1,6 +1,7 @@
 # ADR-009 — Evaluación continua del agente
 
-**Estado:** Aceptado
+**Estado:** Aceptado  
+**Fecha:** línea base v0.1.0 — fecha exacta no registrada (ver auditoría 2026-10-19)
 
 ## Contexto
 Las pruebas unitarias tradicionales no pueden capturar por completo la trayectoria del agente, la calidad de la recuperación ni la selección de herramientas.

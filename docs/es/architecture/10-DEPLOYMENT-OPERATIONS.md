@@ -1,11 +1,15 @@
 # Digital Employee Platform — Despliegue y Operaciones
 
 **Versión:** 0.1.0  
-**Estado:** Línea base normativa
+**Estado:** Línea base normativa  
+**Creado:** 2026-09-21  
+**Actualizado:** 2026-10-19
 
 ## 1. Modelo de despliegue
 
 El objetivo inicial de producción es un despliegue dedicado por empresa. La plataforma debe poder desplegarse sin Kubernetes.
+
+Las dos modalidades comerciales (instalación privada y un SaaS futuro) y su relación con este límite arquitectónico están declaradas en `01` §7.1: la instalación dedicada a un cliente es el modelo inicial, y atender a varias organizaciones desde una misma instalación exige su propio diseño de aislamiento y su ADR.
 
 Una topología de referencia con Docker Compose:
 

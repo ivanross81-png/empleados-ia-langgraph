@@ -1,7 +1,9 @@
 # Digital Employee Platform — Arquitectura Empresarial
 
 **Versión:** 0.1.0  
-**Estado:** Normativo
+**Estado:** Normativo  
+**Creado:** 2026-09-21  
+**Actualizado:** 2026-10-19
 
 ## 1. Resumen de arquitectura
 
@@ -94,8 +96,8 @@ El plano de ejecución realiza el trabajo real:
 | Motor de riesgo | Evaluación de riesgo | Autorización final de negocio |
 | Motor de aprobación | Decisiones humanas | Ejecución de herramientas |
 | MCP Gateway | Cumplimiento/integración de herramientas | Orquestación de flujos de trabajo de negocio |
-| Vault/KMS | Secretos | Almacenamiento de prompts/contexto |
-| Redis | Caché/coordinación transitoria | Fuente de verdad |
+| Vault/KMS *(implementación: OpenBao o KMS equivalente con licencia MPL/Apache — `ADR-007`, `ADR-011`)* | Secretos | Almacenamiento de prompts/contexto |
+| Redis *(saliente: Valkey, BSD-3-Clause — `ADR-011`)* | Caché/coordinación transitoria | Fuente de verdad |
 | PostgreSQL FTS/pgvector | Recuperación | Autorización por sí solo |
 
 ## 5. Límite arquitectónico

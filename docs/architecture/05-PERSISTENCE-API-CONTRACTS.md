@@ -1,7 +1,9 @@
 # Digital Employee Platform — Persistence & API Contracts
 
 **Version:** 0.1.0  
-**Status:** Normative baseline
+**Status:** Normative baseline  
+**Created:** 2026-09-21  
+**Updated:** 2026-10-19
 
 ## 1. Persistence strategy
 
@@ -14,7 +16,9 @@ A third, **bounded** store exists: the agent-runtime state store (the runtime's 
 | Domain/business state (employees, tasks, executions, actions, approvals, artifacts) | PostgreSQL |
 | Durable workflow lifecycle (timers, signals, retries, waits, recovery) | Temporal persistence |
 | Agent-run state inside one run | Agent-runtime store (bounded, classified, retention-limited) |
-| Cache/transient coordination | Redis (never authoritative) |
+| Cache/transient coordination | Redis *(outgoing: reference substitute Valkey, BSD-3-Clause — `ADR-011`, `docs/reference/STACK-LICENCIAS.md`)* (never authoritative) |
+
+Progress and status are read from the durable layer with non-mutating **queries**, while commands are delivered as **signals/updates** (`04` §22).
 
 pgvector and PostgreSQL full-text search provide the initial retrieval layer.
 

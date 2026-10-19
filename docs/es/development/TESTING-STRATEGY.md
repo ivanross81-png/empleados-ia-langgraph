@@ -1,6 +1,8 @@
 # Estrategia de Pruebas
 
-**Versión:** 0.1.0
+**Versión:** 0.1.0  
+**Creado:** 2026-09-21  
+**Actualizado:** 2026-10-19
 
 ## 1. Pirámide de pruebas
 

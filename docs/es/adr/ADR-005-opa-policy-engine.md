@@ -1,6 +1,7 @@
 # ADR-005 — OPA como Motor de Políticas Determinista
 
-**Estado:** Aceptado
+**Estado:** Aceptado  
+**Fecha:** línea base v0.1.0 — fecha exacta no registrada (ver auditoría 2026-10-19)
 
 ## Contexto
 No se puede confiar en los LLM como mecanismo de autorización. Las políticas deben ser deterministas, testeables y revisables.

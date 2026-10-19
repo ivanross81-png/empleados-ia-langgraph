@@ -1,7 +1,9 @@
 # Digital Employee Platform — Visión de Producto
 
 **Versión:** 0.1.0  
-**Estado:** Línea base normativa de producto
+**Estado:** Línea base normativa de producto  
+**Creado:** 2026-09-21  
+**Actualizado:** 2026-10-19
 
 ## 1. Visión
 
@@ -77,6 +79,17 @@ No es responsable de convertirse en el sistema de registro oficial de cada domin
 El primer modelo de producción es **dedicado/tenant único por entorno empresarial**. Esto significa que los datos, la configuración del runtime, las credenciales y los recursos operativos se aíslan por límite de despliegue.
 
 La multi-tenencia dinámica puede considerarse más adelante, pero no es un requisito previo para validar el producto.
+
+### 7.1 Modalidades comerciales frente al límite arquitectónico
+
+Están previstas dos modalidades comerciales y **ninguna cambia la arquitectura de la primera entrega**:
+
+| Modalidad | Qué significa comercialmente | Estado arquitectónico |
+|---|---|---|
+| **Instalación privada** | El producto se instala en el entorno del propio cliente (o en un entorno dedicado a ese cliente) | Es el modelo inicial (`ADR-001`, `10` §1, `10` §17). El aislamiento es por frontera de despliegue. |
+| **SaaS** | El proveedor opera la plataforma y atiende a varias organizaciones cliente | Es un **objetivo comercial de largo plazo**, no una autorización para introducir multi-tenencia dinámica en el MVP. Atender a varias organizaciones desde una misma instalación exige un diseño de aislamiento (datos, credenciales, modelos, cuotas, auditoría) y su propio ADR; mientras ese ADR no exista, la multi-tenencia es el *non-goal* declarado en `ADR-001` y `02` §11. |
+
+Ambas modalidades comparten *metering*, *entitlements* y cuotas (`09` §12), y la modalidad privada agrega el ciclo de instalación/actualización de `10` §17 y la operación sin conexión. El diseño de medición y entitlements puede prepararse para la modalidad SaaS sin introducir multi-tenencia dinámica.
 
 ## 8. Criterios de éxito
 

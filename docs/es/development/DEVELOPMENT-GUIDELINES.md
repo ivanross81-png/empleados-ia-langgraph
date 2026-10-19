@@ -1,6 +1,8 @@
 # Guía de Desarrollo
 
-**Versión:** 0.1.0
+**Versión:** 0.1.0  
+**Creado:** 2026-09-21  
+**Actualizado:** 2026-10-19
 
 ## 1. Primera regla
 

@@ -2,7 +2,9 @@
 
 **Versión:** 0.1.0  
 **Estado:** Línea base normativa  
-**Fecha:** 2026-09-21
+**Fecha:** 2026-09-21  
+**Creado:** 2026-09-21  
+**Actualizado:** 2026-10-19
 
 ## 1. Propósito
 
@@ -119,6 +121,9 @@ Estos documentos no definen la arquitectura; la sostienen y son la base de evide
 | `KORTIX-CROSS-MATRIX.md` | Inventario documental, matriz de cruce, brechas, propuestas y descartes explícitos |
 | `STACK-LICENCIAS.md` | Inventario de licencias del stack objetivo con clasificación de riesgo comercial |
 | `REGISTRO-CAMBIOS-DOCUMENTALES-2026-10-19.md` | Trazabilidad de los cambios documentales del 2026-10-19 |
+| `REGISTRO-CAMBIOS-2026-10-19-AUDITORIA.md` | Trazabilidad de la auditoría de consistencia del 2026-10-19 (archivo, sección, motivo, estado anterior/nuevo, validación) |
+| `AUDITORIA-CONSISTENCIA-2026-10-19.md` | Informe de auditoría de consistencia: alcance, hallazgos por gravedad, evidencia exacta, cambios realizados y riesgos abiertos |
+| `INVARIANTES-Y-PRUEBAS.md` | Invariantes arquitectónicos con su fuente normativa, el riesgo que evitan, la prueba exigida, su estado actual y la fase en que debe ejecutarse |
 | `DECISIONES-PENDIENTES.md` | Decisiones que no pueden cerrarse solo con análisis documental |
 
 Regla de cita: el anexo y el spike conservan **numeraciones de sección heredadas** (§64, §66, §89…) que no existen en los documentos normativos. Citar siempre el documento y la sección normativos; los números heredados son punteros históricos.
@@ -126,3 +131,13 @@ Regla de cita: el anexo y el spike conservan **numeraciones de sección heredada
 ## 11. Revisión documental 2026-10-19
 
 Revisión aditiva. Se **extendieron** secciones; ningún principio arquitectónico, frontera, nombre de contrato ni ADR cambió. Cambios: `03` §5.1–5.2, §15 · `04` §2, §4, §11, §21–25 · `05` §1, §5.1–5.2, §10.1, §11, §20–22 · `06` §2.1–2.2, §4.1, §7.1, §17–18 · `07` §8.1 · `08` §13 · `09` §3, §6, §12.1, §13 · `10` §17–18. Motivo y evidencia: `docs/reference/REGISTRO-CAMBIOS-DOCUMENTALES-2026-10-19.md`.
+
+## 12. Auditoría de consistencia 2026-10-19
+
+Segunda revisión del mismo día: una **auditoría** del paquete, no una extensión. No cambió ninguna decisión arquitectónica ni se agregó ninguna dependencia.
+
+- **Corregido:** contadores e inventarios del paquete (`00-INDEX.md` decía 26 archivos y citaba una ruta equivocada del manifiesto; la matriz de cruce decía 62 archivos; el espejo español del manifiesto estaba desactualizado) y trazabilidad de metadatos (`Creado`/`Actualizado` en los 11 documentos de arquitectura y las 5 guías; `Fecha` en los 11 ADR; *frontmatter* en los documentos de referencia).
+- **Aclarado:** la frontera de durabilidad en `04` §21.2 (las cinco nociones — corrida cognitiva, espera humana duradera, recuperación del workflow, activity fallida, resultados de negocio — ahora son una tabla explícita); lectura frente a comando en `04` §22; *patching* de Temporal y cutover de workers en `04` §24; las modalidades comerciales separadas del límite arquitectónico en `01` §7.1.
+- **Anotado, no sustituido:** los componentes nombrados en `02` §4, `05` §1, `09` §2 y `00-INDEX.md` llevan una nota explícita ("componente saliente / sustituto de referencia, pendiente de aceptación formal de `ADR-011`"). No se renombró ningún componente en silencio ni se introdujo ninguna dependencia.
+- **Separado:** `ADR-011` declara ahora sus cinco capas de formalización (decisión de producto, aceptación formal, compatibilidad técnica, verificación de licencias, validación legal) en lugar de dar a entender que una cierra la siguiente.
+- Hallazgos, evidencia y riesgos abiertos: `docs/reference/AUDITORIA-CONSISTENCIA-2026-10-19.md`. Trazabilidad cambio por cambio: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-AUDITORIA.md`. Pruebas que se deben: `docs/reference/INVARIANTES-Y-PRUEBAS.md`.

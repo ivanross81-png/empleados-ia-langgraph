@@ -1,6 +1,7 @@
 # ADR-003 — Temporal for Durable Execution
 
-**Status:** Accepted
+**Status:** Accepted  
+**Date:** baseline v0.1.0 — exact date not recorded (see audit 2026-10-19)
 
 ## Context
 Digital Employee work may last days or wait for humans. Retries, timers and recovery must survive process restarts.

@@ -1,6 +1,7 @@
 # ADR-010 — Puerta de enlace LLM
 
-**Estado:** Aceptado
+**Estado:** Aceptado  
+**Fecha:** línea base v0.1.0 — fecha exacta no registrada (ver auditoría 2026-10-19)
 
 ## Contexto
 La plataforma necesita abstracción de proveedor, enrutamiento de modelos, respaldos (fallbacks), contabilidad de costos y cuotas sin acoplar el código del agente a un SDK de proveedor.

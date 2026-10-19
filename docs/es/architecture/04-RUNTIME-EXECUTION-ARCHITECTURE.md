@@ -1,7 +1,9 @@
 # Plataforma de Empleado Digital — Arquitectura de Runtime y Ejecución
 
 **Versión:** 0.1.0  
-**Estado:** Normativo
+**Estado:** Normativo  
+**Creado:** 2026-09-21  
+**Actualizado:** 2026-10-19
 
 ## 1. Modelo fundamental de ejecución
 
@@ -262,7 +264,17 @@ El estado de una corrida de agente puede persistirse entre pasos para permitir l
 2. Está confinado al **ciclo corto** de una corrida. Si una corrida debe sobrevivir una espera larga (aprobación, caída externa, días), la durabilidad es responsabilidad de Temporal, no del checkpointer.
 3. Queda sujeto a la misma clasificación de datos, DLP y retención que cualquier otro almacén: ningún secreto, credencial, token crudo o documento externo completo puede persistirse ahí; los payloads grandes van por referencia (`04` §4, `05` §3, `06` §7).
 4. Debe tener una **política de retención y borrado** por clasificación: el historial de checkpoints se borra al llegar a estado terminal más la ventana de retención configurada, salvo que el entorno exija retención mayor por auditoría (en cuyo caso el artefacto es el registro de auditoría, no el checkpoint).
-5. El modo de durabilidad del runtime se elige explícitamente y se documenta; un modo que solo persiste al salir no alcanza para ejecuciones que pueden esperar a un humano.
+5. La durabilidad del runtime es una **decisión acotada y declarada**, no implícita. Las cinco nociones que no deben confundirse:
+
+| Noción | Dueño | Qué cubre |
+|---|---|---|
+| Recuperación de una **corrida cognitiva** | Almacén del runtime del agente (esta sección) | Volver a entrar en una corrida del agente dentro de la misma activity tras la caída del proceso que la ejecutaba, dentro del ciclo corto |
+| **Espera humana duradera** | Temporal (timers y señales del workflow) | Una ejecución que espera horas o días a una persona: el workflow queda suspendido de forma durable y la aprobación es un registro de `05` §10 |
+| Recuperación del **workflow completo** | Temporal | Reejecutar la historia del workflow tras reinicios de workers o procesos, con timers, reintentos y señales intactos |
+| Recuperación de una **activity fallida** | Política de reintentos de Temporal (`§13`) | Reagendar la activity que falló, con la clasificación de errores reintentables y no reintentables |
+| Persistencia de **resultados de negocio** | Almacén de dominio (PostgreSQL, `05` §1) | Estado de la ejecución, resultados, artefactos y registros de auditoría |
+
+Por lo tanto el almacén de checkpoints **nunca** sostiene una espera humana ni estado de negocio: si una pausa debe sobrevivir más que la corrida misma, el runtime devuelve el control a la activity, que espera una señal duradera (`§11`). El modo de durabilidad elegido para el runtime del agente se documenta por despliegue y está cubierto por DP-1 en `docs/reference/DECISIONES-PENDIENTES.md` (aún pendiente de la prueba comparativa).
 
 ### 21.3 Re-ejecución al reanudar
 
@@ -297,6 +309,12 @@ Una ejecución no es "solo escritura". Estas operaciones forman parte del contra
 
 Toda operación de control produce un evento auditable con actor, ejecución, estado previo, cambio pedido y resultado. Ninguna operación de control otorga capacidad nueva al agente.
 
+**Lectura frente a comando (contrato de la capa durable).** El runtime del agente y la capa de API interactúan con el workflow durable de dos maneras distintas y no deben mezclarlas:
+
+- **Leer estado y progreso** usa **queries**: no mutan el workflow y pueden repetirse (así se alimentan el stream de eventos de `05` §20 y la cola de aprobaciones de `05` §10.1).
+- **Ordenar un cambio** usa **signals** (asíncronas, sin valor de retorno) o **updates** (sincrónicas, validadas): una operación de control de la tabla anterior lleva payload validado, es idempotente ante entrega repetida y queda registrada como evento de ejecución.
+- Una operación que muta la ejecución nunca debe implementarse como query, y una lectura nunca debe implementarse como signal.
+
 ## 23. Delegación (sub-agentes, sub-grafos)
 
 *Agregado 2026-10-19 — cierra el hallazgo K-03 de la matriz de cruce.*
@@ -314,6 +332,7 @@ Si el runtime soporta delegar trabajo a un sub-grafo o sub-agente, la delegació
 *Agregado 2026-10-19 — cierra el hallazgo K-T2 de la matriz de cruce.*
 
 - Las definiciones de workflows durables son código y evolucionan; un cambio que altere la secuencia de comandos de una ejecución abierta debe resolverse con una estrategia explícita: cambio compatible, ramificación por versión, o una nueva versión del workflow para las ejecuciones nuevas mientras las viejas terminan con la anterior.
+- Los mecanismos concretos del motor durable son la implementación de referencia de esa regla: *patching* dentro del workflow (una compuerta de versión que ramifica el comportamiento para historias viejas y nuevas) para cambios compatibles menores, y un **nuevo tipo o versión de workflow** para cambios que no pueden parchearse; los despliegues de workers se versionan para que una Task Queue sirva código compatible, con cutover por versión en lugar de reemplazo en el lugar.
 - Los cambios de activities y workflows que puedan romper el replay deben cubrirse con una prueba de replay/regresión antes de publicar (`09` §8, `docs/development/TESTING-STRATEGY.md`).
 - Los despliegues de workers se versionan para que una ejecución no sea servida en silencio por código incompatible.
 - El crecimiento del historial de un workflow está acotado (`10` §6); las ejecuciones de larga vida deben renovar su historial en lugar de crecer indefinidamente.

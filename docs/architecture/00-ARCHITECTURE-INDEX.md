@@ -2,7 +2,9 @@
 
 **Version:** 0.1.0  
 **Status:** Normative baseline  
-**Date:** 2026-09-21
+**Date:** 2026-09-21  
+**Created:** 2026-09-21  
+**Updated:** 2026-10-19
 
 ## 1. Purpose
 
@@ -119,6 +121,9 @@ These documents do not define the architecture; they support it and are the evid
 | `KORTIX-CROSS-MATRIX.md` | Document inventory, cross-check matrix, gaps, proposals and explicit discards |
 | `STACK-LICENCIAS.md` | Licence inventory of the target stack with commercial risk classification |
 | `REGISTRO-CAMBIOS-DOCUMENTALES-2026-10-19.md` | Traceability of the 2026-10-19 documentation changes |
+| `REGISTRO-CAMBIOS-2026-10-19-AUDITORIA.md` | Traceability of the 2026-10-19 consistency audit (file, section, reason, before/after state, validation) |
+| `AUDITORIA-CONSISTENCIA-2026-10-19.md` | Consistency audit report: scope, findings by severity, exact evidence, changes made and risks still open |
+| `INVARIANTES-Y-PRUEBAS.md` | Architectural invariants with their normative source, the risk they prevent, the test required, its current state and the phase in which it must run |
 | `DECISIONES-PENDIENTES.md` | Decisions that cannot be closed by documentary analysis alone |
 
 Citation rule: the annex and the spike keep **legacy section numbers** (§64, §66, §89…) that do not exist in the normative documents. Always cite the normative document and section; treat legacy numbers as historical pointers only.
@@ -126,3 +131,13 @@ Citation rule: the annex and the spike keep **legacy section numbers** (§64, §
 ## 11. Documentation revision 2026-10-19
 
 Additive revision. Sections were **extended**; no architectural principle, boundary, contract name or ADR was changed. Changes: `03` §5.1–5.2, §15 · `04` §2, §4, §11, §21–25 · `05` §1, §5.1–5.2, §10.1, §11, §20–22 · `06` §2.1–2.2, §4.1, §7.1, §17–18 · `07` §8.1 · `08` §13 · `09` §3, §6, §12.1, §13 · `10` §17–18. Rationale and evidence: `docs/reference/REGISTRO-CAMBIOS-DOCUMENTALES-2026-10-19.md`.
+
+## 12. Consistency audit 2026-10-19
+
+Second revision of the same day: an **audit** of the package rather than an extension of it. No architectural decision was changed and no dependency was added.
+
+- **Corrected:** package counts and inventories (`00-INDEX.md` said 26 files and cited a wrong manifest path; the cross matrix said 62 files; the Spanish mirror of the manifest was stale), metadata traceability (`Created`/`Updated` on the 11 architecture documents and the 5 development guides; `Date` on the 11 ADRs; frontmatter on the reference documents).
+- **Clarified:** the durability boundary in `04` §21.2 (the five notions — cognitive run, durable human wait, workflow recovery, failed activity, business results — are now an explicit table); read-versus-command in `04` §22; Temporal patching and worker cutover in `04` §24; the commercial modalities separated from the architectural limit in `01` §7.1.
+- **Annotated, not substituted:** the components named in `02` §4, `05` §1, `09` §2 and `00-INDEX.md` carry an explicit "outgoing / reference substitute, pending formal acceptance of `ADR-011`" note. No component was silently renamed and no dependency was introduced.
+- **Separated:** `ADR-011` now states its five formalisation layers (product decision, formal acceptance, technical compatibility, licence verification, legal validation) instead of implying that one closes the next.
+- Findings, evidence and open risks: `docs/reference/AUDITORIA-CONSISTENCIA-2026-10-19.md`. Change-by-change trace: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-AUDITORIA.md`. Tests still owed: `docs/reference/INVARIANTES-Y-PRUEBAS.md`.

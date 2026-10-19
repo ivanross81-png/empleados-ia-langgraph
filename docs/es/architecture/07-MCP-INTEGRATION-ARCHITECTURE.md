@@ -1,7 +1,9 @@
 # Digital Employee Platform — Arquitectura de Integración MCP
 
 **Versión:** 0.1.0  
-**Estado:** Normativa
+**Estado:** Normativa  
+**Creado:** 2026-09-21  
+**Actualizado:** 2026-10-19
 
 ## 1. Propósito
 

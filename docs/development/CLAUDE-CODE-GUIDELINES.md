@@ -2,6 +2,8 @@
 
 **Version:** 0.1.0  
 **Audience:** Claude Code and other coding agents
+**Created:** 2026-09-21  
+**Updated:** 2026-10-19
 
 ## 1. Mission
 

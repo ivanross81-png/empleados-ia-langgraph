@@ -8,9 +8,9 @@
 > del paquete canónico v0.1, y las decisiones viven en **`docs/adr/`**.
 > Si hay conflicto, prevalece el paquete canónico (00-10 + ADRs). No escribir código nuevo sobre este anexo.
 
-**Versión:** 0.1
-**Fecha:** 2026-09-21
-**Estado:** Annex (no-normativo)
+**Versión:** 0.1  
+**Fecha:** 2026-09-21  
+**Estado:** Annex (no-normativo)  
 **Documento:** ARCHITECTURE-04 (detalle)
 **Nivel:** Principal / Enterprise Architecture
 **Objetivo:** Detalle operativo de la arquitectura interna de ejecución de los Empleados Digitales.

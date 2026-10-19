@@ -1,7 +1,9 @@
 # Digital Employee Platform — Product Vision
 
 **Version:** 0.1.0  
-**Status:** Normative product baseline
+**Status:** Normative product baseline  
+**Created:** 2026-09-21  
+**Updated:** 2026-10-19
 
 ## 1. Vision
 
@@ -77,6 +79,17 @@ It is not responsible for becoming the system of record for every business domai
 The first production model is **dedicated/single-tenant per enterprise environment**. This means data, runtime configuration, credentials and operational resources are isolated by deployment boundary.
 
 Dynamic multi-tenancy can be considered later, but it is not a prerequisite for validating the product.
+
+### 7.1 Commercial modalities versus architectural limit
+
+Two commercial modalities are planned, and **neither changes the architecture of the first release**:
+
+| Modality | What it means commercially | Architectural state |
+|---|---|---|
+| **Private installation** | The product is installed in the customer's own environment (or in an environment dedicated to that customer) | This is the initial model (`ADR-001`, `10` §1, `10` §17). Isolation is by deployment boundary. |
+| **SaaS** | The vendor operates the platform and serves multiple customer organizations | It is a **long-term commercial objective**, not a licence to introduce dynamic multi-tenancy in the MVP. Serving several organizations from one installation requires an isolation design (data, credentials, models, quotas, audit) and its own ADR; until that ADR exists, multi-tenancy is the non-goal stated in `ADR-001` and `02` §11. |
+
+Both modalities share metering, entitlements and quotas (`09` §12), and the private modality adds the installation/upgrade cycle of `10` §17 and offline operation. Metering and entitlement design may be prepared for the SaaS modality without introducing dynamic multi-tenancy.
 
 ## 8. Success criteria
 

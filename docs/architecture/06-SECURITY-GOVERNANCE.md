@@ -1,7 +1,9 @@
 # Digital Employee Platform — Security & Governance
 
 **Version:** 0.1.0  
-**Status:** Normative
+**Status:** Normative  
+**Created:** 2026-09-21  
+**Updated:** 2026-10-19
 
 ## 1. Security model
 

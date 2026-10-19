@@ -1,6 +1,7 @@
 # ADR-006 — PostgreSQL como Sistema de registro oficial (system of record) primario
 
-**Estado:** Aceptado
+**Estado:** Aceptado  
+**Fecha:** línea base v0.1.0 — fecha exacta no registrada (ver auditoría 2026-10-19)
 
 ## Contexto
 La plataforma necesita estado relacional de dominio, transacciones, metadatos de auditoría y recuperación (retrieval) híbrida inicial.

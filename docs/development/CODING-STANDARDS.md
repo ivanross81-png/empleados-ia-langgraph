@@ -1,6 +1,8 @@
 # Coding Standards
 
-**Version:** 0.1.0
+**Version:** 0.1.0  
+**Created:** 2026-09-21  
+**Updated:** 2026-10-19
 
 ## Python
 

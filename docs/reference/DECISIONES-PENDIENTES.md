@@ -1,3 +1,11 @@
+---
+type: reference
+status: active
+created: 2026-10-19
+updated: 2026-10-19
+tags: [digital-employee, decisiones-pendientes, brechas, validacion, trazabilidad]
+---
+
 # Decisiones pendientes
 
 > **Naturaleza:** documento **no normativo** de control. Registra decisiones que **no pueden cerrarse** con análisis documental y requieren prueba técnica, decisión de producto, validación de seguridad, revisión de licencias o evaluación de coste/rendimiento.
@@ -9,6 +17,33 @@
 Cada entrada: **DP-n** · tema · *tipo de validación* · estado · descripción · opciones · criterio de cierre · documento afectado.
 
 Tipos de validación: `PRUEBA` (spike/benchmark), `PRODUCTO` (decisión del responsable), `SEGURIDAD`, `LICENCIA`, `COSTE`/`RENDIMIENTO`.
+
+**Advertencia de lectura:** *verificar* y *validar* no son lo mismo. Una licencia **verificada** es una licencia leída en la fuente del proyecto; una sustitución **validada** exige además una prueba de comportamiento en nuestros usos. Y ninguna de las dos cierra por sí sola una decisión de producto.
+
+## Resumen de estados (revisión de auditoría, 2026-10-19)
+
+| DP | Tema | Tipo | Estado |
+|---|---|---|---|
+| DP-1 | Modo de durabilidad del runtime del agente | PRUEBA | abierta (frontera más precisa en `04` §21.2; falta la prueba comparativa) |
+| DP-2 | Entorno de ejecución ("sandbox") del empleado | PRODUCTO+SEGURIDAD | abierta |
+| DP-3 | Superficies de canal | PRODUCTO+SEGURIDAD | abierta |
+| DP-4 | Cuotas: corte y efecto | PRODUCTO+COSTE | abierta (diseño en `09` §12.1; umbrales sin definir) |
+| DP-5 | Redis → Valkey | LICENCIA+PRUEBA | licencia **verificada**; compatibilidad **no validada** |
+| DP-6 | Sustituciones por licencia (Grafana/Loki/MinIO/Vault) | LICENCIA | licencias directas **verificadas**; técnico y legal **pendientes** |
+| DP-7 | Aislamiento multiempresa: mecanismo de enforcement | SEGURIDAD | abierta |
+| DP-8 | Base vectorial dedicada | COSTE+RENDIMIENTO | línea base fija; ampliación no decidida |
+| DP-9 | OPA externo vs embebido | PRUEBA+COSTE | línea base fija; despliegue abierto |
+| DP-10 | Conectores delegados: consentimiento y UX | PRODUCTO+SEGURIDAD | requisitos fijados; diseño abierto |
+| DP-11 | Almacenamiento de artefactos | COSTE+OPERACIÓN | contrato fijado; medio no decidido |
+| DP-12 | Empaquetado y promoción de definiciones | PRODUCTO | provisional (`03` §15) |
+| DP-13 | Versionado de la taxonomía de auditoría | PRUEBA+PRODUCTO | taxonomía fijada; compatibilidad abierta |
+| DP-14 | Metering y entitlements en instalación privada | PRODUCTO+LICENCIA | diseño propuesto |
+| DP-15 | Observabilidad de la corrida interna | PRUEBA+COSTE | abierta |
+| DP-16 | Frontera workflow durable ↔ corrida de agente | PRUEBA | frontera decidida; umbral operativo a probar |
+| DP-17 | Hacer normativa la política de licencias libres | PRODUCTO+LICENCIA | decisión de producto **tomada**; aceptación formal del ADR **pendiente** |
+| DP-18 | Umbrales cuantitativos y ventanas de retención sin definir | PRODUCTO+PRUEBA | abierta (nueva en la auditoría) |
+
+Ninguna entrada se cierra por inferencia: cada cierre exige la validación declarada y queda registrado con fecha, evidencia y documento actualizado.
 
 ---
 
@@ -52,15 +87,17 @@ Tipos de validación: `PRUEBA` (spike/benchmark), `PRODUCTO` (decisión del resp
 - **Estado:** **sustitución obligatoria** por la política de licencias libres exclusivas (`STACK-LICENCIAS` §0.bis); queda la prueba de compatibilidad
 - **Descripción:** la versión evaluada de Redis es tri-licencia (RSALv2 · SSPLv1 · AGPLv3), **ninguna licencia libre permisiva**, y el producto es SaaS propietario. La única opción admisible es **Valkey (BSD-3-Clause)**; la variante AGPL de Redis queda también fuera del stack por la política.
 - **Criterio de cierre:** prueba de compatibilidad de los usos reales (caché, límites de tasa, coordinación transitoria, si se usa pub/sub o scripts Lua) contra Valkey fijado por versión. La variante AGPL de Redis queda también fuera del stack: Valkey la reemplaza sin obligaciones.
-- **Afecta:** `docs/reference/STACK-LICENCIAS.md` §0.bis/§3.1, `05` §1, `10`.
+- **Estado de las capas (auditoría 2026-10-19):** licencia de Valkey **verificada** en la fuente del proyecto (BSD-3-Clause); compatibilidad técnica **no validada** (sin prueba); decisión de producto **tomada** (licencias libres exclusivas) pero condicionada a la aceptación formal de `ADR-011`.
+- **Afecta:** `docs/reference/STACK-LICENCIAS.md` §0.bis/§3.1, `05` §1, `02` §4, `00-INDEX.md`, `10`.
 
 ## DP-6 · Licencias condicionales del stack de IA/observabilidad
 
 - **Tipo:** LICENCIA
 - **Estado:** pendiente de revisión por componente; bajo la política de licencias libres exclusivas (`STACK-LICENCIAS` §0.bis) los componentes no libres y los AGPL salen del stack de referencia → **sustitución obligatoria**
 - **Descripción:** el stack objetivo incluye componentes no libres o con edición enterprise: Vault (BUSL-1.1), Grafana y Loki (AGPL-3.0), MinIO (AGPL-3.0), y el servidor de observabilidad de LLM evaluado incluye licencia adicional para su edición enterprise (`ee/`).
-- **Criterio de cierre:** por cada componente: versión exacta fijada, licencia libre declarada y clasificada (permisiva / copyleft), y decisión de uso (OSS vs edición enterprise — esta última **descartada** por la política). Sustituciones **obligatorias**: Grafana → **Perses** (Apache-2.0), Loki → **VictoriaLogs**/OpenSearch (Apache-2.0), MinIO → **SeaweedFS** (Apache-2.0), Vault → **OpenBao** (MPL-2.0) — todas verificadas 2026-10-19.
-- **Afecta:** `docs/reference/STACK-LICENCIAS.md` §0.bis/§3.3–3.6, `06` §18, `10` §17.
+- **Criterio de cierre:** por cada componente: versión exacta fijada, licencia libre declarada y clasificada (permisiva / copyleft), y decisión de uso (OSS vs edición enterprise — esta última **descartada** por la política). Sustituciones **obligatorias**: Grafana → **Perses** (Apache-2.0), Loki → **VictoriaLogs**/OpenSearch (Apache-2.0), MinIO → **SeaweedFS** (Apache-2.0), Vault → **OpenBao** (MPL-2.0) — con licencia **verificada** el 2026-10-19 en la fuente de cada proyecto.
+- **Estado de las capas (auditoría 2026-10-19):** licencias directas **verificadas** (no *validadas* técnicamente); el árbol **transitivo** sigue sin verificar hasta que existan el SBOM y el *license gate* de `06` §18; la **variante de licencia del artefacto empaquetado** (digests de imágenes, avisos incluidos) **no fue revisada** → validación legal **pendiente**. **Garage** quedó sin licencia verificada: no debe proponerse como sustituto hasta verificarla.
+- **Afecta:** `docs/reference/STACK-LICENCIAS.md` §0.bis/§3.3–3.6, `06` §18, `10` §17, `ADR-011`.
 
 ## DP-17 · Hacer normativa la política de licencias libres exclusivas
 
@@ -69,8 +106,28 @@ Tipos de validación: `PRUEBA` (spike/benchmark), `PRODUCTO` (decisión del resp
 - **Descripción:** el responsable del producto dispuso *"usemos licencias libres exclusivamente"*. La política quedó aplicada como **criterio** en el inventario no normativo (`STACK-LICENCIAS` §0.bis) y redactada como ADR; el paquete exige que una política de stack se fije con ADR **antes de implementar**, así que todavía no es regla vigente en `docs/architecture`.
 - **Contenido del ADR-011 (Propuesto):** solo licencias libres OSI/FSF; *source-available* no libre (BUSL, RSALv2, SSPLv1, ELv2, "commons clause", *Additional Use Grant*) **prohibida sin excepción**; dentro de las libres, permisivas por defecto y copyleft (AGPL/GPL) solo por ADR de excepción con obligación asumida y plan de salida; el **stack de referencia queda 100% permisivo** (OpenBao, Valkey, Perses, VictoriaLogs/OpenSearch, SeaweedFS); license gate en CI + SBOM + `THIRD-PARTY-NOTICES`; nunca activar `enterprise/`/`ee/`/`wl/`; nada que prohíba ofrecer el producto como servicio hospedado o imponga proveedor exclusivo.
 - **Pendiente al aceptar el ADR (misma revisión):** renombrar los componentes salientes en los normativos que hoy los nombran — `00-INDEX.md` (`Redis`, `Vault/KMS`), `02` §4 (fila `Redis`), `05` §1 (tabla de autoridades: `Redis`), `09` §2 (`Grafana`, `Loki`) —, agregar la nota de implementación en `ADR-007` (Vault → equivalente libre MPL) y replicar los espejos `docs/es/`.
+- **Estado por capas (auditoría 2026-10-19).** Son cinco cosas distintas y ninguna implica la siguiente:
+
+| Capa | Estado | Evidencia / dónde |
+|---|---|---|
+| **1. Decisión de producto** (licencias libres exclusivamente) | **Tomada** el 2026-10-19 por el responsable | `STACK-LICENCIAS` §0.bis; `REGISTRO-CAMBIOS-DOCUMENTALES-2026-10-19.md` §4.1 |
+| **2. Aceptación formal del ADR-011** | **Pendiente** — el ADR sigue en `Proposed` y requiere el acto explícito del responsable | `ADR-011` (sección *Status of this decision*), espejo ES |
+| **3. Compatibilidad técnica de las sustituciones** | **Pendiente** — sin pruebas; Valkey/OpenBao son compatibles a nivel de API para nuestros usos, pero eso no está demostrado | DP-5, DP-6 |
+| **4. Verificación de licencias** | **Hecha** para los componentes directos; **abierta** en el árbol transitivo (falta SBOM + license gate) | `STACK-LICENCIAS` §0.bis/§4, `06` §18 |
+| **5. Validación legal** | **Pendiente** — variante de licencia del artefacto empaquetado sin revisar | DP-6 |
+
+- **Estado documental intermedio (aplicado, no decisión):** los normativos que nombran componentes salientes llevan hoy una **anotación** explícita ("componente saliente / sustituto de referencia, pendiente de aceptación de `ADR-011`") en `02` §4, `05` §1, `09` §2, `01` §7.1 y `00-INDEX.md`, y `ADR-007` tiene su nota de implementación. **No se renombró ningún componente** fuera de la tabla de stack de `00-INDEX.md`, y ninguna anotación constituye una sustitución.
 - **Criterio de cierre:** ADR-011 pasa a *Aceptado* + renombres aplicados y verificados con el validador + prueba de compatibilidad de las sustituciones (DP-5, DP-6) antes de comprometerlas en el despliegue.
-- **Afecta:** `docs/adr/ADR-011`, `docs/adr/ADR-007`, `00-INDEX.md`, `02`, `05`, `09`, `06` §18, `10`, `docs/development/*`, `docs/reference/STACK-LICENCIAS.md`.
+- **Afecta:** `docs/adr/ADR-011`, `docs/adr/ADR-007`, `00-INDEX.md`, `01` §7.1, `02`, `05`, `09`, `06` §18, `10`, `docs/development/*`, `docs/reference/STACK-LICENCIAS.md`.
+
+## DP-18 · Umbrales cuantitativos y ventanas de retención sin definir
+
+- **Tipo:** PRODUCTO + PRUEBA
+- **Estado:** abierta (registrada en la auditoría 2026-10-19)
+- **Descripción:** varios contratos normativos exigen un umbral o una ventana que **no está definido** en ninguna parte. No se inventan valores: se registran acá. Al menos: (a) ventana de retención del almacén de checkpoints por clasificación (`04` §21.2); (b) umbral de *aging* de aprobaciones y de pausas prolongadas que dispara alerta (`09` §11); (c) desvío de costo considerado anómalo (`09` §11/§12.1); (d) ventana de retención de auditoría y de la telemetría interna del agente (`05`, `09` §12, DP-15); (e) límites de profundidad y concurrencia de delegación (`04` §23); (f) valores de presupuesto por ejecución (`04` §16); (g) ventana de retención de la taxonomía de auditoría retirada (DP-13); (h) RPO/RTO por despliegue (`10` §9); (i) umbrales de aceptación de métricas de éxito (`01` §8).
+- **Opciones:** fijarlos como valores por defecto documentados por entorno (recomendado para las ventanas técnicas) o dejarlos configurables con un valor por defecto obligatorio y techo por política.
+- **Criterio de cierre:** cada umbral queda declarado con su unidad, su valor por defecto y quién puede cambiarlo; las pruebas de DP-4/DP-15/DP-16 usan esos valores en lugar de suposiciones.
+- **Afecta:** `04` §16/§21.2/§23, `01` §8, `05`, `09` §11/§12, `10` §9.
 
 ## DP-7 · Aislamiento multiempresa: mecanismo único de enforcement
 

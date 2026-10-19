@@ -1,6 +1,7 @@
 # ADR-009 — Continuous Agent Evaluation
 
-**Status:** Accepted
+**Status:** Accepted  
+**Date:** baseline v0.1.0 — exact date not recorded (see audit 2026-10-19)
 
 ## Context
 Traditional unit tests cannot fully capture agent trajectory, retrieval quality or tool selection.

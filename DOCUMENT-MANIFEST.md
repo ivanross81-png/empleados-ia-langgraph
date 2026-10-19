@@ -34,6 +34,26 @@
 
 The architecture package contains 27 files: 11 architecture documents, 11 ADRs and 5 development guides. They are the normative baseline; `docs/es/` mirrors them in Spanish for human reading.
 
+### 7.1 Package root
+
+| File | Role |
+|---|---|
+| `README.md` | Entry point for the repository: what the package is and how to read it |
+| `00-INDEX.md` | Working index of the project: sources of truth, target stack, decision principles |
+| `DOCUMENT-MANIFEST.md` | This file: inventory, authority and revision log |
+| `EXPLICACION-NO-TECNICA.md` | Plain-language explanation for non-technical readers |
+
+### 7.2 Whole-package inventory (verified 2026-10-19)
+
+| Category | Files |
+|---|---|
+| Normative (English): `docs/architecture` (11), `docs/adr` (11), `docs/development` (5) | 27 |
+| Spanish mirrors: `docs/es/architecture`, `docs/es/adr`, `docs/es/development` | 27 |
+| Spanish mirrors of root files: `docs/es/README.md`, `docs/es/DOCUMENT-MANIFEST.md` | 2 |
+| Package root (English) | 4 |
+| Non-normative reference: `docs/reference/` | 11 |
+| **Total `.md` files** | **71** |
+
 Non-normative reference material lives in `docs/reference/` and is listed in `00-ARCHITECTURE-INDEX.md` §10:
 
 | File | Role |
@@ -42,9 +62,12 @@ Non-normative reference material lives in `docs/reference/` and is listed in `00
 | `docs/reference/SPIKE-FASE1-FOUNDATION-investigacion.md` | Foundation-phase validation plan |
 | `docs/reference/KORTIX-analisis-y-licencias.md` | Kortix/Suna base-vs-reference assessment and licence analysis |
 | `docs/reference/KORTIX-INVESTIGACION-v0.14.3.md` | Kortix/Suna capability investigation (pinned commit, per-capability evidence) |
-| `docs/reference/KORTIX-CROSS-MATRIX.md` | Documentation inventory, cross-check matrix, gaps and proposals |
+| `docs/reference/KORTIX-CROSS-MATRIX.md` | Documentation inventory, cross-check matrix, gaps and proposals (with the 2026-10-19 audit status per finding) |
 | `docs/reference/STACK-LICENCIAS.md` | Target-stack licence inventory and commercial risk |
 | `docs/reference/REGISTRO-CAMBIOS-DOCUMENTALES-2026-10-19.md` | Change log for the 2026-10-19 revision |
+| `docs/reference/REGISTRO-CAMBIOS-2026-10-19-AUDITORIA.md` | Change log for the 2026-10-19 consistency audit |
+| `docs/reference/AUDITORIA-CONSISTENCIA-2026-10-19.md` | Consistency audit report (scope, findings by severity, evidence, open risks) |
+| `docs/reference/INVARIANTES-Y-PRUEBAS.md` | Architectural invariants, their normative source and the test each one requires |
 | `docs/reference/DECISIONES-PENDIENTES.md` | Open decisions requiring test, legal review or product judgement |
 
 ## 8. Revision log
@@ -52,3 +75,4 @@ Non-normative reference material lives in `docs/reference/` and is listed in `00
 - **2026-09-21** — v0.1.0 initial normative baseline (26 files).
 - **2026-10-19** — additive revision after the Kortix/Suna cross-check: sections extended in `03`, `04`, `05`, `06`, `07`, `08`, `09`, `10`; no ADR modified; no principle or contract name changed. Detail: `docs/reference/REGISTRO-CAMBIOS-DOCUMENTALES-2026-10-19.md`.
 - **2026-10-19 (later)** — `ADR-011` added as **Proposed**: free-licence-only stack, per the product owner's decision. Its acceptance (and the consequent component-name updates in `00-INDEX`, `02` §4, `05` §1, `09` §2, `ADR-007` and the Spanish mirrors) is pending. Detail: `docs/reference/DECISIONES-PENDIENTES.md` DP-17.
+- **2026-10-19 (audit)** — consistency audit of the whole package: inventories and counts corrected (the package is 27 normative files, not 26), `Created`/`Updated`/`Date` metadata added to every normative header, the LangGraph/Temporal durability boundary clarified in `04` §21.2, read-versus-command semantics and Temporal patching documented, the commercial modalities separated from the architectural limit in `01` §7.1, ADR-011 formalisation layers stated, and the Spanish mirror of this manifest brought up to date. Evidence and findings: `docs/reference/AUDITORIA-CONSISTENCIA-2026-10-19.md`.

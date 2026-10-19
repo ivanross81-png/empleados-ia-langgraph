@@ -1,6 +1,7 @@
 # ADR-004 — MCP for Enterprise Tool Integration
 
-**Status:** Accepted
+**Status:** Accepted  
+**Date:** baseline v0.1.0 — exact date not recorded (see audit 2026-10-19)
 
 ## Context
 The platform must integrate with many enterprise systems without implementing bespoke agent APIs for every tool.

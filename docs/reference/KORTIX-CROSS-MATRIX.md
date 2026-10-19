@@ -11,23 +11,27 @@ tags: [digital-employee, kortix, cruce, matriz, brechas, trazabilidad]
 > **No normativo.** Documento de trabajo (entregables **A** inventario y **C** matriz del encargo). La fuente de verdad sigue siendo el paquete normativo (`docs/architecture/00-10` + `docs/adr/`) y `docs/es/` para lectura humana. Las modificaciones propuestas y aplicadas se registran en [[REGISTRO-CAMBIOS-DOCUMENTALES-2026-10-19]]; lo que no puede cerrarse por análisis documental queda en [[DECISIONES-PENDIENTES]].
 >
 > Insumos: [[KORTIX-INVESTIGACION-v0.14.3]] (capacidades verificadas de Kortix, IDs `K-nn`) · [[STACK-LICENCIAS]] (licencias del stack) · [[KORTIX-analisis-y-licencias]] (veredicto BASE/REFERENCIA).
+>
+> **Actualización (auditoría del 2026-10-19):** este documento se completó con el estado vigente de cada hallazgo. Las secciones marcadas `bis` (A.4.bis, A.6.bis, C.1.bis) son las que hay que leer para saber **qué está resuelto solo en el papel**, qué sigue pendiente de prueba y qué requiere una decisión de producto o una revisión de licencias. Estados usados: `ABIERTO`, `RESUELTO_DOCUMENTALMENTE`, `PENDIENTE_DE_PRUEBA`, `PENDIENTE_DE_DECISION`, `PENDIENTE_DE_LICENCIA`, `DESCARTADO`, `SUPERSEDIDO`. Informe completo: [[AUDITORIA-CONSISTENCIA-2026-10-19]].
 
 ---
 
 # PARTE A — Inventario de la documentación existente
 
-**Fecha de inventario:** 2026-10-19. **Base:** archivos reales del proyecto (62 archivos `.md`, 416 KB), verificados con un validador no destructivo (`check-docs.py`: enlaces relativos, wikilinks, referencias a documentos del paquete, sintaxis de bloques Mermaid, duplicados).
+**Fecha de inventario:** 2026-10-19. **Base:** archivos reales del proyecto, verificados con validadores no destructivos (`check-docs.py`: enlaces relativos, wikilinks, referencias a documentos del paquete, sintaxis de bloques Mermaid, duplicados; `check-parity.py`: paridad estructural inglés↔español).
+
+> **Corrección de la auditoría 2026-10-19.** La primera versión de este inventario declaraba 62 archivos `.md`. El recuento real al momento de aquel inventario era **68**, y tras los tres documentos de esta auditoría es **71**. Los demás totales del cuadro también estaban desactualizados (ADR: 10, no 11; espejo español: 27, no 29) y quedan corregidos acá.
 
 ## A.1 Documentos y jerarquía
 
 | Grupo | Ubicación | Archivos | Rol |
 |---|---|---|---|
-| Raíz del proyecto | `00-INDEX.md`, `DOCUMENT-MANIFEST.md`, `README.md`, `EXPLICACION-NO-TECNICA.md` | 4 | Índice del vault, manifiesto del paquete, explicación para no técnicos |
-| Arquitectura (normativa) | `docs/architecture/00..10` | 11 | Contrato arquitectónico. v0.1.0, fecha 2026-09-21, "Normative baseline" |
-| Decisiones (normativas) | `docs/adr/ADR-001..010` | 10 | 10 ADRs `Accepted` (deployment, LangGraph, Temporal, MCP, OPA, PostgreSQL, secrets, DLP, evaluación, LLM gateway) |
+| Raíz del proyecto | `README.md`, `00-INDEX.md`, `DOCUMENT-MANIFEST.md`, `EXPLICACION-NO-TECNICA.md` | 4 | Punto de entrada, índice de trabajo, manifiesto e inventario, explicación para no técnicos |
+| Arquitectura (normativa) | `docs/architecture/00..10` | 11 | Contrato arquitectónico. v0.1.0, creada 2026-09-21, revisada 2026-10-19, "Normative baseline" |
+| Decisiones (normativas) | `docs/adr/ADR-001..011` | 11 | 10 ADRs `Accepted` (deployment, LangGraph, Temporal, MCP, OPA, PostgreSQL, secrets, DLP, evaluación, LLM gateway) + `ADR-011` en estado **`Proposed`** (política de licencias libres) |
 | Desarrollo (normativo) | `docs/development/` | 5 | Guidelines, coding standards, testing, security rules, contrato para agentes de código |
-| Espejo en español | `docs/es/` (misma estructura) | 27 | **Lectura humana**; el paquete inglés sigue siendo el normativo |
-| Referencia (no normativa) | `docs/reference/` | 3 previos + **5 nuevos** | Anexo de runtime (superseded), SPIKE Fase 1, análisis Kortix, y los nuevos: investigación Kortix, matriz de cruce, licencias, registro de cambios, decisiones pendientes |
+| Espejo en español | `docs/es/` (misma estructura + `README.md` y `DOCUMENT-MANIFEST.md`) | 29 | **Lectura humana**; el paquete inglés sigue siendo el normativo |
+| Referencia (no normativa) | `docs/reference/` | 8 previos + **3 nuevos** | Anexo de runtime (superseded), SPIKE Fase 1, análisis Kortix, investigación Kortix, matriz de cruce, licencias, registro de cambios, decisiones pendientes, y los nuevos: auditoría de consistencia, registro de la auditoría y matriz de invariantes |
 
 ## A.2 Decisiones vigentes (lo que NO debe cambiarse sin ADR)
 
@@ -72,6 +76,27 @@ tags: [digital-employee, kortix, cruce, matriz, brechas, trazabilidad]
 | Costos | `04` §16, `09` §12 | Enforcement de cuotas por tenant/empleado/tarea y comportamiento al agotarse; metering para el modelo SaaS |
 | Licencias del stack | — | Ausente por completo antes de [[STACK-LICENCIAS]] |
 
+## A.4.bis Estado de los temas parciales tras las modificaciones (revisión de auditoría, 2026-10-19)
+
+La columna *Qué falta* del cuadro A.4 describe el estado **antes** de las modificaciones. Este cuadro registra qué pasó después, sin borrar el análisis original. `RESUELTO_DOCUMENTALMENTE` significa que el contrato ya está escrito, **no** que esté implementado ni probado.
+
+| Tema | Estado al 2026-10-19 | Dónde quedó | Falta todavía |
+|---|---|---|---|
+| Frontera LangGraph ↔ Temporal | `RESUELTO_DOCUMENTALMENTE` (con una ambigüedad corregida en esta auditoría: el punto 5 de `04` §21.2 se leía como si el checkpointer debiera administrar las esperas humanas) | `04` §21.1–21.4 (tabla de las cinco nociones de durabilidad) | `PENDIENTE_DE_PRUEBA`: DP-1, DP-16 |
+| Persistencia del estado del agente | `RESUELTO_DOCUMENTALMENTE` (tercer almacén declarado y acotado) | `05` §1, `04` §21.2, `06` §17 | Backend y modo de durabilidad: DP-1 |
+| Calendarización de triggers | `RESUELTO_DOCUMENTALMENTE` | `03` §5.1 | `PENDIENTE_DE_PRUEBA`: slot perdido/duplicado |
+| Aprobaciones | `RESUELTO_DOCUMENTALMENTE` | `05` §10.1, `03` §8 | Prueba de ciclo de vida (I-04); umbral de *aging*: DP-18 |
+| Auditoría | `RESUELTO_DOCUMENTALMENTE` | `05` §5.1/§5.2, `09` §6 | Versionado de la taxonomía: DP-13 |
+| Identidad empresarial | `RESUELTO_DOCUMENTALMENTE` | `06` §2.1 | Prueba de integración con un IdP real |
+| Progreso en vivo / tiempo real | `RESUELTO_DOCUMENTALMENTE` | `05` §20, `09` §3 | Prueba de reconexión y orden |
+| Archivos y artefactos | `RESUELTO_DOCUMENTALMENTE` | `05` §21, `08` §13 | Medio de almacenamiento: DP-11 |
+| Secretos: entrega al ejecutor | `RESUELTO_DOCUMENTALMENTE` | `06` §7.1, `07` §8 | Prueba de fuga y de sonda (I-02) |
+| Control operativo del runtime | `RESUELTO_DOCUMENTALMENTE` (incluye ahora la semántica lectura/comando: `04` §22) | `04` §22, `05` §1 | Prueba de contrato (I-13) |
+| Costos | `RESUELTO_DOCUMENTALMENTE` (diseño de cuotas) | `09` §12.1, `10` §18 | Umbrales y efecto del corte: DP-4, DP-18 |
+| Licencias del stack | `RESUELTO_DOCUMENTALMENTE` como política **propuesta** + inventario verificado | `STACK-LICENCIAS`, `ADR-011` (Proposed) | `PENDIENTE_DE_DECISION` (aceptación formal), `PENDIENTE_DE_PRUEBA` (compatibilidad), `PENDIENTE_DE_LICENCIA` (transitivas y artefacto empaquetado): DP-5, DP-6, DP-17 |
+
+Además, dos brechas que estaban ausentes y hoy tienen contrato: **versionado de workflows y workers** (`04` §24, con *patching* y cutover por versión) y **ciclo de instalación/actualización privada** (`10` §17).
+
 ## A.5 Preguntas abiertas ya presentes en los documentos
 
 - SPIKE §5: si la separación Temporal↔LangGraph no se implementa limpia (`S-01..S-03`), **se abre un ADR** en vez de parchear.
@@ -89,6 +114,22 @@ tags: [digital-employee, kortix, cruce, matriz, brechas, trazabilidad]
 | C-4 | **Riesgo de deriva bilingüe.** `docs/es/` es un espejo mantenido a mano (los textos en español son más extensos que el original normativo, p.ej. `04`: 6.933 B vs 5.832 B). Nada obliga a sincronizarlos: cualquier cambio en inglés queda desincronizado si no se replica. | `docs/es/architecture/*` | Media (mantenimiento) |
 | C-5 | **`00-INDEX.md` no lista los documentos de `docs/reference/`** más allá de dos, así que un lector nuevo no descubre el material de investigación. | `00-INDEX.md` §7 | Baja |
 | C-6 | **Fuente de verdad de las licencias ausente.** El requisito "dependencias compatibles con comercialización propietaria" (contexto del proyecto) no tenía ningún artefacto que lo verificara. | — | **Alta** (viabilidad comercial) |
+
+## A.6.bis Estado de las contradicciones y defectos al 2026-10-19
+
+Se conserva la tabla A.6 como registro histórico del hallazgo original y se agrega su resolución. Nota de la auditoría: **C-1 estaba parcialmente resuelto** (los contratos se escribieron, el almacén quedó declarado y acotado), pero su redacción introdujo una ambigüedad nueva en el punto 5 de `04` §21.2, corregida en esta revisión.
+
+| # | Estado al 2026-10-19 | Evidencia de la resolución | Pendiente real |
+|---|---|---|---|
+| C-1 | **RESUELTO_DOCUMENTALMENTE** (con corrección de redacción) | `04` §21.1–21.4, `05` §1, `06` §17, `dev/CODING-STANDARDS` | `PENDIENTE_DE_PRUEBA` (DP-1, DP-16) |
+| C-2 | **RESUELTO_DOCUMENTALMENTE** | Nota de trazabilidad en `SPIKE-FASE1-FOUNDATION-investigacion.md` (numeración §89/§64/§66 marcada como heredada y supersedida) + `00-INDEX.md` con la misma nota | Nada: las secciones citadas ya no se presentan como vigentes |
+| C-3 | **RESUELTO_DOCUMENTALMENTE** | `DOCUMENT-MANIFEST.md` §7 con tablas nuevas y registro de revisiones (§8); la frase corrupta no existe en el archivo | Nada |
+| C-4 | **RESUELTO_DOCUMENTALMENTE en el proceso, con riesgo residual de mantenimiento** | Espejo actualizado en las mismas secciones + validador de paridad `check-parity.py` ejecutado (29 pares, 2 divergencias detectadas y corregidas) | Verificación de paridad automatizada en el repositorio (propuesta P-27) |
+| C-5 | **RESUELTO_DOCUMENTALMENTE** | `00-INDEX.md` lista todo `docs/reference/` y `00-ARCHITECTURE-INDEX.md` §10 lo tabula | Nada |
+| C-6 | **RESUELTO_DOCUMENTALMENTE como inventario y política; `PENDIENTE_DE_DECISION`/`PENDIENTE_DE_PRUEBA` como regla vigente** | `STACK-LICENCIAS.md`, `ADR-011` (Proposed), `06` §18 | Aceptación del ADR, compatibilidad probada, SBOM/license gate, revisión legal (DP-5, DP-6, DP-17) |
+| **C-7** (nueva) | **RESUELTO_DOCUMENTALMENTE** — cantidades del paquete desactualizadas en tres lugares (`00-INDEX.md` decía 26 archivos y citaba `docs/DOCUMENT-MANIFEST.md`; este documento declaraba 62 archivos; el espejo `docs/es/DOCUMENT-MANIFEST.md` seguía en 26 y conservaba el párrafo de borrador) | Correcciones en `00-INDEX.md`, `DOCUMENT-MANIFEST.md` §7.1–7.2, `docs/es/DOCUMENT-MANIFEST.md` y este documento (A.1) | Nada |
+| **C-8** (nueva) | **RESUELTO_DOCUMENTALMENTE** — trazabilidad de metadatos incompleta: `ADR-002`–`ADR-010` sin fecha y 01–10/guías sin `created`/`updated` | Campos `Created`/`Updated` en los 11 normativos y las 5 guías (EN y ES) y `Date` en los 11 ADR (EN y ES); las fechas exactas no registradas se declaran como tales, no se inventan | Completar la fecha real de ADR-002–010 si se recupera del historial |
+| **C-9** (nueva) | **RESUELTO_DOCUMENTALMENTE** — el cuadro C.2 declaraba "Aplicado" en propuestas con avance parcial (K-T1 lectura/comando, K-T2 *patching*, P-20 defectos documentales) | Contratos agregados (`04` §22, `04` §24, paridad y manifiesto corregidos) y estados reclasificados en §C.2 y §C.1.bis | Nada documental; las pruebas siguen pendientes |
 
 ## A.7 Juicio de conjunto
 
@@ -169,12 +210,60 @@ La arquitectura está **bien especificada en lo que es su diferencial** (goberna
 | K-65 | API pública con `code` estable, `Idempotency-Key`, paginación, rate limits con cabeceras, OpenAPI servido por la instancia | `api.mdx` | `05` §8–§19 | Todo esto ya está definido (códigos estables, idempotencia, cursores, versionado) | **completo** | Falta servir OpenAPI por la instancia y publicar cabeceras de rate limit | P-19 (mejora menor): `/openapi.json` y cabeceras de límite | Autoservicio y cliente generado; menos fricción de integración | API | P2 | `05` | Revisión de contrato |
 | K-66 | Hechos de stack: RLS multi-tenant, sin pgvector, cola en PostgreSQL, Supabase | `tree.json`, `packages/db/*` | `ADR-001`, `ADR-006` | Single-tenant + pgvector + Temporal | **alternativo** | Confirma que nuestro aislamiento por despliegue y nuestra búsqueda híbrida son decisiones **distintas y deliberadas** | No incorporar | — | — | No incorporar | — | — |
 
+## C.1.bis Estado de cada hallazgo al 2026-10-19 (auditoría de consistencia)
+
+La matriz C.1 se conserva como estaba al momento del cruce. Este cuadro es el **estado vigente** de cada hallazgo, con la taxonomía de la auditoría. Regla de lectura: **`RESUELTO_DOCUMENTALMENTE` no significa implementado ni validado**; `PENDIENTE_DE_PRUEBA` significa que el contrato existe y falta demostrar el comportamiento; `PENDIENTE_DE_DECISION` / `PENDIENTE_DE_LICENCIA` significan que el documento no puede cerrarlo.
+
+| ID | Estado | Respaldo documental | Validación pendiente | Siguiente acción |
+|---|---|---|---|---|
+| K-01 | `RESUELTO_DOCUMENTALMENTE` (formato provisional) | `03` §15 | `PENDIENTE_DE_DECISION`: formato y flujo de revisión (DP-12) | Definir formato y probar promoción entre entornos |
+| K-04/K-05/K-06/K-16 | `RESUELTO_DOCUMENTALMENTE` | `06` §4.1, `03` §9 | `PENDIENTE_DE_PRUEBA`: política con dos reglas solapadas; suspensión ante `REQUIRE_APPROVAL` | Escribir el caso de prueba de política |
+| K-12/K-21/K-25 | `PENDIENTE_DE_DECISION` (brecha declarada) | `04` §25, DP-2 | Decisión de producto + revisión de seguridad | Decidir si el empleado computa y con qué aislamiento |
+| K-15/K-16 | `RESUELTO_DOCUMENTALMENTE` | `04` §22 (incluye lectura/comando) | `PENDIENTE_DE_PRUEBA`: directiva en vuelo + auditoría (I-13) | Prueba de integración del control en vivo |
+| K-19 | `RESUELTO_DOCUMENTALMENTE` (superadora) | `04` §11, `03` §8, `05` §10 | `PENDIENTE_DE_PRUEBA` (ciclo de vida de la aprobación, I-04) | Mantener; usar K-19 como evidencia de mercado |
+| K-20 | `DESCARTADO` | `ADR-003`, `04` §2–3 | — | No incorporar |
+| K-18 | `RESUELTO_DOCUMENTALMENTE` | `04` §13/§15/§20 | `PENDIENTE_DE_PRUEBA`: recuperación tras caída del worker | Incluir en la prueba de DP-16 |
+| K-L1 | `RESUELTO_DOCUMENTALMENTE` | `04` §21.2 (almacén acotado, clasificación, retención, por referencia), `05` §1, `06` §17 | `PENDIENTE_DE_PRUEBA`: DP-1 (costo, caída a mitad de nodo, borrado por retención) | Ejecutar la prueba comparativa de DP-1 |
+| K-L2 | `RESUELTO_DOCUMENTALMENTE` | `04` §21.3 (regla de reejecución), `dev/CODING-STANDARDS` | `PENDIENTE_DE_PRUEBA`: dos reanudaciones no duplican efecto | Caso de prueba de idempotencia (I-05) |
+| K-L3 | `RESUELTO_DOCUMENTALMENTE` | `04` §21.4 | `PENDIENTE_DE_PRUEBA`: ejecución pausada sobrevive a un cambio de grafo | Incluir en la prueba de versionado |
+| K-T1 | `RESUELTO_DOCUMENTALMENTE` **(al 2026-10-19; antes figuraba solo como propuesta)** | `04` §22 (queries para leer, signals/updates para comandar), `05` §1 | `PENDIENTE_DE_PRUEBA`: consulta que no muta; comando con payload inválido rechazado | Prueba de contrato (I-13) |
+| K-T2 | `RESUELTO_DOCUMENTALMENTE` **(el mecanismo de *patching* y el cutover por versión se agregaron en esta auditoría)** | `04` §24, `10` §10 | `PENDIENTE_DE_PRUEBA`: replay en CI | Prueba de replay en la tubería de integración |
+| K-T3 | `RESUELTO_DOCUMENTALMENTE` (parcial en el detalle de backfill) | `03` §5.1 (base horaria, identidad de slot, misfire, solapamiento) | `PENDIENTE_DE_PRUEBA`: dos slots superpuestos; **el *backfill* explícito de slots históricos no está especificado** | Probar solapamiento; evaluar si el backfill se necesita |
+| K-T4 | `RESUELTO_DOCUMENTALMENTE` | `10` §6, `04` §13, §24 | `PENDIENTE_DE_PRUEBA`: Continue-As-New con historia larga | Prueba de renovación de historia |
+| K-T5 | `ABIERTO` (P2) | `09` §2 (menciona Search Attributes como mecanismo previsto) · `09` §3–4 | Falta el uso concreto de Search Attributes y de las métricas del SDK en consultas operativas | Definir atributos de búsqueda para la cola de aprobaciones |
+| K-47/K-48 | `RESUELTO_DOCUMENTALMENTE` | `06` §2.1 | `PENDIENTE_DE_PRUEBA`: integración real con un IdP | Prueba con un proveedor de identidad |
+| K-49 | `RESUELTO_DOCUMENTALMENTE` | `06` §2.1 | `PENDIENTE_DE_PRUEBA`: sesión que excede el máximo recibe 401 | Prueba de política de sesión |
+| K-50/K-51 | `RESUELTO_DOCUMENTALMENTE` | `06` §7.1, `07` §8, `ADR-007` | `PENDIENTE_DE_PRUEBA`: fuga y sonda (I-02) | Prueba de fuga con herramienta que ejecuta código |
+| K-52/K-53/K-54 | `RESUELTO_DOCUMENTALMENTE` | `05` §5.1–§5.2, `09` §6 | `PENDIENTE_DE_PRUEBA`: contrato de auditoría; versionado de la taxonomía (DP-13) | Probar exportación con nombres retirados |
+| K-27 | `DESCARTADO` (se mantiene OPA) | `06` §4, `07` §4 | — | No incorporar |
+| K-26 | `RESUELTO_DOCUMENTALMENTE` | `07` §8, `04` §8 | `PENDIENTE_DE_PRUEBA` (misma que I-02) | Usar K-26 como evidencia externa |
+| K-29 | `RESUELTO_DOCUMENTALMENTE` (requisitos) | `07` §8.1, `06` §3 | `PENDIENTE_DE_DECISION`: consentimiento y UX (DP-10); `PENDIENTE_DE_PRUEBA`: revocación sin *fallback* | Diseñar el flujo de consentimiento |
+| K-28 | `DESCARTADO` | `00` §8 | — | No incorporar |
+| K-31..K-35/K-39 | `RESUELTO_DOCUMENTALMENTE` | `03` §5.1, `05` §11 | `PENDIENTE_DE_PRUEBA`: slot perdido y duplicado | Prueba de calendarización |
+| K-36/K-37/K-38 | `RESUELTO_DOCUMENTALMENTE` | `05` §11 | `PENDIENTE_DE_PRUEBA`: reintento con el mismo identificador de evento | Prueba de deduplicación |
+| K-40 | `PENDIENTE_DE_DECISION` (nota aplicada) | `03` §5.2, `04` §25, DP-3 | Decisión de producto + revisión de seguridad | Elegir el primer canal y sus requisitos |
+| K-41 | `RESUELTO_DOCUMENTALMENTE` | `ADR-010`, `09` §12 | `PENDIENTE_DE_PRUEBA`: modelo no listado no se usa por alias | Probar política de modelos permitidos |
+| K-42/K-43 | `RESUELTO_DOCUMENTALMENTE` (diseño de corte) | `09` §12.1, `10` §18 | `PENDIENTE_DE_DECISION`: umbrales (DP-4, DP-18); `PENDIENTE_DE_PRUEBA`: corte con efecto externo | Fijar umbrales y probar el corte |
+| K-22/K-23/K-24 | `RESUELTO_DOCUMENTALMENTE` | `05` §21, `08` §13 | `PENDIENTE_DE_DECISION`: medio de almacenamiento (DP-11) | Elegir almacén y probar ciclo de vida |
+| K-55/K-56 | `DESCARTADO` (ventaja propia) | `10` §1, `02` §10 | — | No incorporar |
+| K-57/K-59/K-60/K-61 | `RESUELTO_DOCUMENTALMENTE` | `10` §17 | `PENDIENTE_DE_PRUEBA`: instalación limpia y rollback | Prueba de instalación y reversión |
+| K-58 | `RESUELTO_DOCUMENTALMENTE` (nota) | `10` §12/§17 | `PENDIENTE_DE_DECISION`: alcance del panel de plataforma | Definir funciones administrativas |
+| K-63 | `DESCARTADO` (con reserva de decisión de producto) | `01` §9, `06`, DP-2 (contexto) | Decisión de producto si un cliente lo pidiera | No incorporar |
+| K-62 | `DESCARTADO` | `01` §6, `02` §11 | — | No incorporar |
+| K-64 | `RESUELTO_DOCUMENTALMENTE` (el stream) / `PENDIENTE_DE_DECISION` (la multiplicidad de clientes) | `05` §20, `09` §3 | `PENDIENTE_DE_PRUEBA`: reconexión y orden | Probar el contrato de stream |
+| K-65 | `RESUELTO_DOCUMENTALMENTE` | `05` §8–§22 | `PENDIENTE_DE_PRUEBA`: OpenAPI servido por la instancia y cabeceras de límite | Agregar a la prueba de contrato de API |
+| K-66 | `DESCARTADO` (decisión propia distinta) | `ADR-001`, `ADR-006` | — | No incorporar |
+| C-1..C-6 | `RESUELTO_DOCUMENTALMENTE` (ver A.6.bis) | — | Pruebas indicadas arriba | Ver A.6.bis |
+| Hallazgos en curso de prueba | `PENDIENTE_DE_PRUEBA` | DP-1, DP-4, DP-7, DP-13, DP-15, DP-16, DP-18 | Requieren ejecución | Ver `INVARIANTES-Y-PRUEBAS.md` §1 |
+
 ## C.2 Resumen de propuestas (lo que sí se hizo o se propone)
+
+Estados posibles: `Aplicado` (el contrato está en el normativo), `Aplicado parcialmente` (parte del contrato se agregó después, ver §C.1.bis), `Aplicado como propuesta` (el texto declara la brecha/pregunta, sin decisión), `Propuesto` (redactado, sin efecto normativo) y `Pendiente`. **`Aplicado` describe el estado del documento, no una validación técnica.**
 
 | Propuesta | Descripción | Prioridad | Documentos | Estado |
 |---|---|---|---|---|
 | P-01 | Declarar el **checkpointer** de LangGraph: dónde vive el estado, clasificación, retención, "por referencia"; regla de **re-ejecución de nodos** e idempotencia de efectos previos a `interrupt`; compatibilidad de grafos en vuelo | **P0** | `04`, `05`, `06` | Aplicado |
-| P-02 | Inventario de **licencias del stack** + reglas de incorporación de dependencias (license gate, SBOM, lista de revisión, prohibiciones) | **P0** | `STACK-LICENCIAS` (nuevo), `dev/*` | Aplicado (documento) / propuesto (reglas de CI) |
+| P-02 | Inventario de **licencias del stack** + reglas de incorporación de dependencias (license gate, SBOM, lista de revisión, prohibiciones) | **P0** | `STACK-LICENCIAS` (nuevo), `06` §18, `ADR-011` | Aplicado el inventario y la regla; **Propuesto** el ADR (`ADR-011`) y **pendientes** la puerta en CI, el SBOM y la verificación transitiva |
 | P-03 | Requisitos de **identidad empresarial**: SSO con verificación de dominio, SCIM, MFA obligatoria, política de sesión, revocación, mapeo grupos→roles | P1 | `06` §2 | Aplicado |
 | P-04 | **Taxonomía de acciones auditadas** + cobertura "toda operación deja fila" + filtro/export | P1 | `05` §5, `09` §6 | Aplicado |
 | P-05 | **Semántica de calendarización**: zona horaria IANA, jitter, clave por slot, misfire/catch-up, política de solapamiento, límites de corrida, pausa global; dedupe por event-id en webhooks | P1 | `03` §5, `05` §11, `04` | Aplicado |
@@ -192,7 +281,14 @@ La arquitectura está **bien especificada en lo que es su diferencial** (goberna
 | P-17 | **Ciclo de instalación y actualización** en instalación privada (bootstrap idempotente, auto-diagnóstico, rollback de release, cierre de registro) + versionado de workflows/workers | P2 | `10` | Aplicado |
 | P-18 | Requisitos mínimos de **canal** (vinculación de identidad, política de acceso al hilo, autorización por acción, stop) | P2 | `03` §5 (nota), `DECISIONES-PENDIENTES` | Aplicado (nota) |
 | P-19 | Publicar **OpenAPI** por instancia y cabeceras de rate limit | P2 | `05` | Aplicado (nota) |
-| P-20 | **Defectos documentales**: manifiesto (frase corrupta), referencias a secciones del anexo supersedido, sincronización `es/` | P2 | `00-INDEX`, `DOCUMENT-MANIFEST`, `SPIKE`, anexo | Aplicado |
+| P-20 | **Defectos documentales**: manifiesto (frase corrupta), referencias a secciones del anexo supersedido, sincronización `es/` | P2 | `00-INDEX`, `DOCUMENT-MANIFEST`, `SPIKE`, anexo | Aplicado parcialmente en la revisión del 2026-10-19; **completado en la auditoría del 2026-10-19** (contadores, espejo del manifiesto, espejos en español) |
+| P-21 | **Semántica de lectura frente a comando** en la capa durable (*query* para leer, *signal*/*update* para comandar, con payload validado) | P1 | `04` §22, `05` §1 | Aplicado en la auditoría (cierra el avance parcial de K-T1) |
+| P-22 | ***Patching* de workflows y cutover por versión de worker** como implementación de referencia del versionado durable | P1 | `04` §24 | Aplicado en la auditoría (cierra el avance parcial de K-T2) |
+| P-23 | **Modalidades comerciales separadas del límite arquitectónico** (instalación privada vs SaaS futuro, sin habilitar multi-tenencia dinámica) | P1 | `01` §7.1, `10` §1 | Aplicado en la auditoría |
+| P-24 | **Formalización de `ADR-011` en capas** (decisión de producto / aceptación formal / compatibilidad técnica / verificación de licencias / validación legal) y anotaciones explícitas en los normativos que nombran componentes salientes | P1 | `ADR-011`, `ADR-007`, `02` §4, `05` §1, `09` §2, `00-INDEX`, `01` §7.1, DP-17 | Aplicado en la auditoría; la aceptación formal sigue pendiente |
+| P-25 | **Metadatos de trazabilidad** por documento (`Created`/`Updated`, `Date` en ADR, frontmatter en los documentos de referencia) | P2 | Todos los normativos (EN/ES), `DECISIONES-PENDIENTES` | Aplicado en la auditoría; las fechas no registradas se declaran como tales |
+| P-26 | **Matriz de invariantes y pruebas** con fuente normativa, riesgo, prueba, estado y fase | P1 | `INVARIANTES-Y-PRUEBAS.md` (nuevo) | Aplicado en la auditoría |
+| P-27 | **Verificación de paridad inglés↔español automatizada** en el repositorio (no solo ejecutada a mano) | P2 | `docs/es/**` | Propuesto: hoy existe como validador externo no destructivo; requiere decisión sobre dónde vive el script |
 
 ## C.3 Descartes explícitos (capacidades evaluadas y **no** incorporadas)
 
@@ -227,5 +323,5 @@ La arquitectura está **bien especificada en lo que es su diferencial** (goberna
 | `08-MEMORY-KNOWLEDGE-CONTEXT.md` | Ampliado: artefactos como fuente de contexto y su retención (P-08) |
 | `09-OBSERVABILITY-EVALUATION.md` | Ampliado: stream de eventos (P-06), cuotas y corte (P-12), auditoría vs acciones (P-04), modelos permitidos |
 | `10-DEPLOYMENT-OPERATIONS.md` | Ampliado: instalación/actualización privada (P-17), metering comercial (P-12) |
-| ADRs | **Ningún ADR modificado**: no cambió ninguna decisión arquitectónica. Se documentan dos sustituciones posibles de componente (Redis/Vault) que, si se adoptan, requieren nota en `ADR-006`/`ADR-007` |
+| ADRs | **Ninguna decisión arquitectónica cambiada.** `ADR-007` recibe una *nota de implementación* (qué producto satisface "Vault o equivalente"), `ADR-011` se agrega como `Proposed` con sus capas de formalización separadas, y todos los ADR ganan su campo de fecha. Los cambios de nombre de componentes en los normativos quedan como **anotaciones**, no como sustituciones, hasta que `ADR-011` sea aceptado |
 | `docs/es/**` | Espejo actualizado en los mismos puntos (mitigación de C-4) |

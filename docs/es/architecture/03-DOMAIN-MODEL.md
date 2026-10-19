@@ -1,7 +1,9 @@
 # Plataforma de Empleado Digital — Modelo de Dominio
 
 **Versión:** 0.1.0  
-**Estado:** Normativo
+**Estado:** Normativo  
+**Creado:** 2026-09-21  
+**Actualizado:** 2026-10-19
 
 ## 1. Agregados principales
 
@@ -164,6 +166,8 @@ Una Política es una regla de gobernanza determinista. Puede producir:
 - `REQUIRE_APPROVAL`
 
 La puntuación de riesgo puede enriquecer la decisión, pero no reemplaza la autorización.
+
+La semántica de decisión de la política (suspensión ante `REQUIRE_APPROVAL`, granularidad a nivel de argumentos, precedencia y *deny by default*) está definida en `06` §4.1.
 
 ## 10. Herramienta y Servidor MCP
 

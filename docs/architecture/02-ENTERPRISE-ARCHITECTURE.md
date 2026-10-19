@@ -1,7 +1,9 @@
 # Digital Employee Platform — Enterprise Architecture
 
 **Version:** 0.1.0  
-**Status:** Normative
+**Status:** Normative  
+**Created:** 2026-09-21  
+**Updated:** 2026-10-19
 
 ## 1. Architecture overview
 
@@ -94,8 +96,8 @@ The execution plane performs actual work:
 | Risk Engine | Risk assessment | Final business authorization |
 | Approval Engine | Human decisions | Tool execution |
 | MCP Gateway | Tool enforcement/integration | Business workflow orchestration |
-| Vault/KMS | Secrets | Prompt/context storage |
-| Redis | Cache/transient coordination | Source of truth |
+| Vault/KMS *(implementation: OpenBao or equivalent MPL/Apache-licensed KMS — `ADR-007`, `ADR-011`)* | Secrets | Prompt/context storage |
+| Redis *(outgoing: Valkey, BSD-3-Clause — `ADR-011`)* | Cache/transient coordination | Source of truth |
 | PostgreSQL FTS/pgvector | Retrieval | Authorization by itself |
 
 ## 5. Architectural boundary

@@ -1,7 +1,9 @@
 # Digital Employee Platform — Observability & Evaluation
 
 **Version:** 0.1.0  
-**Status:** Normative
+**Status:** Normative  
+**Created:** 2026-09-21  
+**Updated:** 2026-10-19
 
 ## 1. Observability goals
 
@@ -18,10 +20,12 @@ Reference components:
 
 - OpenTelemetry for traces/metrics/log correlation;
 - Prometheus for metrics;
-- Grafana for dashboards;
-- Loki or equivalent for logs;
+- Grafana for dashboards *(outgoing component: the reference substitute is Perses — Apache-2.0 — pending formal acceptance of `ADR-011`)*;
+- Loki or equivalent for logs *(outgoing component: the reference substitutes are VictoriaLogs or OpenSearch — Apache-2.0 — pending formal acceptance of `ADR-011`)*;
 - Langfuse for LLM/agent tracing;
 - PostgreSQL for durable audit metadata.
+
+The reference stack is bound by the free-licence policy (`ADR-011`, `docs/reference/STACK-LICENCIAS.md`). Naming a component here is not an approval to deploy it: the licence gate of `06` §18 applies. Temporal Search Attributes are the intended mechanism for operational queries over open executions (for example "executions waiting for an approval of employee X"), instead of ad-hoc queries against domain tables.
 
 ## 3. Correlation identifiers
 

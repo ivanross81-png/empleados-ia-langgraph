@@ -1,11 +1,15 @@
 # Digital Employee Platform — Deployment & Operations
 
 **Version:** 0.1.0  
-**Status:** Normative baseline
+**Status:** Normative baseline  
+**Created:** 2026-09-21  
+**Updated:** 2026-10-19
 
 ## 1. Deployment model
 
 The initial production target is a dedicated deployment per enterprise. The platform must be deployable without Kubernetes.
+
+The two commercial modalities (private installation and a future SaaS) and their relationship with this architectural limit are stated in `01` §7.1: an installation dedicated to one customer is the initial model, and serving several organizations from one installation requires its own isolation design and ADR.
 
 A reference Docker Compose topology:
 

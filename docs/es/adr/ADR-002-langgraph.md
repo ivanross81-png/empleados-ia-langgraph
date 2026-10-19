@@ -1,6 +1,7 @@
 # ADR-002 — LangGraph como Runtime del agente
 
-**Estado:** Aceptado
+**Estado:** Aceptado  
+**Fecha:** línea base v0.1.0 — fecha exacta no registrada (ver auditoría 2026-10-19)
 
 ## Contexto
 La plataforma requiere razonamiento de agente con estado, loops, uso condicional de herramientas y estado de grafo explícito.

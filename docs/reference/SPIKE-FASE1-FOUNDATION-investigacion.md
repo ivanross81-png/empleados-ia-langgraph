@@ -2,7 +2,7 @@
 
 **Proyecto:** Digital Employee Platform
 **Documento:** 09-SPIKE (no-normativo, pre-implementación)
-**Estado:** Investigación → propuesta de validación en vivo
+**Estado:** Investigación → propuesta de validación en vivo  
 **Fecha:** 2026-09-21
 
 > Este documento NO es normativo. Pertenece a `docs/reference/` porque precede a la
@@ -50,7 +50,7 @@ Trigger (cron 09:00)
 
 Riesgos de negocio simulados (CRM/ERP en contenedor aparte) para mostrar: ALLOW, DENY y APPROVAL, más un **fallo + compensación** y un **cron con resume tras restart del worker**.
 
-## 4. Stack a validar (Fase 1, doc `10` §89)
+## 4. Stack a validar (Fase 1, doc `10` §89 — numeración **heredada** del anexo supersedido; en el normativo vigente, ver `10` §1–§6)
 
 | Componente | Se valida | Evidencia |
 |---|---|---|
@@ -85,7 +85,7 @@ Si S-01..S-03 fallan, la arquitectura tiene un conflicto real de frontera → **
 
 ## 6. Cómo se ejecuta la rebanada
 
-1. Contenedor de spike aparte (no el principal), repositorio esqueleto según `10` §66 (apps/, packages/domain|application|infrastructure/, migrations/).
+1. Contenedor de spike aparte (no el principal), repositorio esqueleto según `10` §66 (apps/, packages/domain|application|infrastructure/, migrations/); la referencia `10` §66 es **heredada** del anexo supersedido — en el normativo vigente, ver `10` §1–§6.
 2. Se difunden: Docker Compose (`frontend, api, worker, temporal, temporal-ui, postgres, redis, mcp-gateway, litellm, otel-collector, langfuse`); Vault incorporado si el entorno lo permite.
 3. Se implementa la mínima cantidad de código que permita el guión de la sección 3, respetando `development/CLAUDE-CODE-GUIDELINES.md`.
 4. Se corren los 8 umbrales como tests/evidencia (integration + security), estilo del manifest v0.1.

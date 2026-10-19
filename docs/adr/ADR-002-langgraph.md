@@ -1,6 +1,7 @@
 # ADR-002 — LangGraph as Agent Runtime
 
-**Status:** Accepted
+**Status:** Accepted  
+**Date:** baseline v0.1.0 — exact date not recorded (see audit 2026-10-19)
 
 ## Context
 The platform requires stateful agent reasoning, loops, conditional tool use and explicit graph state.

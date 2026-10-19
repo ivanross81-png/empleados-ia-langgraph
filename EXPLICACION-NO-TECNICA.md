@@ -1,6 +1,6 @@
 # La Plataforma de Empleados Digitales — Explicación para no técnicos
 
-**Versión:** 0.1 — para compartir con personas sin perfil técnico
+**Versión:** 0.1 — para compartir con personas sin perfil técnico  
 **Autor:** Proyecto Empleados IA — Hermes
 
 ---

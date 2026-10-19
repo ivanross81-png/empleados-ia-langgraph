@@ -2,24 +2,28 @@
 
 Proyecto de la **Digital Employee Platform**: plataforma B2B para construir, operar y gobernar Empleados Digitales que ejecutan trabajo empresarial sobre workflows durables, tools controladas y governance humana.
 
-> **Base documental:** paquete **arquitectura v0.1 canónica** (26 archivos). Los documentos de arquitectura son **normativos**: el código debe implementarlos y no redefinirlos silenciosamente; los cambios de límites/seguridad/contratos/exclusión requieren un **ADR**.
+> **Base documental:** paquete **arquitectura v0.1 canónica** (27 archivos: 11 de arquitectura, 11 ADR y 5 guías de desarrollo) más los espejos en `docs/es/` y los documentos de referencia no normativos. Los documentos de arquitectura son **normativos**: el código debe implementarlos y no redefinirlos silenciosamente; los cambios de límites/seguridad/contratos/exclusión requieren un **ADR**.
+>
+> **Estado:** línea base `v0.1.0` creada 2026-09-21 · revisada 2026-10-19 (auditoría de consistencia). Inventario y revisiones: `DOCUMENT-MANIFEST.md`.
 
 ## Fuentes de verdad
 
 - **`EXPLICACION-NO-TECNICA.md`** — explicación llana del proyecto para compartir con no técnicos.
-- **`docs/DOCUMENT-MANIFEST.md`** — inventario de los 26 documentos y su rol.
-- **`docs/es/`** — versión en **español (rioplatense)** de los 26 documentos (misma estructura). El paquete **inglés** (`docs/architecture`, `docs/adr`, `docs/development`) sigue siendo la **fuente normativa** para agentes de codificación y referencias cruzadas; `docs/es/` es la lectura humana en castellano.
+- **`DOCUMENT-MANIFEST.md`** — inventario de los 27 documentos normativos, los 4 archivos de raíz y el material de referencia, con su rol y sus revisiones.
+- **`docs/es/`** — versión en **español (rioplatense)** de los 27 documentos (misma estructura). El paquete **inglés** (`docs/architecture`, `docs/adr`, `docs/development`) sigue siendo la **fuente normativa** para agentes de codificación y referencias cruzadas; `docs/es/` es la lectura humana en castellano.
 - **`docs/architecture/00-ARCHITECTURE-INDEX.md`** — índice, reglas normativas y orden de lectura (empezar acá).
 - **`docs/adr/`** — decisiones inmutables.
 - **`docs/development/`** — reglas para implementar (incluye `CLAUDE-CODE-GUIDELINES.md`).
-- **`docs/reference/`** — anexos **no-normativos**: detalle operativo heredado del anexo ARCHITECTURE-03 (supersedido), investigación del SPIKE Fase 1, y el paquete de investigación/cruce con **Kortix/Suna** (`KORTIX-INVESTIGACION-v0.14.3.md`, `KORTIX-CROSS-MATRIX.md`, `STACK-LICENCIAS.md`) más el registro de cambios y las decisiones pendientes. Índice completo en `docs/architecture/00-ARCHITECTURE-INDEX.md` §10.
+- **`docs/reference/`** — anexos **no-normativos**: detalle operativo heredado del anexo ARCHITECTURE-03 (supersedido), investigación del SPIKE Fase 1, y el paquete de investigación/cruce con **Kortix/Suna** (`KORTIX-INVESTIGACION-v0.14.3.md`, `KORTIX-CROSS-MATRIX.md`, `STACK-LICENCIAS.md`) más el registro de cambios, las decisiones pendientes, la auditoría de consistencia y la matriz de invariantes. Índice completo en `docs/architecture/00-ARCHITECTURE-INDEX.md` §10.
 
 ## Stack objetivo
 
 ```
-FastAPI · PostgreSQL(+pgvector+FTS) · Redis · Temporal · LangGraph
-LiteLLM · OPA · MCP Gateway · Vault/KMS · OpenTelemetry · Langfuse
+FastAPI · PostgreSQL(+pgvector+FTS) · Valkey¹ · Temporal · LangGraph
+LiteLLM · OPA · MCP Gateway · OpenBao¹ · OpenTelemetry · Langfuse
 ```
+
+¹ Sustituciones de referencia por la política de licencias libres (`docs/adr/ADR-011-free-licence-stack.md`, **estado: Propuesto**): Valkey reemplaza a Redis y OpenBao a HashiCorp Vault. Mientras el ADR no esté aceptado, los documentos normativos siguen nombrando el componente saliente con su anotación; detalle en `docs/reference/STACK-LICENCIAS.md` §0.bis.
 
 ## Principios de decisión (definición con Iván)
 

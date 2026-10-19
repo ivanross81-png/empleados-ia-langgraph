@@ -1,6 +1,7 @@
 # ADR-003 — Temporal para Ejecución Durable
 
-**Estado:** Aceptado
+**Estado:** Aceptado  
+**Fecha:** línea base v0.1.0 — fecha exacta no registrada (ver auditoría 2026-10-19)
 
 ## Contexto
 El trabajo del Empleado Digital puede durar días o esperar por humanos. Los reintentos, los temporizadores y la recuperación deben sobrevivir a los reinicios del proceso.

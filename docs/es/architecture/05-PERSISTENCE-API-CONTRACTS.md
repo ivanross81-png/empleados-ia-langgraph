@@ -1,7 +1,9 @@
 # Plataforma de Empleado Digital — Persistencia y Contratos de API
 
 **Versión:** 0.1.0  
-**Estado:** Línea base normativa
+**Estado:** Línea base normativa  
+**Creado:** 2026-09-21  
+**Actualizado:** 2026-10-19
 
 ## 1. Estrategia de persistencia
 
@@ -14,7 +16,9 @@ Existe un tercer almacén **acotado**: el almacén de estado del runtime del age
 | Estado de dominio/negocio (empleados, tareas, ejecuciones, acciones, aprobaciones, artefactos) | PostgreSQL |
 | Ciclo de vida durable del workflow (temporizadores, señales, reintentos, esperas, recuperación) | Persistencia de Temporal |
 | Estado de la corrida del agente dentro de una corrida | Almacén del runtime del agente (acotado, clasificado, con retención limitada) |
-| Caché/coordinación transitoria | Redis (nunca autoritativo) |
+| Caché/coordinación transitoria | Redis *(saliente: sustituto de referencia Valkey, BSD-3-Clause — `ADR-011`, `docs/reference/STACK-LICENCIAS.md`)* (nunca autoritativo) |
+
+El progreso y el estado se leen de la capa durable con **queries** que no mutan, mientras que los comandos se entregan como **signals/updates** (`04` §22).
 
 pgvector y la búsqueda de texto completo de PostgreSQL proporcionan la capa inicial de recuperación.
 
