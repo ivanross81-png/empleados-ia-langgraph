@@ -8,6 +8,8 @@ The platform is sold as a closed proprietary product, both as multi-tenant SaaS 
 
 The product owner decided on 2026-10-19: **use free licences exclusively.**
 
+> **Note (post-audit verification, 2026-10-19):** this *Context* describes the situation **as of the decision date**. Those components are **no longer part of the reference stack**: they left it on acceptance — see *Consequences* — and the normative documents now name their free-licence equivalents.
+
 Inventory and per-component evidence: `docs/reference/STACK-LICENCIAS.md` (§0.bis policy, §2 inventory, §3 risks). This ADR converts that criterion into a normative rule of the package.
 
 ## Decision

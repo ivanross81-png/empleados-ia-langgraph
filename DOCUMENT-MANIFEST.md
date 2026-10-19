@@ -23,7 +23,7 @@
 | 19 | `docs/adr/ADR-008-dlp-pii-protection.md` | DLP decision |
 | 20 | `docs/adr/ADR-009-evaluation-framework.md` | Evaluation decision |
 | 21 | `docs/adr/ADR-010-llm-gateway.md` | LLM gateway decision |
-| 22 | `docs/adr/ADR-011-free-licence-stack.md` | **Proposed** — free-licence-only stack policy |
+| 22 | `docs/adr/ADR-011-free-licence-stack.md` | **Accepted** (2026-10-19) — free-licence-only stack policy |
 | 23 | `docs/development/DEVELOPMENT-GUIDELINES.md` | Engineering workflow |
 | 24 | `docs/development/CODING-STANDARDS.md` | Coding standards |
 | 25 | `docs/development/TESTING-STRATEGY.md` | Testing strategy |
@@ -51,8 +51,8 @@ The architecture package contains 27 files: 11 architecture documents, 11 ADRs a
 | Spanish mirrors: `docs/es/architecture`, `docs/es/adr`, `docs/es/development` | 27 |
 | Spanish mirrors of root files: `docs/es/README.md`, `docs/es/DOCUMENT-MANIFEST.md` | 2 |
 | Package root (English) | 4 |
-| Non-normative reference: `docs/reference/` | 12 |
-| **Total `.md` files** | **72** |
+| Non-normative reference: `docs/reference/` | 14 |
+| **Total `.md` files** | **74** |
 
 Non-normative reference material lives in `docs/reference/` and is listed in `00-ARCHITECTURE-INDEX.md` §10:
 
@@ -69,6 +69,8 @@ Non-normative reference material lives in `docs/reference/` and is listed in `00
 | `docs/reference/AUDITORIA-CONSISTENCIA-2026-10-19.md` | Consistency audit report (scope, findings by severity, evidence, open risks) |
 | `docs/reference/INVARIANTES-Y-PRUEBAS.md` | Architectural invariants, their normative source and the test each one requires |
 | `docs/reference/REGISTRO-CAMBIOS-2026-10-19-ADR-011-ACEPTADO.md` | Change log for the acceptance of `ADR-011` and the resulting component renames |
+| `docs/reference/VERIFICACION-POST-AUDITORIA-2026-10-19.md` | Post-audit verification report: what was checked, what was reproducible, the reusable-code question and open risks |
+| `docs/reference/REGISTRO-CAMBIOS-2026-10-19-VERIFICACION-POST-AUDITORIA.md` | Change log for the post-audit verification (V-1…V-8) |
 | `docs/reference/DECISIONES-PENDIENTES.md` | Open decisions requiring test, legal review or product judgement |
 
 ## 8. Revision log
@@ -78,3 +80,4 @@ Non-normative reference material lives in `docs/reference/` and is listed in `00
 - **2026-10-19 (later)** — `ADR-011` added as **Proposed**: free-licence-only stack, per the product owner's decision. Its acceptance (and the consequent component-name updates in `00-INDEX`, `02` §4, `05` §1, `09` §2, `ADR-007` and the Spanish mirrors) was pending. Detail: `docs/reference/DECISIONES-PENDIENTES.md` DP-17. **(Accepted the same day: see the entry below.)**
 - **2026-10-19 (audit)** — consistency audit of the whole package: inventories and counts corrected (the package is 27 normative files, not 26), `Created`/`Updated`/`Date` metadata added to every normative header, the LangGraph/Temporal durability boundary clarified in `04` §21.2, read-versus-command semantics and Temporal patching documented, the commercial modalities separated from the architectural limit in `01` §7.1, ADR-011 formalisation layers stated, and the Spanish mirror of this manifest brought up to date. Evidence and findings: `docs/reference/AUDITORIA-CONSISTENCIA-2026-10-19.md`.
 - **2026-10-19 (ADR-011 accepted)** — the product owner accepted `ADR-011` (**Proposed → Accepted**) and, with it, the substitution became normative: the replaced components were renamed in `00-INDEX.md`, `02` §4, `04`, `05` §1, `06` §7, `07`, `09` §2, `10` §1–§3, the `ADR-007` implementation note, the Spanish mirrors and the non-technical explanation. **No architectural decision was changed and no test was closed.** Detail: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-ADR-011-ACEPTADO.md`.
+- **2026-10-19 (post-audit verification)** — follow-up review of the **published** files, which found residues the previous revisions had not reached: both manifests still showed `ADR-011` with its pre-acceptance status (now `Accepted`), `DP-17` contradicted its own state, `DP-6` presented substituted components as the current stack, `ADR-011` §Context lacked its date note, and `00-INDEX.md` did not separate the historical count (26) from the current one (**27**). Claims of **reusable code** were removed: the platform is built **from scratch** on this documentary package, and the Hermes-OS question is registered as **DP-19**. **No architectural decision was changed and no test was closed** (DP-5, DP-6 remain open). Report: `docs/reference/VERIFICACION-POST-AUDITORIA-2026-10-19.md`; trace: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-VERIFICACION-POST-AUDITORIA.md`.

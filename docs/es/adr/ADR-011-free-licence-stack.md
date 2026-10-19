@@ -8,6 +8,8 @@ La plataforma se comercializa como producto propietario cerrado, tanto en SaaS m
 
 El responsable de producto decidió el 2026-10-19: **usar licencias libres exclusivamente.**
 
+> **Nota (verificación posterior, 2026-10-19):** este *Contexto* describe la situación **a la fecha de la decisión**. Esos componentes **ya no forman parte del stack de referencia**: salieron con la aceptación —ver *Consecuencias*— y los documentos normativos hoy nombran sus equivalentes libres.
+
 Inventario y evidencia por componente: `docs/reference/STACK-LICENCIAS.md` (§0.bis política, §2 inventario, §3 riesgos). Este ADR convierte ese criterio en regla normativa del paquete.
 
 ## Decisión

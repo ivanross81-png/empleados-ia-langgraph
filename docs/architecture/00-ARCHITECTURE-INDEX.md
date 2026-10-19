@@ -125,6 +125,8 @@ These documents do not define the architecture; they support it and are the evid
 | `AUDITORIA-CONSISTENCIA-2026-10-19.md` | Consistency audit report: scope, findings by severity, exact evidence, changes made and risks still open |
 | `INVARIANTES-Y-PRUEBAS.md` | Architectural invariants with their normative source, the risk they prevent, the test required, its current state and the phase in which it must run |
 | `REGISTRO-CAMBIOS-2026-10-19-ADR-011-ACEPTADO.md` | Change log for the acceptance of `ADR-011` and the normative component renames it enabled |
+| `VERIFICACION-POST-AUDITORIA-2026-10-19.md` | Post-audit verification report (state of the published files, reusable-code question, open risks) |
+| `REGISTRO-CAMBIOS-2026-10-19-VERIFICACION-POST-AUDITORIA.md` | Change log for the post-audit verification (V-1…V-8) |
 | `DECISIONES-PENDIENTES.md` | Decisions that cannot be closed by documentary analysis alone |
 
 Citation rule: the annex and the spike keep **legacy section numbers** (§64, §66, §89…) that do not exist in the normative documents. Always cite the normative document and section; treat legacy numbers as historical pointers only.
@@ -150,3 +152,13 @@ Third revision of the same day: the product owner **accepted `ADR-011`** (`Propo
 - **Renamed (normative):** `OpenBao` replaces `Vault`/`Vault-KMS` in `02` §4 (table and diagram), `04` (credential diagram), `06` §7, `07` (MCP diagram), `10` §1–§3 and the `ADR-007` implementation note; `Valkey` replaces `Redis` in `00-INDEX.md`, `02` §4, `05` §1 and `10` §1; `Perses` replaces `Grafana` and `VictoriaLogs`/`OpenSearch` replace `Loki` in `09` §2; `SeaweedFS` remains the reference for object storage. Spanish mirrors and `EXPLICACION-NO-TECNICA.md` updated in the same revision.
 - **Unchanged by this act:** no architectural decision, no boundary, no contract name and no dependency. **No test was closed:** licence verification is not technical validation of a substitution (DP-5, DP-6 remain open).
 - Trace: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-ADR-011-ACEPTADO.md`. Policy and licence evidence: `docs/reference/STACK-LICENCIAS.md`.
+
+## 14. Post-audit verification 2026-10-19
+
+Follow-up review of the **published** state (commit `8c881ea`), to check whether the corrections declared by the audit and the acceptance were still valid in the files themselves — without assuming a previous report as evidence.
+
+- **Corrected:** both manifests still described `ADR-011` with its pre-acceptance status (now `Accepted` / `Aceptado`); `DP-17` contradicted its own state (its description still said the policy was not yet in force); `DP-6` presented Vault, Grafana, Loki and MinIO as components **of the current target stack** (now "evaluated stack… outside the reference stack"); `ADR-011` §Context lacked a note that it describes the situation at the decision date; and `00-INDEX.md` now separates the **historical** count (initial baseline of 26) from the **current** one (**27**).
+- **Reusable-code ambiguity resolved by evidence, not inference:** two documents claimed existing reusable code (a control plane / tenancy / SSO "of Hermes-OS" and "a base project we reuse"). The package declares **no repository, scope or interfaces for that system**, so the claim had no verifiable support. The texts now state that the platform is **built from scratch** on this documentary package, that **Hermes-OS is a separate system** whose code is **not** part of this project, and the reuse-versus-integration question is registered as **DP-19**, pending a product-owner decision.
+- **Not reproducible:** the alleged persistence of "26 documents", of the `docs/DOCUMENT-MANIFEST.md` path and of `Redis`/`Vault` in the `00-INDEX.md` stack. In the published files those were already corrected (`51f7f686` for count and path, `8c881ea` for the stack); what remained was the lack of separation between historical and current count, now added.
+- **Unchanged:** no architectural decision, boundary, contract or dependency. DP-5 and DP-6 remain open (no substitution is technically validated) and the historical, research and comparative documents keep their former component names.
+- Report: `docs/reference/VERIFICACION-POST-AUDITORIA-2026-10-19.md`. Trace: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-VERIFICACION-POST-AUDITORIA.md`.

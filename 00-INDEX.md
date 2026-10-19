@@ -5,6 +5,8 @@ Proyecto de la **Digital Employee Platform**: plataforma B2B para construir, ope
 > **Base documental:** paquete **arquitectura v0.1 canónica** (27 archivos: 11 de arquitectura, 11 ADR y 5 guías de desarrollo) más los espejos en `docs/es/` y los documentos de referencia no normativos. Los documentos de arquitectura son **normativos**: el código debe implementarlos y no redefinirlos silenciosamente; los cambios de límites/seguridad/contratos/exclusión requieren un **ADR**.
 >
 > **Estado:** línea base `v0.1.0` creada 2026-09-21 · revisada 2026-10-19 (auditoría de consistencia). Inventario y revisiones: `DOCUMENT-MANIFEST.md`.
+>
+> **Trazabilidad del recuento:** la línea base **inicial** (2026-09-21) tenía **26** archivos normativos (11 de arquitectura, **10** ADR y 5 guías). El paquete **vigente** tiene **27**, por la incorporación de `ADR-011` (11 ADR en total). El espejo `docs/es/` refleja los mismos 27. Cualquier recuento vigente es **27**; el 26 es histórico y no debe presentarse como actual.
 
 ## Fuentes de verdad
 
@@ -27,7 +29,8 @@ LiteLLM · OPA · MCP Gateway · OpenBao¹ · OpenTelemetry · Langfuse
 
 ## Principios de decisión (definición con Iván)
 
-- **No se reescribe** lo que ya funciona y es diferenciador (control plane / seguridad / tenancy de Hermes-OS).
+- **La plataforma se construye desde cero.** No existe código propio de esta plataforma que se pueda reutilizar: la base de diseño es **este paquete documental** (principios, contratos, ADR y reglas de seguridad), que se preserva y se enriquece.
+- **Hermes-OS es un sistema aparte**, de otro proyecto. En este paquete **no se afirma** que su código forme parte de la plataforma ni que se reutilice. Su relación —origen de supuestos de diseño o sistema a integrar— exige declarar alcance e **interfaces**, y está **pendiente de decisión del responsable** (`docs/reference/DECISIONES-PENDIENTES.md` DP-19). Sin esa decisión no se asume reutilización ni integración.
 - **Sí se cambia de enfoque** en la capa commodity y difícil (el loop de agente): adoptar un executor maduro (LangGraph) detrás de una interfaz intercambiable, no construirlo a mano.
 - **Evolución por fases** (`10-DEPLOYMENT-OPERATIONS.md` §17 y el plan de fases del SPIKE en `docs/reference/`): Foundation → Governance → Durable → Enterprise Ops → Scale. *(El detalle histórico de fases vivía en la sección §89 del anexo heredado hoy supersedido: ver nota de trazabilidad en `docs/reference/SPIKE-FASE1-FOUNDATION-investigacion.md`.)*
 - Validar en vivo (spike / rebanada vertical) antes de comprometer.

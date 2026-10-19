@@ -86,7 +86,9 @@ Regla de oro de la plataforma:
 ## 6. Por qué es mejor que "dejarlo simple" (chatbot) o rehacerlo
 
 - **vs. un chatbot:** un chatbot responde; un empleado digital ejecuta con **reglas, aprobación humana y registro**. Para una empresa seria eso es la diferencia entre "una herramienta de consulta" y "un colaborador".
-- **vs. rehacer desde cero el sistema interno anterior:** ya tenemos un proyecto base con seguridad y control multi-cliente muy valioso. No lo tiramos: **reutilizamos lo que ya funciona** y cambiamos de rumbo solo en la parte de ejecución, aprovechando soluciones maduras.
+- **vs. empezar sin diseño previo:** la plataforma **no tiene todavía código propio** y **no reutiliza código de ningún sistema anterior**: se construye **desde cero**, pero no desde una hoja en blanco. Lo que ya está hecho y se aprovecha es el **diseño**: este paquete documental (principios, contratos, decisiones y las reglas de seguridad y control) es la base sobre la que se empieza a programar. Cambiamos de rumbo solo en la parte de ejecución, aprovechando soluciones maduras y con licencias libres.
+
+> **Sobre "Hermes-OS":** si en algún documento aparece mencionado como sistema previo, se lo nombra como **un sistema distinto, de otro proyecto**. Acá no se afirma que su código forme parte de esta plataforma ni que se reutilice; si en el futuro se decidiera integrarlo, eso se documenta aparte (alcance e interfaces) y hoy figura como decisión pendiente.
 
 ---
 

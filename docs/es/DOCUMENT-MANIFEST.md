@@ -25,7 +25,7 @@
 | 19 | `docs/adr/ADR-008-dlp-pii-protection.md` | Decisión de DLP |
 | 20 | `docs/adr/ADR-009-evaluation-framework.md` | Decisión de evaluación |
 | 21 | `docs/adr/ADR-010-llm-gateway.md` | Decisión de gateway de LLM |
-| 22 | `docs/adr/ADR-011-free-licence-stack.md` | **Propuesto** — política de stack con licencias libres únicamente |
+| 22 | `docs/adr/ADR-011-free-licence-stack.md` | **Aceptado** (2026-10-19) — política de stack con licencias libres únicamente |
 | 23 | `docs/development/DEVELOPMENT-GUIDELINES.md` | Flujo de trabajo de ingeniería |
 | 24 | `docs/development/CODING-STANDARDS.md` | Estándares de codificación |
 | 25 | `docs/development/TESTING-STRATEGY.md` | Estrategia de pruebas |
@@ -53,8 +53,8 @@ El paquete de arquitectura contiene 27 archivos: 11 documentos de arquitectura, 
 | Espejos en español: `docs/es/architecture`, `docs/es/adr`, `docs/es/development` | 27 |
 | Espejos en español de los archivos de raíz: `docs/es/README.md`, `docs/es/DOCUMENT-MANIFEST.md` | 2 |
 | Raíz del paquete (inglés) | 4 |
-| Referencia no normativa: `docs/reference/` | 12 |
-| **Total de archivos `.md`** | **72** |
+| Referencia no normativa: `docs/reference/` | 14 |
+| **Total de archivos `.md`** | **74** |
 
 El material de referencia **no normativo** vive en `docs/reference/` y está listado en `00-ARCHITECTURE-INDEX.md` §10:
 
@@ -71,6 +71,8 @@ El material de referencia **no normativo** vive en `docs/reference/` y está lis
 | `docs/reference/AUDITORIA-CONSISTENCIA-2026-10-19.md` | Informe de auditoría de consistencia (alcance, hallazgos por gravedad, evidencia, riesgos abiertos) |
 | `docs/reference/INVARIANTES-Y-PRUEBAS.md` | Invariantes arquitectónicos, su fuente normativa y la prueba que exige cada uno |
 | `docs/reference/REGISTRO-CAMBIOS-2026-10-19-ADR-011-ACEPTADO.md` | Registro de cambios de la aceptación de `ADR-011` y de los renombres de componentes que habilita |
+| `docs/reference/VERIFICACION-POST-AUDITORIA-2026-10-19.md` | Informe de verificación posterior a la auditoría: qué se comprobó, qué resultó reproducible, la cuestión del código reutilizable y los riesgos abiertos |
+| `docs/reference/REGISTRO-CAMBIOS-2026-10-19-VERIFICACION-POST-AUDITORIA.md` | Registro de cambios de la verificación posterior (V-1…V-8) |
 | `docs/reference/DECISIONES-PENDIENTES.md` | Decisiones abiertas que requieren prueba, revisión legal o juicio de producto |
 
 ## 8. Registro de revisiones
@@ -80,3 +82,4 @@ El material de referencia **no normativo** vive en `docs/reference/` y está lis
 - **2026-10-19 (posterior)** — se agrega `ADR-011` como **Propuesto**: stack con licencias libres únicamente, según la decisión del responsable de producto. Su aceptación (y las consiguientes actualizaciones de nombres de componentes en `00-INDEX`, `02` §4, `05` §1, `09` §2, `ADR-007` y los espejos en español) quedaba pendiente. Detalle: `docs/reference/DECISIONES-PENDIENTES.md` DP-17. **(Aceptado ese mismo día: ver la entrada siguiente.)**
 - **2026-10-19 (auditoría)** — auditoría de consistencia de todo el paquete: se corrigen inventarios y cantidades (el paquete son 27 archivos normativos, no 26), se agregan metadatos `Creado`/`Actualizado`/`Fecha` a todas las cabeceras normativas, se aclara la frontera de durabilidad LangGraph/Temporal en `04` §21.2, se documentan la semántica de lectura frente a comando y el *patching* de Temporal, se separan las modalidades comerciales del límite arquitectónico en `01` §7.1, se declaran las capas de formalización de ADR-011 y se pone al día este espejo. Evidencia y hallazgos: `docs/reference/AUDITORIA-CONSISTENCIA-2026-10-19.md`.
 - **2026-10-19 (ADR-011 aceptado)** — el responsable de producto aceptó `ADR-011` (**Propuesto → Aceptado**) y con eso la sustitución pasó a ser **normativa**: los componentes reemplazados fueron renombrados en `00-INDEX.md`, `02` §4, `04`, `05` §1, `06` §7, `07`, `09` §2, `10` §1–§3, la nota de implementación de `ADR-007`, los espejos en español y la explicación no técnica. **No se cambió ninguna decisión arquitectónica ni se cerró ninguna prueba.** Detalle: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-ADR-011-ACEPTADO.md`.
+- **2026-10-19 (verificación posterior)** — revisión de seguimiento de los archivos **publicados**, que encontró residuos que las revisiones anteriores no alcanzaron: los dos manifiestos seguían mostrando `ADR-011` con su estado anterior a la aceptación (ahora `Aceptado`), `DP-17` se contradecía con su propio estado, `DP-6` presentaba componentes sustituidos como el stack actual, el §Contexto de `ADR-011` no tenía su nota de fecha y `00-INDEX.md` no separaba el recuento histórico (26) del vigente (**27**). Se quitaron las afirmaciones sobre **código reutilizable**: la plataforma se construye **desde cero** sobre este paquete documental y la cuestión de Hermes-OS queda registrada como **DP-19**. **No se cambió ninguna decisión arquitectónica ni se cerró ninguna prueba** (DP-5 y DP-6 siguen abiertas). Informe: `docs/reference/VERIFICACION-POST-AUDITORIA-2026-10-19.md`; trazabilidad: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-VERIFICACION-POST-AUDITORIA.md`.
