@@ -20,12 +20,12 @@ Componentes de referencia:
 
 - OpenTelemetry para correlación de rastros/métricas/registros;
 - Prometheus para métricas;
-- Grafana para paneles *(componente saliente: el sustituto de referencia es Perses — Apache-2.0 —, pendiente de aceptación formal de `ADR-011`)*;
-- Loki o equivalente para registros *(componente saliente: los sustitutos de referencia son VictoriaLogs u OpenSearch — Apache-2.0 —, pendientes de aceptación formal de `ADR-011`)*;
+- Perses para paneles *(Apache-2.0; reemplaza a Grafana según `ADR-011` Aceptado)*;
+- VictoriaLogs u OpenSearch para registros *(Apache-2.0; reemplazan a Loki según `ADR-011` Aceptado)*;
 - Langfuse para trazado de LLM/agentes;
 - PostgreSQL para metadatos de auditoría durables.
 
-El stack de referencia está sujeto a la política de licencias libres (`ADR-011`, `docs/reference/STACK-LICENCIAS.md`). Nombrar un componente aquí no es una aprobación para desplegarlo: aplica el *license gate* de `06` §18. Los *Search Attributes* de Temporal son el mecanismo previsto para consultas operativas sobre ejecuciones abiertas (por ejemplo, "ejecuciones esperando una aprobación del empleado X"), en lugar de consultas ad-hoc contra tablas de dominio.
+El stack de referencia está sujeto a la política de licencias libres, vigente desde la aceptación de `ADR-011` (2026-10-19): `docs/reference/STACK-LICENCIAS.md`. Nombrar un componente aquí no es una aprobación para desplegarlo: aplica el *license gate* de `06` §18. Los *Search Attributes* de Temporal son el mecanismo previsto para consultas operativas sobre ejecuciones abiertas (por ejemplo, "ejecuciones esperando una aprobación del empleado X"), en lugar de consultas ad-hoc contra tablas de dominio.
 
 ## 3. Identificadores de correlación
 

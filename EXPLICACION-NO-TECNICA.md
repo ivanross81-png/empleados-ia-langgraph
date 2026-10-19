@@ -58,8 +58,8 @@ Imagina una **oficina** donde cada componente es un colaborador con un rol claro
 | **El Inspector de Reglas (OPA)** | El que conoce el reglamento | Decide **sí/no** según reglas escritas y versionadas: ¿está permitido esto? |
 | **El Guardia de la puerta (MCP Gateway)** | El que controla el acceso a los sistemas | Valida que solo se usen las herramientas permitidas, con límites y supervisión |
 | **El Libro de Cuentas (PostgreSQL)** | La memoria oficial | Guarda todo el estado del negocio y quién hizo qué |
-| **La Memoria de Trabajo (Redis)** | La pizarra rápida | Coordinación rápida y temporales del momento |
-| **La Caja Fuerte (Vault)** | El que custodia las claves | Guarda contraseñas y credenciales; nadie las ve en claro |
+| **La Memoria de Trabajo (Valkey)** | La pizarra rápida | Coordinación rápida y temporales del momento |
+| **La Caja Fuerte (OpenBao)** | El que custodia las claves | Guarda contraseñas y credenciales; nadie las ve en claro |
 | **El Guardián de datos (DLP)** | El que cuida la información sensible | Clasifica los datos (públicos, confidenciales, PCI) y prohíbe fugas |
 | **Los Paneles de Control (Observabilidad + Evaluación)** | Los que revisan el trabajo | Miden costos, errores, calidad; y "examinan" a cada empleado digital antes de dejarlo trabajar |
 
@@ -77,7 +77,7 @@ Regla de oro de la plataforma:
 - **El Inspector (OPA)** — reglas "escritas", versiones claras, decisiones siempre repetibles. Un humano entiende por qué el sistema dijo "no" o "necesita aprobación".
 - **El Guardia (MCP Gateway)** — une la IA con los sistemas reales de la empresa con **un solo punto de control**: todo pasa por ahí, nada entra en la puerta de atrás.
 - **El Libro de Cuentas (PostgreSQL)** — una sola base soporta datos, búsquedas y auditoría; no sumamos tecnologías de más hasta que de verdad haga falta.
-- **La Caja Fuerte (Vault)** — las credenciales nunca se mezclan con las conversaciones de la IA; solo se usan en el momento exacto y por corto tiempo.
+- **La Caja Fuerte (OpenBao)** — las credenciales nunca se mezclan con las conversaciones de la IA; solo se usan en el momento exacto y por corto tiempo.
 
 > **Filosofía:** usamos soluciones maduras y estándar donde no somos el diferencial (razonar, aguantar trabajo largo, hablar con proveedores de IA), y construimos a medida solo donde sí somos diferentes (gobierno, seguridad y control de los empleados digitales). Esto evita inventar ruedas y mantener sistemas complicados sin razón.
 
@@ -115,7 +115,7 @@ Si ese mismo trabajo es parte de un flujo mayor (crear cliente, crear cuenta, y 
 - **Aprobación humana:** un permiso que un humano da cuando una acción es arriesgada.
 - **Reglas / política:** el "reglamento" que decide qué se puede y qué no.
 - **Herramienta / MCP:** la forma en que la IA se conecta a los sistemas de la empresa.
-- **Caja fuerte / Vault:** donde se guardan las claves de acceso, protegidas.
+- **Caja fuerte / OpenBao:** donde se guardan las claves de acceso, protegidas.
 - **Auditoría:** el registro permanente de quién hizo qué y por qué.
 - **Compensación:** el "deshacer" cuando un paso salió mal.
 - **Reconciliación manual:** cuando una acción no se puede deshacer, queda para revisión de un humano.

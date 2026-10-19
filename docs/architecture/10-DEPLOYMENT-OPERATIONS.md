@@ -22,13 +22,13 @@ mcp-gateway
 temporal
 temporal-ui
 postgres
-redis
+valkey
 litellm
 otel-collector
 langfuse
 ```
 
-Vault/KMS may be external to the deployment.
+OpenBao may be external to the deployment.
 
 ## 2. Runtime separation
 
@@ -36,7 +36,7 @@ At minimum, API, worker and MCP Gateway should be independently restartable. Tem
 
 ## 3. Configuration
 
-Configuration is environment-specific and must not contain secrets in source control. Use environment variables for non-secret configuration and Vault/KMS for secrets.
+Configuration is environment-specific and must not contain secrets in source control. Use environment variables for non-secret configuration and OpenBao for secrets.
 
 ## 4. Secrets
 

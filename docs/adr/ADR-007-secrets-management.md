@@ -13,4 +13,4 @@ Use Vault or an equivalent KMS-backed centralized secret manager. The MCP Gatewa
 Credential lifecycle and rotation become explicit operational responsibilities.
 
 ## Implementation note (2026-10-19)
-"Vault or equivalent" is decided by this ADR; the **specific product** is not. Under the free-licence policy (`ADR-011`) the reference implementation is **OpenBao** (MPL-2.0), which covers the same contract (KMS-backed, dynamic credentials, engine API). This note does not change the decision of this ADR and requires no new ADR: it only records which implementation satisfies it. The credential-exposure modes to the executor are defined in `06` §7.1.
+"Vault or equivalent" is decided by this ADR; the **specific product** is not. Under the free-licence policy — in force since `ADR-011` was accepted on 2026-10-19 — the reference implementation is **OpenBao** (MPL-2.0), which covers the same contract (KMS-backed, dynamic credentials, engine API). This note does not change the decision of this ADR and requires no new ADR: it only records which implementation satisfies it. The credential-exposure modes to the executor are defined in `06` §7.1.

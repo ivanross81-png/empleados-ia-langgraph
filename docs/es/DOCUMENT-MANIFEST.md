@@ -53,8 +53,8 @@ El paquete de arquitectura contiene 27 archivos: 11 documentos de arquitectura, 
 | Espejos en español: `docs/es/architecture`, `docs/es/adr`, `docs/es/development` | 27 |
 | Espejos en español de los archivos de raíz: `docs/es/README.md`, `docs/es/DOCUMENT-MANIFEST.md` | 2 |
 | Raíz del paquete (inglés) | 4 |
-| Referencia no normativa: `docs/reference/` | 11 |
-| **Total de archivos `.md`** | **71** |
+| Referencia no normativa: `docs/reference/` | 12 |
+| **Total de archivos `.md`** | **72** |
 
 El material de referencia **no normativo** vive en `docs/reference/` y está listado en `00-ARCHITECTURE-INDEX.md` §10:
 
@@ -70,11 +70,13 @@ El material de referencia **no normativo** vive en `docs/reference/` y está lis
 | `docs/reference/REGISTRO-CAMBIOS-2026-10-19-AUDITORIA.md` | Registro de cambios de la auditoría de consistencia del 2026-10-19 |
 | `docs/reference/AUDITORIA-CONSISTENCIA-2026-10-19.md` | Informe de auditoría de consistencia (alcance, hallazgos por gravedad, evidencia, riesgos abiertos) |
 | `docs/reference/INVARIANTES-Y-PRUEBAS.md` | Invariantes arquitectónicos, su fuente normativa y la prueba que exige cada uno |
+| `docs/reference/REGISTRO-CAMBIOS-2026-10-19-ADR-011-ACEPTADO.md` | Registro de cambios de la aceptación de `ADR-011` y de los renombres de componentes que habilita |
 | `docs/reference/DECISIONES-PENDIENTES.md` | Decisiones abiertas que requieren prueba, revisión legal o juicio de producto |
 
 ## 8. Registro de revisiones
 
 - **2026-09-21** — línea base normativa v0.1.0 (26 archivos).
 - **2026-10-19** — revisión aditiva tras el cruce con Kortix/Suna: secciones ampliadas en `03`, `04`, `05`, `06`, `07`, `08`, `09`, `10`; ningún ADR modificado; ningún principio ni nombre de contrato cambiado. Detalle: `docs/reference/REGISTRO-CAMBIOS-DOCUMENTALES-2026-10-19.md`.
-- **2026-10-19 (posterior)** — se agrega `ADR-011` como **Propuesto**: stack con licencias libres únicamente, según la decisión del responsable de producto. Su aceptación (y las consiguientes actualizaciones de nombres de componentes en `00-INDEX`, `02` §4, `05` §1, `09` §2, `ADR-007` y los espejos en español) queda pendiente. Detalle: `docs/reference/DECISIONES-PENDIENTES.md` DP-17.
+- **2026-10-19 (posterior)** — se agrega `ADR-011` como **Propuesto**: stack con licencias libres únicamente, según la decisión del responsable de producto. Su aceptación (y las consiguientes actualizaciones de nombres de componentes en `00-INDEX`, `02` §4, `05` §1, `09` §2, `ADR-007` y los espejos en español) quedaba pendiente. Detalle: `docs/reference/DECISIONES-PENDIENTES.md` DP-17. **(Aceptado ese mismo día: ver la entrada siguiente.)**
 - **2026-10-19 (auditoría)** — auditoría de consistencia de todo el paquete: se corrigen inventarios y cantidades (el paquete son 27 archivos normativos, no 26), se agregan metadatos `Creado`/`Actualizado`/`Fecha` a todas las cabeceras normativas, se aclara la frontera de durabilidad LangGraph/Temporal en `04` §21.2, se documentan la semántica de lectura frente a comando y el *patching* de Temporal, se separan las modalidades comerciales del límite arquitectónico en `01` §7.1, se declaran las capas de formalización de ADR-011 y se pone al día este espejo. Evidencia y hallazgos: `docs/reference/AUDITORIA-CONSISTENCIA-2026-10-19.md`.
+- **2026-10-19 (ADR-011 aceptado)** — el responsable de producto aceptó `ADR-011` (**Propuesto → Aceptado**) y con eso la sustitución pasó a ser **normativa**: los componentes reemplazados fueron renombrados en `00-INDEX.md`, `02` §4, `04`, `05` §1, `06` §7, `07`, `09` §2, `10` §1–§3, la nota de implementación de `ADR-007`, los espejos en español y la explicación no técnica. **No se cambió ninguna decisión arquitectónica ni se cerró ninguna prueba.** Detalle: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-ADR-011-ACEPTADO.md`.

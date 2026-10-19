@@ -124,6 +124,7 @@ These documents do not define the architecture; they support it and are the evid
 | `REGISTRO-CAMBIOS-2026-10-19-AUDITORIA.md` | Traceability of the 2026-10-19 consistency audit (file, section, reason, before/after state, validation) |
 | `AUDITORIA-CONSISTENCIA-2026-10-19.md` | Consistency audit report: scope, findings by severity, exact evidence, changes made and risks still open |
 | `INVARIANTES-Y-PRUEBAS.md` | Architectural invariants with their normative source, the risk they prevent, the test required, its current state and the phase in which it must run |
+| `REGISTRO-CAMBIOS-2026-10-19-ADR-011-ACEPTADO.md` | Change log for the acceptance of `ADR-011` and the normative component renames it enabled |
 | `DECISIONES-PENDIENTES.md` | Decisions that cannot be closed by documentary analysis alone |
 
 Citation rule: the annex and the spike keep **legacy section numbers** (§64, §66, §89…) that do not exist in the normative documents. Always cite the normative document and section; treat legacy numbers as historical pointers only.
@@ -138,6 +139,14 @@ Second revision of the same day: an **audit** of the package rather than an exte
 
 - **Corrected:** package counts and inventories (`00-INDEX.md` said 26 files and cited a wrong manifest path; the cross matrix said 62 files; the Spanish mirror of the manifest was stale), metadata traceability (`Created`/`Updated` on the 11 architecture documents and the 5 development guides; `Date` on the 11 ADRs; frontmatter on the reference documents).
 - **Clarified:** the durability boundary in `04` §21.2 (the five notions — cognitive run, durable human wait, workflow recovery, failed activity, business results — are now an explicit table); read-versus-command in `04` §22; Temporal patching and worker cutover in `04` §24; the commercial modalities separated from the architectural limit in `01` §7.1.
-- **Annotated, not substituted:** the components named in `02` §4, `05` §1, `09` §2 and `00-INDEX.md` carry an explicit "outgoing / reference substitute, pending formal acceptance of `ADR-011`" note. No component was silently renamed and no dependency was introduced.
+- **Annotated, not substituted (at the time of the audit):** the components named in `02` §4, `05` §1, `09` §2 and `00-INDEX.md` carried an explicit "outgoing / reference substitute, pending formal acceptance of `ADR-011`" note. No component was silently renamed and no dependency was introduced. **Superseded hours later by the acceptance (see §13).**
 - **Separated:** `ADR-011` now states its five formalisation layers (product decision, formal acceptance, technical compatibility, licence verification, legal validation) instead of implying that one closes the next.
 - Findings, evidence and open risks: `docs/reference/AUDITORIA-CONSISTENCIA-2026-10-19.md`. Change-by-change trace: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-AUDITORIA.md`. Tests still owed: `docs/reference/INVARIANTES-Y-PRUEBAS.md`.
+
+## 13. `ADR-011` acceptance 2026-10-19
+
+Third revision of the same day: the product owner **accepted `ADR-011`** (`Proposed` → `Accepted`). The free-licence policy became a normative rule of the package and the substitution stopped being an annotation:
+
+- **Renamed (normative):** `OpenBao` replaces `Vault`/`Vault-KMS` in `02` §4 (table and diagram), `04` (credential diagram), `06` §7, `07` (MCP diagram), `10` §1–§3 and the `ADR-007` implementation note; `Valkey` replaces `Redis` in `00-INDEX.md`, `02` §4, `05` §1 and `10` §1; `Perses` replaces `Grafana` and `VictoriaLogs`/`OpenSearch` replace `Loki` in `09` §2; `SeaweedFS` remains the reference for object storage. Spanish mirrors and `EXPLICACION-NO-TECNICA.md` updated in the same revision.
+- **Unchanged by this act:** no architectural decision, no boundary, no contract name and no dependency. **No test was closed:** licence verification is not technical validation of a substitution (DP-5, DP-6 remain open).
+- Trace: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-ADR-011-ACEPTADO.md`. Policy and licence evidence: `docs/reference/STACK-LICENCIAS.md`.

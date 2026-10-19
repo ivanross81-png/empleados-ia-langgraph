@@ -7,7 +7,7 @@
 
 ## 1. Estrategia de persistencia
 
-PostgreSQL es el sistema de registro oficial principal del estado de dominio. Temporal persiste el estado del flujo de trabajo a través de su propia capa de persistencia. Redis es infraestructura transitoria y no debe convertirse en el almacén autoritativo del estado de negocio.
+PostgreSQL es el sistema de registro oficial principal del estado de dominio. Temporal persiste el estado del flujo de trabajo a través de su propia capa de persistencia. Valkey es infraestructura transitoria y no debe convertirse en el almacén autoritativo del estado de negocio.
 
 Existe un tercer almacén **acotado**: el almacén de estado del runtime del agente (su propio checkpointing), confinado a una corrida dentro de una activity. No es un sistema de registro y se rige por `04` §21. Las autoridades de estado son:
 
@@ -16,7 +16,7 @@ Existe un tercer almacén **acotado**: el almacén de estado del runtime del age
 | Estado de dominio/negocio (empleados, tareas, ejecuciones, acciones, aprobaciones, artefactos) | PostgreSQL |
 | Ciclo de vida durable del workflow (temporizadores, señales, reintentos, esperas, recuperación) | Persistencia de Temporal |
 | Estado de la corrida del agente dentro de una corrida | Almacén del runtime del agente (acotado, clasificado, con retención limitada) |
-| Caché/coordinación transitoria | Redis *(saliente: sustituto de referencia Valkey, BSD-3-Clause — `ADR-011`, `docs/reference/STACK-LICENCIAS.md`)* (nunca autoritativo) |
+| Caché/coordinación transitoria | Valkey *(BSD-3-Clause; reemplaza a Redis 8 según `ADR-011` Aceptado)* (nunca autoritativo) |
 
 El progreso y el estado se leen de la capa durable con **queries** que no mutan, mientras que los comandos se entregan como **signals/updates** (`04` §22).
 

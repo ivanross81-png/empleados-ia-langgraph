@@ -14,7 +14,7 @@ Proyecto de la **Digital Employee Platform**: plataforma B2B para construir, ope
 - **`docs/architecture/00-ARCHITECTURE-INDEX.md`** — índice, reglas normativas y orden de lectura (empezar acá).
 - **`docs/adr/`** — decisiones inmutables.
 - **`docs/development/`** — reglas para implementar (incluye `CLAUDE-CODE-GUIDELINES.md`).
-- **`docs/reference/`** — anexos **no-normativos**: detalle operativo heredado del anexo ARCHITECTURE-03 (supersedido), investigación del SPIKE Fase 1, y el paquete de investigación/cruce con **Kortix/Suna** (`KORTIX-INVESTIGACION-v0.14.3.md`, `KORTIX-CROSS-MATRIX.md`, `STACK-LICENCIAS.md`) más el registro de cambios, las decisiones pendientes, la auditoría de consistencia y la matriz de invariantes. Índice completo en `docs/architecture/00-ARCHITECTURE-INDEX.md` §10.
+- **`docs/reference/`** — anexos **no-normativos**: detalle operativo heredado del anexo ARCHITECTURE-03 (supersedido), investigación del SPIKE Fase 1, y el paquete de investigación/cruce con **Kortix/Suna** (`KORTIX-INVESTIGACION-v0.14.3.md`, `KORTIX-CROSS-MATRIX.md`, `STACK-LICENCIAS.md`) más los registros de cambios (revisión documental, auditoría de consistencia y **aceptación de `ADR-011`**), las decisiones pendientes, el informe de auditoría y la matriz de invariantes. Índice completo en `docs/architecture/00-ARCHITECTURE-INDEX.md` §10.
 
 ## Stack objetivo
 
@@ -23,7 +23,7 @@ FastAPI · PostgreSQL(+pgvector+FTS) · Valkey¹ · Temporal · LangGraph
 LiteLLM · OPA · MCP Gateway · OpenBao¹ · OpenTelemetry · Langfuse
 ```
 
-¹ Sustituciones de referencia por la política de licencias libres (`docs/adr/ADR-011-free-licence-stack.md`, **estado: Propuesto**): Valkey reemplaza a Redis y OpenBao a HashiCorp Vault. Mientras el ADR no esté aceptado, los documentos normativos siguen nombrando el componente saliente con su anotación; detalle en `docs/reference/STACK-LICENCIAS.md` §0.bis.
+¹ Sustituciones de referencia por la política de licencias libres (`docs/adr/ADR-011-free-licence-stack.md`, **Aceptado el 2026-10-19**): Valkey reemplaza a Redis 8 y OpenBao a HashiCorp Vault; los paneles pasan de Grafana a Perses y los logs de Loki a VictoriaLogs/OpenSearch. Detalle y evidencia de licencias: `docs/reference/STACK-LICENCIAS.md` §0.bis; trazabilidad del renombre: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-ADR-011-ACEPTADO.md`.
 
 ## Principios de decisión (definición con Iván)
 

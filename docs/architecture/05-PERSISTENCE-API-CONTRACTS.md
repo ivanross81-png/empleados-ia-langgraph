@@ -7,7 +7,7 @@
 
 ## 1. Persistence strategy
 
-PostgreSQL is the primary system of record for domain state. Temporal persists workflow state through its own persistence layer. Redis is transient infrastructure and must not become the authoritative store for business state.
+PostgreSQL is the primary system of record for domain state. Temporal persists workflow state through its own persistence layer. Valkey is transient infrastructure and must not become the authoritative store for business state.
 
 A third, **bounded** store exists: the agent-runtime state store (the runtime's own checkpointing), confined to one agent run inside an activity. It is not a system of record and is governed by `04` §21. State authorities are therefore:
 
@@ -16,7 +16,7 @@ A third, **bounded** store exists: the agent-runtime state store (the runtime's 
 | Domain/business state (employees, tasks, executions, actions, approvals, artifacts) | PostgreSQL |
 | Durable workflow lifecycle (timers, signals, retries, waits, recovery) | Temporal persistence |
 | Agent-run state inside one run | Agent-runtime store (bounded, classified, retention-limited) |
-| Cache/transient coordination | Redis *(outgoing: reference substitute Valkey, BSD-3-Clause — `ADR-011`, `docs/reference/STACK-LICENCIAS.md`)* (never authoritative) |
+| Cache/transient coordination | Valkey *(BSD-3-Clause; replaces Redis 8 per `ADR-011` Accepted)* (never authoritative) |
 
 Progress and status are read from the durable layer with non-mutating **queries**, while commands are delivered as **signals/updates** (`04` §22).
 

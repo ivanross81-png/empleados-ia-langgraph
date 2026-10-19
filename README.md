@@ -24,7 +24,7 @@ Documentación normativa de la plataforma de **Empleados Digitales**: agentes qu
 
 - El **inglés** es la fuente normativa; `docs/es/` debe reflejarlo fielmente.
 - Un cambio de límites, seguridad, contratos o exclusiones **requiere un ADR**; no se hace por edición silenciosa.
-- Las decisiones **propuestas** (`ADR-011`, estado `Proposed`) no son reglas vigentes: los documentos normativos las anotan como salientes/propuestas, no las aplican.
+- Las decisiones **aceptadas** son reglas vigentes: `ADR-011` (política de licencias libres) está **aceptado** desde el 2026-10-19, así que el stack de referencia usa Valkey, OpenBao, Perses, VictoriaLogs/OpenSearch y SeaweedFS en lugar de Redis, Vault, Grafana, Loki y MinIO (`docs/reference/STACK-LICENCIAS.md`). Lo que está propuesto se marca como tal y no se aplica.
 - Una **brecha documentada** no es una brecha resuelta: lo que falta probar o decidir se registra en `docs/reference/DECISIONES-PENDIENTES.md`.
 - El stack de referencia está sujeto a la política de **licencias libres** (`docs/adr/ADR-011-free-licence-stack.md`, `docs/reference/STACK-LICENCIAS.md`).
 

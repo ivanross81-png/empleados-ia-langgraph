@@ -92,7 +92,7 @@ Separation of duties should prevent a requester from approving their own restric
 
 ## 7. Secrets
 
-Use Vault or an equivalent KMS-backed secret manager. Secrets should be injected as late as possible and exist only for the minimum required lifetime.
+Use OpenBao (or an equivalent free-licence KMS-backed secret manager — `ADR-007`, `ADR-011`). Secrets should be injected as late as possible and exist only for the minimum required lifetime.
 
 Never store secrets in:
 

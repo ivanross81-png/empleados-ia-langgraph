@@ -23,7 +23,7 @@ flowchart TB
     POL[OPA Policy + Risk]
     APR[Approval Engine]
     MCP[MCP Gateway]
-    SEC[Vault/KMS]
+    SEC[OpenBao/KMS]
     SYS[CRM / ERP / ITSM / DB / APIs]
     DB[(PostgreSQL + pgvector)]
     OBS[OpenTelemetry / Langfuse / Prometheus]
@@ -96,8 +96,8 @@ El plano de ejecución realiza el trabajo real:
 | Motor de riesgo | Evaluación de riesgo | Autorización final de negocio |
 | Motor de aprobación | Decisiones humanas | Ejecución de herramientas |
 | MCP Gateway | Cumplimiento/integración de herramientas | Orquestación de flujos de trabajo de negocio |
-| Vault/KMS *(implementación: OpenBao o KMS equivalente con licencia MPL/Apache — `ADR-007`, `ADR-011`)* | Secretos | Almacenamiento de prompts/contexto |
-| Redis *(saliente: Valkey, BSD-3-Clause — `ADR-011`)* | Caché/coordinación transitoria | Fuente de verdad |
+| OpenBao *(gestor de secretos respaldado por KMS con licencia libre — `ADR-007`, `ADR-011` Aceptado)* | Secretos | Almacenamiento de prompts/contexto |
+| Valkey *(BSD-3-Clause; reemplaza a Redis 8 según `ADR-011`)* | Caché/coordinación transitoria | Fuente de verdad |
 | PostgreSQL FTS/pgvector | Recuperación | Autorización por sí solo |
 
 ## 5. Límite arquitectónico

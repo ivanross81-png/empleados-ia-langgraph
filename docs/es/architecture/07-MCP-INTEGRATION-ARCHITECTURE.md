@@ -21,7 +21,7 @@ flowchart LR
     MG --> AUTH[Identity / Scope]
     MG --> POL[OPA]
     MG --> RISK[Risk]
-    MG --> SEC[Vault/KMS]
+    MG --> SEC[OpenBao/KMS]
     MG --> RL[Rate/Concurrency]
     MG --> CB[Circuit Breaker]
     MG --> MCP1[CRM MCP]

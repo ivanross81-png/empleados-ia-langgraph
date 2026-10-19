@@ -92,7 +92,7 @@ La separación de funciones debe impedir que un solicitante apruebe su propia ac
 
 ## 7. Secretos
 
-Use Vault o un administrador de secretos equivalente con respaldo KMS. Los secretos deben inyectarse lo más tarde posible y existir únicamente durante el tiempo de vida mínimo requerido.
+Use OpenBao (o un administrador de secretos equivalente con respaldo KMS y licencia libre — `ADR-007`, `ADR-011`). Los secretos deben inyectarse lo más tarde posible y existir únicamente durante el tiempo de vida mínimo requerido.
 
 Nunca almacene secretos en:
 

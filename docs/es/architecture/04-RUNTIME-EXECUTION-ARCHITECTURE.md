@@ -127,7 +127,7 @@ La puerta de enlace debe ser sin estado (stateless) y escalable horizontalmente.
 ```text
 Tool Request
  → MCP Gateway
- → Vault/KMS
+ → OpenBao/KMS
  → Short-lived Credential
  → External API
 ```

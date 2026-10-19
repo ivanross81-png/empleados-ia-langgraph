@@ -28,7 +28,7 @@ Tipos de validación: `PRUEBA` (spike/benchmark), `PRODUCTO` (decisión del resp
 | DP-2 | Entorno de ejecución ("sandbox") del empleado | PRODUCTO+SEGURIDAD | abierta |
 | DP-3 | Superficies de canal | PRODUCTO+SEGURIDAD | abierta |
 | DP-4 | Cuotas: corte y efecto | PRODUCTO+COSTE | abierta (diseño en `09` §12.1; umbrales sin definir) |
-| DP-5 | Redis → Valkey | LICENCIA+PRUEBA | licencia **verificada**; compatibilidad **no validada** |
+| DP-5 | Redis → Valkey | LICENCIA+PRUEBA | política **aceptada** (ADR-011) y renombre **aplicado**; compatibilidad **no validada** |
 | DP-6 | Sustituciones por licencia (Grafana/Loki/MinIO/Vault) | LICENCIA | licencias directas **verificadas**; técnico y legal **pendientes** |
 | DP-7 | Aislamiento multiempresa: mecanismo de enforcement | SEGURIDAD | abierta |
 | DP-8 | Base vectorial dedicada | COSTE+RENDIMIENTO | línea base fija; ampliación no decidida |
@@ -40,7 +40,7 @@ Tipos de validación: `PRUEBA` (spike/benchmark), `PRODUCTO` (decisión del resp
 | DP-14 | Metering y entitlements en instalación privada | PRODUCTO+LICENCIA | diseño propuesto |
 | DP-15 | Observabilidad de la corrida interna | PRUEBA+COSTE | abierta |
 | DP-16 | Frontera workflow durable ↔ corrida de agente | PRUEBA | frontera decidida; umbral operativo a probar |
-| DP-17 | Hacer normativa la política de licencias libres | PRODUCTO+LICENCIA | decisión de producto **tomada**; aceptación formal del ADR **pendiente** |
+| DP-17 | Hacer normativa la política de licencias libres | PRODUCTO+LICENCIA | decisión de producto **tomada** y ADR **aceptado (2026-10-19)**; renombres **aplicados**; pruebas de compatibilidad pendientes (DP-5/DP-6) |
 | DP-18 | Umbrales cuantitativos y ventanas de retención sin definir | PRODUCTO+PRUEBA | abierta (nueva en la auditoría) |
 
 Ninguna entrada se cierra por inferencia: cada cierre exige la validación declarada y queda registrado con fecha, evidencia y documento actualizado.
@@ -87,7 +87,7 @@ Ninguna entrada se cierra por inferencia: cada cierre exige la validación decla
 - **Estado:** **sustitución obligatoria** por la política de licencias libres exclusivas (`STACK-LICENCIAS` §0.bis); queda la prueba de compatibilidad
 - **Descripción:** la versión evaluada de Redis es tri-licencia (RSALv2 · SSPLv1 · AGPLv3), **ninguna licencia libre permisiva**, y el producto es SaaS propietario. La única opción admisible es **Valkey (BSD-3-Clause)**; la variante AGPL de Redis queda también fuera del stack por la política.
 - **Criterio de cierre:** prueba de compatibilidad de los usos reales (caché, límites de tasa, coordinación transitoria, si se usa pub/sub o scripts Lua) contra Valkey fijado por versión. La variante AGPL de Redis queda también fuera del stack: Valkey la reemplaza sin obligaciones.
-- **Estado de las capas (auditoría 2026-10-19):** licencia de Valkey **verificada** en la fuente del proyecto (BSD-3-Clause); compatibilidad técnica **no validada** (sin prueba); decisión de producto **tomada** (licencias libres exclusivas) pero condicionada a la aceptación formal de `ADR-011`.
+- **Estado de las capas (actualizado 2026-10-19 tras la aceptación de `ADR-011`):** licencia de Valkey **verificada** en la fuente del proyecto (BSD-3-Clause); **renombre aplicado** en los normativos (`02` §4, `05` §1, `10` §1, `00-INDEX.md` y espejos ES): Valkey es hoy el componente nombrado; compatibilidad técnica **no validada** (sin prueba); decisión de producto **tomada y formalizada** por `ADR-011` **Aceptado**.
 - **Afecta:** `docs/reference/STACK-LICENCIAS.md` §0.bis/§3.1, `05` §1, `02` §4, `00-INDEX.md`, `10`.
 
 ## DP-6 · Licencias condicionales del stack de IA/observabilidad
@@ -102,22 +102,22 @@ Ninguna entrada se cierra por inferencia: cada cierre exige la validación decla
 ## DP-17 · Hacer normativa la política de licencias libres exclusivas
 
 - **Tipo:** PRODUCTO + LICENCIA
-- **Estado:** **ADR-011 redactado en estado Propuesto** (`docs/adr/ADR-011-free-licence-stack.md` + espejo `docs/es/adr/`); pendiente la aceptación del responsable y las actualizaciones normativas que dependen de ella
+- **Estado:** **CERRADA en su capa documental** el 2026-10-19: `ADR-011` (`docs/adr/ADR-011-free-licence-stack.md` + espejo `docs/es/adr/`) pasó a **Aceptado** por decisión del responsable de producto y los normativos fueron **renombrados** a los equivalentes libres. Trazabilidad: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-ADR-011-ACEPTADO.md`. Lo que sigue abierto no es la política, sino su **compatibilidad técnica** (DP-5, DP-6) y la **validación legal** de las variantes empaquetadas.
 - **Descripción:** el responsable del producto dispuso *"usemos licencias libres exclusivamente"*. La política quedó aplicada como **criterio** en el inventario no normativo (`STACK-LICENCIAS` §0.bis) y redactada como ADR; el paquete exige que una política de stack se fije con ADR **antes de implementar**, así que todavía no es regla vigente en `docs/architecture`.
-- **Contenido del ADR-011 (Propuesto):** solo licencias libres OSI/FSF; *source-available* no libre (BUSL, RSALv2, SSPLv1, ELv2, "commons clause", *Additional Use Grant*) **prohibida sin excepción**; dentro de las libres, permisivas por defecto y copyleft (AGPL/GPL) solo por ADR de excepción con obligación asumida y plan de salida; el **stack de referencia queda 100% permisivo** (OpenBao, Valkey, Perses, VictoriaLogs/OpenSearch, SeaweedFS); license gate en CI + SBOM + `THIRD-PARTY-NOTICES`; nunca activar `enterprise/`/`ee/`/`wl/`; nada que prohíba ofrecer el producto como servicio hospedado o imponga proveedor exclusivo.
-- **Pendiente al aceptar el ADR (misma revisión):** renombrar los componentes salientes en los normativos que hoy los nombran — `00-INDEX.md` (`Redis`, `Vault/KMS`), `02` §4 (fila `Redis`), `05` §1 (tabla de autoridades: `Redis`), `09` §2 (`Grafana`, `Loki`) —, agregar la nota de implementación en `ADR-007` (Vault → equivalente libre MPL) y replicar los espejos `docs/es/`.
+- **Contenido del ADR-011 (Aceptado el 2026-10-19):** solo licencias libres OSI/FSF; *source-available* no libre (BUSL, RSALv2, SSPLv1, ELv2, "commons clause", *Additional Use Grant*) **prohibida sin excepción**; dentro de las libres, permisivas por defecto y copyleft (AGPL/GPL) solo por ADR de excepción con obligación asumida y plan de salida; el **stack de referencia queda 100% permisivo** (OpenBao, Valkey, Perses, VictoriaLogs/OpenSearch, SeaweedFS); license gate en CI + SBOM + `THIRD-PARTY-NOTICES`; nunca activar `enterprise/`/`ee/`/`wl/`; nada que prohíba ofrecer el producto como servicio hospedado o imponga proveedor exclusivo.
+- **Renombres aplicados en la misma revisión de la aceptación:** `00-INDEX.md` (tabla de stack: `Valkey`, `OpenBao`), `02` §4 (filas y etiqueta del diagrama), `04` (diagrama de credenciales), `05` §1 (tabla de autoridades), `06` §7 (secretos), `07` (diagrama MCP), `09` §2 (`Perses`, `VictoriaLogs`/`OpenSearch`), `10` §1–§3 (servicios y configuración), nota de implementación de `ADR-007`, espejos `docs/es/` y `EXPLICACION-NO-TECNICA.md`. Registro: `REGISTRO-CAMBIOS-2026-10-19-ADR-011-ACEPTADO.md`.
 - **Estado por capas (auditoría 2026-10-19).** Son cinco cosas distintas y ninguna implica la siguiente:
 
 | Capa | Estado | Evidencia / dónde |
 |---|---|---|
 | **1. Decisión de producto** (licencias libres exclusivamente) | **Tomada** el 2026-10-19 por el responsable | `STACK-LICENCIAS` §0.bis; `REGISTRO-CAMBIOS-DOCUMENTALES-2026-10-19.md` §4.1 |
-| **2. Aceptación formal del ADR-011** | **Pendiente** — el ADR sigue en `Proposed` y requiere el acto explícito del responsable | `ADR-011` (sección *Status of this decision*), espejo ES |
+| **2. Aceptación formal del ADR-011** | **Hecha** — el responsable de producto aceptó el ADR el 2026-10-19 | `ADR-011` (*Estado de esta decisión*), espejo ES, `REGISTRO-CAMBIOS-2026-10-19-ADR-011-ACEPTADO.md` |
 | **3. Compatibilidad técnica de las sustituciones** | **Pendiente** — sin pruebas; Valkey/OpenBao son compatibles a nivel de API para nuestros usos, pero eso no está demostrado | DP-5, DP-6 |
 | **4. Verificación de licencias** | **Hecha** para los componentes directos; **abierta** en el árbol transitivo (falta SBOM + license gate) | `STACK-LICENCIAS` §0.bis/§4, `06` §18 |
 | **5. Validación legal** | **Pendiente** — variante de licencia del artefacto empaquetado sin revisar | DP-6 |
 
-- **Estado documental intermedio (aplicado, no decisión):** los normativos que nombran componentes salientes llevan hoy una **anotación** explícita ("componente saliente / sustituto de referencia, pendiente de aceptación de `ADR-011`") en `02` §4, `05` §1, `09` §2, `01` §7.1 y `00-INDEX.md`, y `ADR-007` tiene su nota de implementación. **No se renombró ningún componente** fuera de la tabla de stack de `00-INDEX.md`, y ninguna anotación constituye una sustitución.
-- **Criterio de cierre:** ADR-011 pasa a *Aceptado* + renombres aplicados y verificados con el validador + prueba de compatibilidad de las sustituciones (DP-5, DP-6) antes de comprometerlas en el despliegue.
+- **Estado documental (aplicado el 2026-10-19):** con el ADR aceptado, los componentes salientes fueron **renombrados** en los normativos — `00-INDEX.md`, `02` §4, `04` (diagrama de credenciales), `05` §1, `06` §7, `07` (diagrama MCP), `09` §2, `10` §1–§3, `ADR-007` y los espejos `docs/es/`, más `EXPLICACION-NO-TECNICA.md` — y las anotaciones del período `Propuesto` quedaron reemplazadas por el nombre del componente adoptado. El renombre es trazable en `REGISTRO-CAMBIOS-2026-10-19-ADR-011-ACEPTADO.md`.
+- **Criterio de cierre (parcialmente cumplido):** ADR-011 **Aceptado** ✔ y renombres **aplicados y verificados con los validadores** ✔; sigue pendiente la prueba de compatibilidad de las sustituciones (DP-5, DP-6) antes de comprometerlas en el despliegue.
 - **Afecta:** `docs/adr/ADR-011`, `docs/adr/ADR-007`, `00-INDEX.md`, `01` §7.1, `02`, `05`, `09`, `06` §18, `10`, `docs/development/*`, `docs/reference/STACK-LICENCIAS.md`.
 
 ## DP-18 · Umbrales cuantitativos y ventanas de retención sin definir

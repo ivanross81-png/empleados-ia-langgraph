@@ -28,7 +28,7 @@ tags: [digital-employee, licencias, dependencias, comercializacion, riesgo-legal
 ## 0.bis Política: licencias libres exclusivamente (directiva del responsable de producto, 2026-10-19)
 
 > **Decisión del responsable del producto:** *"usemos licencias libres exclusivamente"* (primera formulación: *"tenemos que dar prioridad a licencias de uso libre"*).
-> **Estado:** redactada como **`ADR-011 — Stack con licencias libres únicamente`** (estado **Propuesto**, `docs/adr/ADR-011-free-licence-stack.md` y espejo `docs/es/adr/`). Hasta su aceptación, este documento la aplica como **criterio de selección**; su conversión en regla normativa del stack queda en `DECISIONES-PENDIENTES.md` **DP-17**.
+> **Estado:** **`ADR-011 — Stack con licencias libres únicamente` está ACEPTADO** (`docs/adr/ADR-011-free-licence-stack.md` y espejo `docs/es/adr/`; aceptación del responsable de producto el **2026-10-19**). Esta política es **regla normativa del paquete** desde esa fecha y el stack de referencia ya fue renombrado a sus equivalentes libres (ver `REGISTRO-CAMBIOS-2026-10-19-ADR-011-ACEPTADO.md`).
 
 **Regla:** solo componentes bajo **licencias libres aprobadas por OSI/FSF**. Las licencias meramente *source-available* (BUSL, RSALv2, SSPLv1, ELv2, "commons clause", cualquier *Additional Use Grant*) quedan **prohibidas sin excepción** de camino: restringen el uso, no solo la distribución.
 
@@ -55,7 +55,7 @@ tags: [digital-employee, licencias, dependencias, comercializacion, riesgo-legal
 
 **Alcance de la política:** aplica a todo componente que se distribuya o se ejecute dentro del producto (runtime, servicios, imágenes base, herramientas de build instaladas en cliente). **No** aplica a: servicios externos consumidos por API que el cliente ya tiene (por ejemplo su propio S3 o su IdP), herramientas de desarrollo que no se distribuyen, y contenido documental. **Garage quedó no verificado** (ruta de licencia no encontrada en la rama consultada): no usarlo como sustituto hasta verificarlo.
 
-**Efecto sobre documentos normativos (pendiente de la aceptación del ADR-011):** `00-INDEX.md` (nombra `Redis` y `Vault/KMS`), `02` §4 (tabla: fila `Redis`), `05` §1 (tabla de autoridades: `Redis`), `09` §2 (`Grafana`, `Loki`) y la nota de implementación en `ADR-007` (Vault → equivalente libre MPL), con sus espejos en `docs/es/`.
+**Efecto sobre documentos normativos (aplicado el 2026-10-19 con la aceptación de `ADR-011`):** `00-INDEX.md` (tabla de stack: `Valkey`, `OpenBao`), `02` §4 (filas `OpenBao`, `Valkey` y etiqueta del diagrama), `04` (diagrama de credenciales → `OpenBao/KMS`), `05` §1 (tabla de autoridades: `Valkey`), `06` §7 (secretos: OpenBao), `09` §2 (`Perses`, `VictoriaLogs`/`OpenSearch`), `07` (diagrama MCP → `OpenBao/KMS`), `10` §1–§3 (lista de servicios y configuración) y la nota de implementación en `ADR-007`, con sus espejos en `docs/es/` y `EXPLICACION-NO-TECNICA.md`. Los nombres de los componentes salientes (**Redis, Vault, Grafana, Loki, MinIO**) quedan solo en documentos históricos no normativos.
 
 ## 1. Resumen de riesgo (semáforo)
 
@@ -70,7 +70,7 @@ tags: [digital-employee, licencias, dependencias, comercializacion, riesgo-legal
 **Los dos riesgos que más impactan al modelo de negocio:**
 
 1. **Redis 8** ya no es BSD: es **tri-licencia RSALv2 / SSPLv1 / AGPLv3** (elección del usuario) y **ninguna de las tres es OSI-aprobada salvo AGPL**. Si el bundle se entrega en instalación privada, la variante AGPL impone obligaciones de copyleft; RSALv2/SSPLv1 restringen ofrecerlo como servicio. → Alternativa directa: **Valkey** (BSD-3-Clause, fork de Redis 7.2 mantenido por la Linux Foundation), que además es API-compatible para nuestros usos (caché/coordinación transitoria, `02-ENTERPRISE-ARCHITECTURE.md` §4).
-2. **HashiCorp Vault** es **BUSL-1.1** desde la versión 1.15.0 (licenciante IBM). BUSL permite uso en producción bajo el *Additional Use Grant*, pero **prohíbe ofrecer un servicio que compita** con el producto licenciado, y sus condiciones cambian por versión. Nuestra arquitectura dice "Vault **o un gestor equivalente KMS-backed**" (ADR-007), así que hay margen: **OpenBao** (MPL-2.0, fork de Vault, API-compatible) es la alternativa con licencia limpia. Decisión pendiente.
+2. **HashiCorp Vault** es **BUSL-1.1** desde la versión 1.15.0 (licenciante IBM). BUSL permite uso en producción bajo el *Additional Use Grant*, pero **prohíbe ofrecer un servicio que compita** con el producto licenciado, y sus condiciones cambian por versión. Nuestra arquitectura dice "Vault **o un gestor equivalente KMS-backed**" (ADR-007), así que hay margen: **OpenBao** (MPL-2.0, fork de Vault, API-compatible) es la alternativa con licencia limpia. **Decidido:** `ADR-011` (Aceptado, 2026-10-19) fija OpenBao como implementación de referencia; la evaluación operativa sigue pendiente (DP-6).
 
 ## 2. Inventario por componente
 
@@ -92,7 +92,7 @@ tags: [digital-employee, licencias, dependencias, comercializacion, riesgo-legal
 |---|---|---|---|---|
 | **OPA** | Policy decision point determinístico (`ADR-005`) | **v1.21.3** | **Apache-2.0** | 🟢 |
 | **HashiCorp Vault** | Gestor de secretos (`ADR-007`) — **saliente** | **v2.2.0** (texto BUSL aplica desde 1.15.0) | **BUSL-1.1** (source-available, **no libre**) | 🔴 Prohibida por §0.bis. Sustituto obligatorio: **OpenBao v2.7.1 — MPL-2.0** 🟢 (verificado). |
-| **OpenBao** | Alternativa API-compatible a Vault | **v2.7.1** | **MPL-2.0** | 🟢 Candidato a sustitución (decisión pendiente, ver `DECISIONES-PENDIENTES.md`). |
+| **OpenBao** | Implementación de referencia del gestor de secretos (reemplaza a Vault) | **v2.7.1** | **MPL-2.0** | 🟢 **Adoptado** por `ADR-011` (Aceptado, 2026-10-19); evaluación operativa pendiente (DP-6). |
 | **Microsoft Presidio** | Detección PII para el gateway DLP (doc `06` §8) | 2.2.364 | **MIT** | 🟢 |
 | **MCP (especificación + SDKs)** | Protocolo de herramientas (`ADR-004`) | spec revisión **2026-07-28** | Spec en **transición MIT → Apache-2.0**; documentación **CC-BY-4.0** | 🟡 Registrar la revisión de spec usada; la transición no afecta el uso del protocolo, pero sí la trazabilidad. |
 

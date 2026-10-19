@@ -124,6 +124,7 @@ Estos documentos no definen la arquitectura; la sostienen y son la base de evide
 | `REGISTRO-CAMBIOS-2026-10-19-AUDITORIA.md` | Trazabilidad de la auditoría de consistencia del 2026-10-19 (archivo, sección, motivo, estado anterior/nuevo, validación) |
 | `AUDITORIA-CONSISTENCIA-2026-10-19.md` | Informe de auditoría de consistencia: alcance, hallazgos por gravedad, evidencia exacta, cambios realizados y riesgos abiertos |
 | `INVARIANTES-Y-PRUEBAS.md` | Invariantes arquitectónicos con su fuente normativa, el riesgo que evitan, la prueba exigida, su estado actual y la fase en que debe ejecutarse |
+| `REGISTRO-CAMBIOS-2026-10-19-ADR-011-ACEPTADO.md` | Registro de cambios de la aceptación de `ADR-011` y de los renombres normativos de componentes que habilitó |
 | `DECISIONES-PENDIENTES.md` | Decisiones que no pueden cerrarse solo con análisis documental |
 
 Regla de cita: el anexo y el spike conservan **numeraciones de sección heredadas** (§64, §66, §89…) que no existen en los documentos normativos. Citar siempre el documento y la sección normativos; los números heredados son punteros históricos.
@@ -138,6 +139,14 @@ Segunda revisión del mismo día: una **auditoría** del paquete, no una extensi
 
 - **Corregido:** contadores e inventarios del paquete (`00-INDEX.md` decía 26 archivos y citaba una ruta equivocada del manifiesto; la matriz de cruce decía 62 archivos; el espejo español del manifiesto estaba desactualizado) y trazabilidad de metadatos (`Creado`/`Actualizado` en los 11 documentos de arquitectura y las 5 guías; `Fecha` en los 11 ADR; *frontmatter* en los documentos de referencia).
 - **Aclarado:** la frontera de durabilidad en `04` §21.2 (las cinco nociones — corrida cognitiva, espera humana duradera, recuperación del workflow, activity fallida, resultados de negocio — ahora son una tabla explícita); lectura frente a comando en `04` §22; *patching* de Temporal y cutover de workers en `04` §24; las modalidades comerciales separadas del límite arquitectónico en `01` §7.1.
-- **Anotado, no sustituido:** los componentes nombrados en `02` §4, `05` §1, `09` §2 y `00-INDEX.md` llevan una nota explícita ("componente saliente / sustituto de referencia, pendiente de aceptación formal de `ADR-011`"). No se renombró ningún componente en silencio ni se introdujo ninguna dependencia.
+- **Anotado, no sustituido (al momento de la auditoría):** los componentes nombrados en `02` §4, `05` §1, `09` §2 y `00-INDEX.md` llevaban una nota explícita ("componente saliente / sustituto de referencia, pendiente de aceptación formal de `ADR-011`"). No se renombró ningún componente en silencio ni se introdujo ninguna dependencia. **Superado horas después por la aceptación (ver §13).**
 - **Separado:** `ADR-011` declara ahora sus cinco capas de formalización (decisión de producto, aceptación formal, compatibilidad técnica, verificación de licencias, validación legal) en lugar de dar a entender que una cierra la siguiente.
 - Hallazgos, evidencia y riesgos abiertos: `docs/reference/AUDITORIA-CONSISTENCIA-2026-10-19.md`. Trazabilidad cambio por cambio: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-AUDITORIA.md`. Pruebas que se deben: `docs/reference/INVARIANTES-Y-PRUEBAS.md`.
+
+## 13. Aceptación de `ADR-011` 2026-10-19
+
+Tercera revisión del mismo día: el responsable de producto **aceptó `ADR-011`** (`Propuesto` → `Aceptado`). La política de licencias libres pasó a ser regla normativa del paquete y la sustitución dejó de ser una anotación:
+
+- **Renombrado (normativo):** `OpenBao` reemplaza a `Vault`/`Vault-KMS` en `02` §4 (tabla y diagrama), `04` (diagrama de credenciales), `06` §7, `07` (diagrama MCP), `10` §1–§3 y la nota de implementación de `ADR-007`; `Valkey` reemplaza a `Redis` en `00-INDEX.md`, `02` §4, `05` §1 y `10` §1; `Perses` reemplaza a `Grafana` y `VictoriaLogs`/`OpenSearch` a `Loki` en `09` §2; `SeaweedFS` sigue siendo la referencia para almacenamiento de objetos. Espejos en español y `EXPLICACION-NO-TECNICA.md` actualizados en la misma revisión.
+- **Sin cambios por este acto:** ninguna decisión arquitectónica, frontera, nombre de contrato ni dependencia. **No se cerró ninguna prueba:** verificar una licencia no es validar técnicamente una sustitución (DP-5 y DP-6 siguen abiertas).
+- Trazabilidad: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-ADR-011-ACEPTADO.md`. Política y evidencia de licencias: `docs/reference/STACK-LICENCIAS.md`.
