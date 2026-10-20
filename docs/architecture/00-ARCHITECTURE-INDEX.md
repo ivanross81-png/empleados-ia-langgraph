@@ -4,7 +4,7 @@
 **Status:** Normative baseline  
 **Date:** 2026-09-21  
 **Created:** 2026-09-21  
-**Updated:** 2026-10-19
+**Updated:** 2026-10-20
 
 ## 1. Purpose
 
@@ -130,6 +130,10 @@ These documents do not define the architecture; they support it and are the evid
 | `REGISTRO-CAMBIOS-2026-10-19-DECISIONES-RESPONSABLE.md` | Change log for the product-owner decisions of 2026-10-19 (`ADR-012`–`ADR-014`, DP-1/DP-2/DP-5/DP-6/DP-18/DP-19/DP-20, validators published and wired into CI) |
 | `COMPATIBILIDAD-Y-LICENCIAS-PREPARACION.md` | Preparation of the compatibility tests and the licence review of the distributable artifact: verified reference versions, uses to test, deliverables and risks |
 | `DECISIONES-PENDIENTES.md` | Decisions that cannot be closed by documentary analysis alone |
+
+### Proposed MVP product documents (2026-10-20)
+
+The proposed product package lives in `docs/product/` with Spanish reading mirrors in `docs/es/product/`: `MVP-PRD.md`, `MVP-DELIVERY-PLAN.md` and `MVP-TRACEABILITY-MATRIX.md`. It narrows the first demonstrator to one Collections Digital Employee, a minimal first-party web console, synthetic data, a simulated integration, durable human approval and measurable acceptance tests. **This is not an accepted product scope**: Collections and the first channel remain recommendations until the product owner accepts them; DP-3 stays open. The proposal does not change architecture or ADRs and does not close technical, licence or legal gates. Record: `docs/reference/REGISTRO-MVP-DEFINITION-2026-10-20.md`.
 
 Citation rule: the annex and the spike keep **legacy section numbers** (§64, §66, §89…) that do not exist in the normative documents. Always cite the normative document and section; treat legacy numbers as historical pointers only.
 
