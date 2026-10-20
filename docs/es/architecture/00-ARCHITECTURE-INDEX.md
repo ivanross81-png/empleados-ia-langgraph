@@ -178,6 +178,6 @@ El responsable del producto resolvió ocho puntos abiertos. Tres cambiaban una f
 | **DP-18** — valores de línea base de ingeniería del MVP: presupuestos, delegación, alertas, retención, RPO/RTO, aceptación de calidad y seguridad | `04` §16/§23, `09` §12.1/§13, `10` §9, `01` §8, DP-18 |
 | **DP-19** — Hermes-OS es **referencia de diseño, no un sistema a integrar** (cerrada, opción a) | `00-INDEX.md`, `EXPLICACION-NO-TECNICA.md`, DP-19 |
 | **Modalidad SaaS** — instalaciones dedicadas por cliente en la primera etapa productiva; SaaS con recursos compartidos solo tras validar el aislamiento y cerrar un ADR específico | `01` §7.1, DP-7 |
-| **P-27** — validadores documentales **publicados y conectados a CI** | `tools/docs-verify/`, `.github/workflows/docs-verify.yml` |
+| **P-27** — validadores documentales **publicados y conectados a CI**; se verificó una corrida en verde y una **falla real** ante un enlace roto introducido a propósito (PR cerrado sin fusionar) | `tools/docs-verify/`, `.github/workflows/docs-verify.yml` |
 
 **Disciplina de capas:** son **decisiones adoptadas** y **diseño documentado**. Ninguna sustitución está técnicamente validada, no se ejecutó ninguna prueba y la revisión de licencias del artefacto distribuible no fue emitida: **la distribución comercial sigue bloqueada** (DP-5, DP-6). Trazabilidad: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-DECISIONES-RESPONSABLE.md`; preparación: `docs/reference/COMPATIBILIDAD-Y-LICENCIAS-PREPARACION.md`.

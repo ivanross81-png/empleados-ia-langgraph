@@ -94,4 +94,15 @@ python3 tools/docs-verify/verify_docs.py .
 
 **Excepción declarada del validador:** `check_paths.py` mantiene una lista de rutas ignoradas, con el motivo escrito en el código. Hoy tiene **una sola** entrada y no oculta ningún problema real: `docs/DOCUMENT-MANIFEST.md`, la ruta defectuosa que los registros de auditoría citan **a propósito** para describir el defecto histórico. (Durante las horas en que el workflow no estaba publicado tuvo una segunda entrada, `.github/workflows/docs-verify.yml`; se retiró al publicarse el archivo, para que la lista no tape un problema real.)
 
+### 6.1 Integración continua — evidencia real
+
+No alcanza con que el archivo del workflow esté publicado: se comprobó que **se ejecuta** y que **falla cuando debe**.
+
+| Comprobación | Corrida | Evento | Resultado |
+|---|---|---|---|
+| Positiva: el paquete tal como está en `main` | `39348540210` (commit `cb031e5`) | `push` | **success** — el paso "Verificación documental determinista" terminó OK |
+| Negativa: enlace roto introducido **a propósito** en una rama temporal | `39348593658` | `pull_request` | **failure** — el paso "Verificación documental determinista" falló y el log dice: `Hallazgos: 1` · `enlaces roídos: 1` · `docs/reference/TEMP-CONTROL-NEGATIVO.md: enlace 99-NO-EXISTE.md sin archivo` |
+
+La corrida negativa se hizo en la rama `prueba-ci-control-negativo` con el PR #1, que se **cerró sin fusionar** y cuya rama se borró (local y remota): `main` nunca contuvo el enlace roto. Que la CI "falle ante errores demostrables" queda así **verificado**, no supuesto.
+
 **Lo que esta validación NO prueba:** consistencia semántica, validez técnica de las sustituciones, compatibilidad de versiones ni licencias. El resultado limpio es condición **necesaria, no suficiente**.

@@ -178,6 +178,6 @@ Eight open items were resolved by the product owner. Three of them changed a bou
 | **DP-18** — MVP engineering baseline values: budgets, delegation, alerts, retention, RPO/RTO, quality and security acceptance | `04` §16/§23, `09` §12.1/§13, `10` §9, `01` §8, DP-18 |
 | **DP-19** — Hermes-OS is a **design reference, not a system to integrate** (closed, option a) | `00-INDEX.md`, `EXPLICACION-NO-TECNICA.md`, DP-19 |
 | **SaaS modality** — dedicated installations per customer in the first production stage; shared-resource SaaS only after the isolation is validated and a specific ADR is closed | `01` §7.1, DP-7 |
-| **P-27** — documentation validators **published and wired into CI** | `tools/docs-verify/`, `.github/workflows/docs-verify.yml` |
+| **P-27** — documentation validators **published and wired into CI**; one green run and one **real failure** were verified against a broken link introduced on purpose (PR closed without merging) | `tools/docs-verify/`, `.github/workflows/docs-verify.yml` |
 
 **Layer discipline:** these are **decisions adopted** and **design documented**. No substitution is technically validated, no test has been executed, and the licence review of the distributable artifact has not been issued: **commercial distribution stays blocked** (DP-5, DP-6). Trace: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-DECISIONES-RESPONSABLE.md`; preparation: `docs/reference/COMPATIBILIDAD-Y-LICENCIAS-PREPARACION.md`.
