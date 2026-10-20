@@ -34,7 +34,7 @@ tags: [digital-employee, registro-cambios, decisiones, adr, trazabilidad, dp]
 | `docs/reference/COMPATIBILIDAD-Y-LICENCIAS-PREPARACION.md` | Preparación de DP-5/DP-6: versiones verificadas, usos a probar, entregables (ninguno producido), riesgos |
 | `docs/reference/REGISTRO-CAMBIOS-2026-10-19-DECISIONES-RESPONSABLE.md` | Este registro |
 | `tools/docs-verify/check_docs.py`, `check_paths.py`, `verify_all.py`, `check_parity.py`, `verify_docs.py` | Validadores publicados (solo biblioteca estándar; sin rutas del laboratorio: el repositorio se toma del argumento o del directorio actual) |
-| *(`.github/workflows/docs-verify.yml`)* | **No publicado.** El workflow está preparado y probado, pero el **token de publicación no tiene el alcance `workflow`** de GitHub, así que el push fue rechazado (`refusing to allow a Personal Access Token to create or update workflow`). Queda pendiente de que el responsable lo publique con un token con ese alcance o lo suba desde la interfaz web. Por eso los cuadros dicen "CI preparada y pendiente", no "aplicada" |
+| `.github/workflows/docs-verify.yml` | CI: ejecuta `verify_docs.py` en cada push y PR contra `main` y **falla** ante hallazgos. **Primer intento rechazado**: el token no tenía el alcance `workflow` de GitHub; el responsable lo agregó al PAT el 2026-10-19 y el workflow se publicó en el mismo commit que esta corrección |
 
 ## 3. Cambios en documentos normativos
 
@@ -54,7 +54,7 @@ tags: [digital-employee, registro-cambios, decisiones, adr, trazabilidad, dp]
 | `01` §7.1 (EN/ES) | Modalidades comerciales y límite arquitectónico | Decisión del responsable: primera etapa **dedicada por cliente**; misma base de código y contratos (`tenant_id`, autorización, auditoría, límites); SaaS compartido solo tras validar aislamiento + ADR | D-8 |
 | `01` §8 (EN/ES) | Criterios de éxito sin umbrales | Línea base de aceptación: calidad ≥95 % y sin regresión >2 pp; seguridad 100 % de pruebas deterministas de autorización y cero acciones externas no autorizadas | D-3 |
 | `00-INDEX.md` | "27 archivos (11 ADR)"; recuento vigente 27; Hermes-OS "pendiente de decisión" | "**30** archivos (14 ADR)"; trazabilidad 26 → 27 → **30**; Hermes-OS **referencia de diseño, no integración** (DP-19 cerrada) | D-1, conteo |
-| `README.md` | `ADR-001`–`011`; 27 normativos; validación "no destructiva" | `ADR-001`–**`014`**; **30** normativos; validación **publicada en el repositorio** (corrida manual; CI preparada y pendiente de publicar), con el límite explícito (no prueba semántica ni valida tecnología) | D-4, conteo |
+| `README.md` | `ADR-001`–`011`; 27 normativos; validación "no destructiva" | `ADR-001`–**`014`**; **30** normativos; validación **publicada y ejecutada en CI**, con el límite explícito (no prueba semántica ni valida tecnología) | D-4, conteo |
 | `docs/es/README.md` | 11 decisiones arquitectónicas | **14** decisiones (incluidas las tres del 2026-10-19) | conteo |
 | `docs/architecture/00-ARCHITECTURE-INDEX.md` §10 y §15 (EN/ES) | Sin §15 | §15 con las ocho decisiones y su destino; §10 lista los dos documentos de referencia nuevos | trazabilidad |
 
@@ -75,7 +75,7 @@ tags: [digital-employee, registro-cambios, decisiones, adr, trazabilidad, dp]
 - **No** se tocaron los documentos históricos, de investigación ni comparativos (`KORTIX-*`, `STACK-LICENCIAS`, anexo supersedido, registros previos): sus menciones de componentes salientes siguen siendo correctas en su contexto.
 - **No** se modificó ninguna decisión arquitectónica previa: `ADR-014` **reemplaza** la frase de "rechazo por defecto" de `05` §10.1 (agregada ese mismo día en la revisión aditiva), documentando el cambio en lugar de editarla en silencio.
 - **No** se cerró DP-1, DP-2, DP-4, DP-7, DP-13, DP-15, DP-16, DP-18 ni DP-20: tienen decisión adoptada o diseño documentado, y **cero pruebas ejecutadas**.
-- **No** se publicó el workflow de CI: el token de publicación no tiene el alcance `workflow` de GitHub y el push fue rechazado. Los validadores **sí** quedaron publicados y ejecutables; la documentación declara "CI preparada y pendiente", no "aplicada", porque un reclamo sin el artefacto publicado sería falso.
+- **El workflow de CI se publicó en un segundo intento.** El primer push fue rechazado (`refusing to allow a Personal Access Token to create or update workflow`) porque el PAT no tenía el alcance `workflow`; mientras eso estuvo así, la documentación dijo "CI preparada y pendiente de publicar", no "aplicada". Al agregarse el alcance, el workflow se publicó y la documentación pasó a "CI activa". La traza del rechazo se conserva aquí a propósito.
 
 ## 6. Validación ejecutada en esta revisión
 
@@ -92,6 +92,6 @@ python3 tools/docs-verify/verify_docs.py .
 | Inventarios, manifiestos, estados de ADR, refs cruzadas | `verify_all.py` | 14 ADR `Accepted` EN=ES, espejos 30 (esperado 30), metadatos faltantes 0, refs roídas 0, enlaces roídos 0, contadores declarados 82 = reales 82, **0 hallazgos** |
 | Paridad estructural EN↔ES | `check_parity.py` | **0 divergencias / 32 pares** |
 
-**Excepción declarada del validador:** `check_paths.py` mantiene una lista de rutas ignoradas, con el motivo escrito en el código. Hoy tiene dos entradas y ninguna oculta un problema real: `docs/DOCUMENT-MANIFEST.md` (ruta defectuosa que los registros de auditoría citan **a propósito** para describir el defecto histórico) y `.github/workflows/docs-verify.yml` (workflow preparado y pendiente de publicar que la documentación nombra para dejarlo trazado).
+**Excepción declarada del validador:** `check_paths.py` mantiene una lista de rutas ignoradas, con el motivo escrito en el código. Hoy tiene **una sola** entrada y no oculta ningún problema real: `docs/DOCUMENT-MANIFEST.md`, la ruta defectuosa que los registros de auditoría citan **a propósito** para describir el defecto histórico. (Durante las horas en que el workflow no estaba publicado tuvo una segunda entrada, `.github/workflows/docs-verify.yml`; se retiró al publicarse el archivo, para que la lista no tape un problema real.)
 
 **Lo que esta validación NO prueba:** consistencia semántica, validez técnica de las sustituciones, compatibilidad de versiones ni licencias. El resultado limpio es condición **necesaria, no suficiente**.

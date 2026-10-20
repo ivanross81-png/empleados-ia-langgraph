@@ -32,6 +32,6 @@ Documentación normativa de la plataforma de **Empleados Digitales**: agentes qu
 
 El paquete se verifica con comprobaciones deterministas y **reproducibles**, publicadas en el repositorio: `python3 tools/docs-verify/verify_docs.py` comprueba enlaces y referencias locales, existencia de las rutas documentadas, inventarios y manifiestos, estados de ADR y referencias cruzadas, y paridad estructural inglés/español.
 
-La **integración continua está preparada y pendiente de publicar**: el workflow `.github/workflows/docs-verify.yml` no se pudo subir porque el token de publicación no tiene el alcance `workflow` de GitHub. Mientras tanto, la corrida es manual y su resultado se registra en los informes.
+La **integración continua está activa**: `.github/workflows/docs-verify.yml` ejecuta `verify_docs.py` en cada push y PR contra `main` y **falla** ante hallazgos demostrables (para publicarlo hubo que agregar el alcance `workflow` al token de GitHub).
 
 Un resultado limpio es una **condición necesaria, no suficiente**: no prueba consistencia semántica ni valida técnicamente las tecnologías del stack. Estado de las últimas corridas: `docs/reference/AUDITORIA-CONSISTENCIA-2026-10-19.md` §8 y `docs/reference/REGISTRO-CAMBIOS-2026-10-19-DECISIONES-RESPONSABLE.md`.

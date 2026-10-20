@@ -127,7 +127,7 @@ These documents do not define the architecture; they support it and are the evid
 | `REGISTRO-CAMBIOS-2026-10-19-ADR-011-ACEPTADO.md` | Change log for the acceptance of `ADR-011` and the normative component renames it enabled |
 | `VERIFICACION-POST-AUDITORIA-2026-10-19.md` | Post-audit verification report (state of the published files, reusable-code question, open risks) |
 | `REGISTRO-CAMBIOS-2026-10-19-VERIFICACION-POST-AUDITORIA.md` | Change log for the post-audit verification (V-1…V-8) |
-| `REGISTRO-CAMBIOS-2026-10-19-DECISIONES-RESPONSABLE.md` | Change log for the product-owner decisions of 2026-10-19 (`ADR-012`–`ADR-014`, DP-1/DP-2/DP-5/DP-6/DP-18/DP-19/DP-20, validators published in `tools/docs-verify/`) |
+| `REGISTRO-CAMBIOS-2026-10-19-DECISIONES-RESPONSABLE.md` | Change log for the product-owner decisions of 2026-10-19 (`ADR-012`–`ADR-014`, DP-1/DP-2/DP-5/DP-6/DP-18/DP-19/DP-20, validators published and wired into CI) |
 | `COMPATIBILIDAD-Y-LICENCIAS-PREPARACION.md` | Preparation of the compatibility tests and the licence review of the distributable artifact: verified reference versions, uses to test, deliverables and risks |
 | `DECISIONES-PENDIENTES.md` | Decisions that cannot be closed by documentary analysis alone |
 
@@ -178,6 +178,6 @@ Eight open items were resolved by the product owner. Three of them changed a bou
 | **DP-18** — MVP engineering baseline values: budgets, delegation, alerts, retention, RPO/RTO, quality and security acceptance | `04` §16/§23, `09` §12.1/§13, `10` §9, `01` §8, DP-18 |
 | **DP-19** — Hermes-OS is a **design reference, not a system to integrate** (closed, option a) | `00-INDEX.md`, `EXPLICACION-NO-TECNICA.md`, DP-19 |
 | **SaaS modality** — dedicated installations per customer in the first production stage; shared-resource SaaS only after the isolation is validated and a specific ADR is closed | `01` §7.1, DP-7 |
-| **P-27** — documentation validators **published** (`tools/docs-verify/`); the CI workflow is **prepared and pending publication** | `tools/docs-verify/`; the workflow lives outside the repository until a token with the `workflow` scope is available |
+| **P-27** — documentation validators **published and wired into CI** | `tools/docs-verify/`, `.github/workflows/docs-verify.yml` |
 
 **Layer discipline:** these are **decisions adopted** and **design documented**. No substitution is technically validated, no test has been executed, and the licence review of the distributable artifact has not been issued: **commercial distribution stays blocked** (DP-5, DP-6). Trace: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-DECISIONES-RESPONSABLE.md`; preparation: `docs/reference/COMPATIBILIDAD-Y-LICENCIAS-PREPARACION.md`.
