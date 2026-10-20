@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Punto de entrada de la verificación documental. Solo lee.
 
-Corre los cuatro validadores y devuelve un código de salida distinto de cero
+Corre los validadores y devuelve un código de salida distinto de cero
 si alguno encuentra hallazgos, para que la integración continua falle ante
 errores demostrables.
 
@@ -10,6 +10,7 @@ QUÉ COMPRUEBA (determinista)
   2. Existencia de las rutas documentadas                   check_paths.py
   3. Inventarios, manifiestos, estados de ADR y refs cruzadas   verify_all.py
   4. Paridad estructural EN <-> ES                          check_parity.py
+  5. Cantidades declaradas en prosa y tablas de los manifiestos  check_counts.py
 
 QUÉ NO COMPRUEBA
   - Consistencia semántica: que el texto diga lo mismo que la decisión.
@@ -29,6 +30,7 @@ STEPS = [
     ("existencia de rutas documentadas", "check_paths.py"),
     ("inventarios, ADR y referencias cruzadas", "verify_all.py"),
     ("paridad estructural EN <-> ES", "check_parity.py"),
+    ("cantidades declaradas en los manifiestos", "check_counts.py"),
 ]
 
 
@@ -54,7 +56,7 @@ def main() -> int:
             print(f"  FALLA: {label}")
         print("La verificación documental NO pasó. Corregir antes de publicar.")
         return 1
-    print("Los cuatro validadores terminaron sin hallazgos.")
+    print("Los cinco validadores terminaron sin hallazgos.")
     print("Recordatorio: esto es estructura, no semántica ni validación técnica.")
     return 0
 

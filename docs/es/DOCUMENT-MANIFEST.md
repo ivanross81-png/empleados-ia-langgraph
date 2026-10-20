@@ -37,7 +37,7 @@
 
 ## 7. Conjunto documental
 
-El paquete de arquitectura contiene 27 archivos: 11 documentos de arquitectura, 11 ADR y 5 guías de desarrollo. Son la línea base normativa; `docs/es/` los espeja en español para lectura humana.
+El paquete de arquitectura contiene 30 archivos: 11 documentos de arquitectura, 14 ADR y 5 guías de desarrollo. Son la línea base normativa; `docs/es/` los espeja en español para lectura humana. (Fueron 26 en la línea base del 2026-09-21 y 27 tras la auditoría del 2026-10-19; esos números se conservan en el registro de revisiones como hitos de la cronología, no como inventario vigente.)
 
 ### 7.1 Raíz del paquete
 
