@@ -90,7 +90,8 @@ python3 tools/docs-verify/verify_docs.py .
 | Enlaces y referencias locales | `check_docs.py` | 82 archivos `.md`, 188 enlaces/referencias verificadas OK, 8 bloques Mermaid, 0 duplicados, **0 hallazgos** |
 | Existencia de rutas documentadas | `check_paths.py` | 586 rutas comprobadas, **0 hallazgos** |
 | Inventarios, manifiestos, estados de ADR, refs cruzadas | `verify_all.py` | 14 ADR `Accepted` EN=ES, espejos 30 (esperado 30), metadatos faltantes 0, refs roídas 0, enlaces roídos 0, contadores declarados 82 = reales 82, **0 hallazgos** |
-| Paridad estructural EN↔ES | `check_parity.py` | **0 divergencias / 32 pares** |
+| Paridad estructural EN↔ES | `check_parity.py` | **0 divergencias / 32 pares** (incluido el par de manifiestos) |
+| Cantidades declaradas en prosa y tablas de los manifiestos | `check_counts.py` | 2 manifiestos, inventario real 11 arquitectura / 14 ADR / 5 guías → 30 normativos; **0 hallazgos**; con la regresión controlada, **6 hallazgos** (ver §7) |
 
 **Excepción declarada del validador:** `check_paths.py` mantiene una lista de rutas ignoradas, con el motivo escrito en el código. Hoy tiene **una sola** entrada y no oculta ningún problema real: `docs/DOCUMENT-MANIFEST.md`, la ruta defectuosa que los registros de auditoría citan **a propósito** para describir el defecto histórico. (Durante las horas en que el workflow no estaba publicado tuvo una segunda entrada, `.github/workflows/docs-verify.yml`; se retiró al publicarse el archivo, para que la lista no tape un problema real.)
 
@@ -106,3 +107,44 @@ No alcanza con que el archivo del workflow esté publicado: se comprobó que **s
 La corrida negativa se hizo en la rama `prueba-ci-control-negativo` con el PR #1, que se **cerró sin fusionar** y cuya rama se borró (local y remota): `main` nunca contuvo el enlace roto. Que la CI "falle ante errores demostrables" queda así **verificado**, no supuesto.
 
 **Lo que esta validación NO prueba:** consistencia semántica, validez técnica de las sustituciones, compatibilidad de versiones ni licencias. El resultado limpio es condición **necesaria, no suficiente**.
+
+## 7. Corrección residual de los manifiestos (§7) y control de cantidades
+
+### 7.1 El defecto
+
+`DOCUMENT-MANIFEST.md` §7 y `docs/es/DOCUMENT-MANIFEST.md` §7 declaraban en **prosa** que el paquete contenía **27 archivos: 11 de arquitectura, 11 ADR y 5 guías**, mientras que la **tabla** de §7.2 de esos mismos archivos ya decía **30 (11 + 14 + 5)**. La prosa quedó sin actualizar al crearse `ADR-012`–`ADR-014`: los contadores de la tabla y del índice se corrigieron en la ronda de decisiones, la frase explicativa no — por eso ningún validador lo detectó (`verify_all.py` solo miraba la fila del total de `.md` y el "26 archivos" del índice).
+
+Ninguno de los dos recuentos era falso en su contexto histórico: **26** corresponde a la línea base v0.1.0 del 2026-09-21 y **27** a la auditoría del 2026-10-19. Ambos se conservan.
+
+### 7.2 El cambio
+
+| Archivo · sección | Antes | Después |
+|---|---|---|
+| `DOCUMENT-MANIFEST.md` §7 | "contains 27 files: 11 architecture documents, 11 ADRs and 5 development guides" | "contains **30** files: 11 architecture documents, **14** ADRs and 5 development guides", con la nota que declara 26 y 27 como hitos fechados del registro de revisiones |
+| `docs/es/DOCUMENT-MANIFEST.md` §7 | "contiene 27 archivos: 11 documentos de arquitectura, 11 ADR y 5 guías de desarrollo" | "contiene **30** archivos: 11 documentos de arquitectura, **14** ADR y 5 guías de desarrollo", con la nota equivalente |
+| `DOCUMENT-MANIFEST.md` §8 y su espejo | — | Entrada de revisión nueva, fechada, con el defecto, la corrección y el validador agregado (el historial no se borra) |
+
+No se modificó ninguna decisión arquitectónica, ni `00-INDEX.md`, ni los normativos: la única inconsistencia encontrada fue esta, y estaba en los dos manifiestos.
+
+### 7.3 La comprobación nueva
+
+`tools/docs-verify/check_counts.py` compara **lo declarado contra el inventario real** del repositorio (calculado, nunca escrito a mano) y cubre lo que los validadores previos dejaban pasar:
+
+1. La **frase de composición** en inglés y en español (§7), con sus cuatro números.
+2. La **fila de la tabla** de §7.2 con los tres conteos por categoría.
+3. Cualquier **declaración suelta** en la parte de inventario: `N ADR`, `N documentos de arquitectura`, y que el total declarado sea la suma de las categorías.
+
+Excluye a propósito el **registro de revisiones** (se detiene donde empieza la sección 8) y las **líneas de lista con fecha**, porque son cronología, no inventario vigente. Está enchufado a `verify_docs.py`, así que la CI lo corre en cada push y PR.
+
+### 7.4 Evidencia real (no declarada)
+
+| Comprobación | Corrida / ejecución | Resultado |
+|---|---|---|
+| Regresión en **local** (volver a 27/11 ADR en los dos manifiestos) | `check_counts.py` en el árbol de trabajo | **exit 1 · 6 hallazgos**: composición EN y ES (11/11/5 ≠ 11/14/5), total (27 ≠ 30) y "declara 11 ADR, real 14" |
+| Corregido, batería completa en local | `verify_docs.py` | **exit 0 · cinco validadores sin hallazgos** |
+| Corrección publicada | CI `39350402082` (`push`, `7f3aa9c5`) | **success** |
+| Regresión **a través de CI** en rama temporal | CI `39350420093` (`pull_request`, `d9516ce1`) | **failure** — el log dice `cantidades declaradas en los manifiestos (check_counts.py)` · `hallazgos: 6` con las seis líneas de detalle y `FALLA: cantidades declaradas en los manifiestos` |
+
+La corrida de regresión se hizo en la rama `prueba-regresion-cantidades` con el PR #2, **cerrado sin fusionar** y con la rama borrada (local y remota): `main` nunca contuvo el recuento obsoleto. `check_parity.py` da **0 divergencias en 32 pares**, incluido el par de manifiestos, así que EN y ES declaran lo mismo.
+
+**Sigue sin probarse** la consistencia semántica (que el texto diga lo mismo que la decisión), la validez técnica de las sustituciones, las licencias y todo lo legal: este control es de cantidades declaradas, nada más.

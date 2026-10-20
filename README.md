@@ -30,7 +30,7 @@ Documentación normativa de la plataforma de **Empleados Digitales**: agentes qu
 
 ## Validación
 
-El paquete se verifica con comprobaciones deterministas y **reproducibles**, publicadas en el repositorio: `python3 tools/docs-verify/verify_docs.py` comprueba enlaces y referencias locales, existencia de las rutas documentadas, inventarios y manifiestos, estados de ADR y referencias cruzadas, y paridad estructural inglés/español.
+El paquete se verifica con comprobaciones deterministas y **reproducibles**, publicadas en el repositorio: `python3 tools/docs-verify/verify_docs.py` comprueba enlaces y referencias locales, existencia de las rutas documentadas, inventarios y manifiestos, estados de ADR y referencias cruzadas, paridad estructural inglés/español, y las **cantidades declaradas en los manifiestos** (en la prosa y en las tablas) contra el inventario real del repositorio.
 
 La **integración continua está activa**: `.github/workflows/docs-verify.yml` ejecuta `verify_docs.py` en cada push y PR contra `main` y **falla** ante hallazgos demostrables (para publicarlo hubo que agregar el alcance `workflow` al token de GitHub).
 
