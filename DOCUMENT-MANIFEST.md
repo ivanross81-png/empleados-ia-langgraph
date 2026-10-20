@@ -54,8 +54,10 @@ The architecture package contains 30 files: 11 architecture documents, 14 ADRs a
 | Spanish mirrors: `docs/es/architecture`, `docs/es/adr`, `docs/es/development` | 30 |
 | Spanish mirrors of root files: `docs/es/README.md`, `docs/es/DOCUMENT-MANIFEST.md` | 2 |
 | Package root (English) | 4 |
-| Non-normative reference: `docs/reference/` | 16 |
-| **Total `.md` files** | **82** |
+| Non-normative reference: `docs/reference/` | 17 |
+| Proposed product documents: `docs/product/` | 3 |
+| Spanish product mirrors: `docs/es/product/` | 3 |
+| **Total `.md` files** | **89** |
 | Repository tooling (not `.md`): `tools/docs-verify/` (validators, run by `.github/workflows/docs-verify.yml` in CI) | — |
 
 Non-normative reference material lives in `docs/reference/` and is listed in `00-ARCHITECTURE-INDEX.md` §10:
@@ -78,6 +80,11 @@ Non-normative reference material lives in `docs/reference/` and is listed in `00
 | `docs/reference/REGISTRO-CAMBIOS-2026-10-19-DECISIONES-RESPONSABLE.md` | Change log for the product-owner decisions of 2026-10-19 (`ADR-012`–`ADR-014`, DP-1/DP-2/DP-5/DP-6/DP-18/DP-19/DP-20, validators published and wired into CI) and for the residual manifest-count correction (§7) |
 | `docs/reference/COMPATIBILIDAD-Y-LICENCIAS-PREPARACION.md` | Preparation of the compatibility tests and the licence review of the distributable artifact (versions, uses to test, deliverables, risks) |
 | `docs/reference/DECISIONES-PENDIENTES.md` | Open decisions requiring test, legal review or product judgement |
+| `docs/reference/REGISTRO-MVP-DEFINITION-2026-10-20.md` | Record of the proposed MVP scope package and its open decisions |
+
+### 7.3 Proposed MVP product documents
+
+The three files in `docs/product/` are proposals, not normative architecture: `MVP-PRD.md` defines scope and acceptance; `MVP-DELIVERY-PLAN.md` defines increments and exit gates; `MVP-TRACEABILITY-MATRIX.md` maps requirements to contracts and test evidence. Their Spanish reading mirrors live in `docs/es/product/`. They are not part of the 30-file normative architecture count until explicitly accepted and reconciled with the manifest policy.
 
 ## 8. Revision log
 
@@ -88,3 +95,5 @@ Non-normative reference material lives in `docs/reference/` and is listed in `00
 - **2026-10-19 (ADR-011 accepted)** — the product owner accepted `ADR-011` (**Proposed → Accepted**) and, with it, the substitution became normative: the replaced components were renamed in `00-INDEX.md`, `02` §4, `04`, `05` §1, `06` §7, `07`, `09` §2, `10` §1–§3, the `ADR-007` implementation note, the Spanish mirrors and the non-technical explanation. **No architectural decision was changed and no test was closed.** Detail: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-ADR-011-ACEPTADO.md`.
 - **2026-10-19 (product-owner decisions)** — the product owner resolved eight open items. Three required an **ADR** and were created as **Accepted**: `ADR-012` (runtime checkpoint store: PostgreSQL, separate runtime schema, 7-day retention), `ADR-013` (no arbitrary agent code execution in the MVP; restricted artifact-generation service) and `ADR-014` (approval aging: **no** automatic cancellation or rejection, replacing the "reject by default" of `05` §10.1). The MVP engineering baseline values (budgets, delegation, alerts, retention, RPO/RTO, quality and security acceptance) were written into `04` §16/§23, `09` §12.1/§13, `10` §9, `01` §7.1/§8 and DP-18; the operational Search Attributes were defined in `04` §22.1 (DP-20); DP-19 was closed as option (a) and DP-1/DP-2 keep the decision adopted with the tests pending. The documentation validators were published in `tools/docs-verify/` and wired into CI (`.github/workflows/docs-verify.yml`) at the owner's authorization. **No substitution is technically validated and the commercial distribution stays blocked.** Trace: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-DECISIONES-RESPONSABLE.md`.
 - **2026-10-19 (manifest counts)** — the §7 prose of this manifest still declared the pre-`ADR-012`–`ADR-014` inventory (**27 files: 11 architecture, 11 ADR, 5 guides**) while the §7.2 table already said **30 (11/14/5)**; the prose was corrected to 30 (11/14/5) and a deterministic check was added (`tools/docs-verify/check_counts.py`, wired into `verify_docs.py` and therefore into CI) so that a stale quantity — in prose or in a table — fails the build. The **26** of the 2026-09-21 baseline and the **27** of the 2026-10-19 audit stay in this log as dated milestones. **No architectural decision was changed and no technical test was validated.** Trace: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-DECISIONES-RESPONSABLE.md` §7.
+
+- **2026-10-20 (MVP definition proposal)** — added three proposed product documents in `docs/product/`, Spanish reading mirrors in `docs/es/product/`, and a non-normative record in `docs/reference/`. The whole-package Markdown inventory increases from 82 to 89; normative architecture count remains 30. Collections and the first-party web console remain recommendations pending explicit product-owner acceptance. No ADR or technical validation gate was changed.
