@@ -56,8 +56,10 @@ El paquete de arquitectura contiene 30 archivos: 11 documentos de arquitectura, 
 | Espejos en español: `docs/es/architecture`, `docs/es/adr`, `docs/es/development` | 30 |
 | Espejos en español de los archivos de raíz: `docs/es/README.md`, `docs/es/DOCUMENT-MANIFEST.md` | 2 |
 | Raíz del paquete (inglés) | 4 |
-| Referencia no normativa: `docs/reference/` | 16 |
-| **Total de archivos `.md`** | **82** |
+| Referencia no normativa: `docs/reference/` | 17 |
+| Documentos de producto propuestos: `docs/product/` | 3 |
+| Espejos de producto en español: `docs/es/product/` | 3 |
+| **Total de archivos `.md`** | **89** |
 | Herramientas del repositorio (no son `.md`): `tools/docs-verify/` (validadores, ejecutados por `.github/workflows/docs-verify.yml` en CI) | — |
 
 El material de referencia **no normativo** vive en `docs/reference/` y está listado en `00-ARCHITECTURE-INDEX.md` §10:
@@ -80,6 +82,11 @@ El material de referencia **no normativo** vive en `docs/reference/` y está lis
 | `docs/reference/REGISTRO-CAMBIOS-2026-10-19-DECISIONES-RESPONSABLE.md` | Registro de cambios de las decisiones del responsable del producto del 2026-10-19 (`ADR-012`–`ADR-014`, DP-1/DP-2/DP-5/DP-6/DP-18/DP-19/DP-20, validadores publicados y conectados a CI) y de la corrección residual de los recuentos del manifiesto (§7) |
 | `docs/reference/COMPATIBILIDAD-Y-LICENCIAS-PREPARACION.md` | Preparación de las pruebas de compatibilidad y de la revisión de licencias del artefacto distribuible (versiones, usos a probar, entregables, riesgos) |
 | `docs/reference/DECISIONES-PENDIENTES.md` | Decisiones abiertas que requieren prueba, revisión legal o juicio de producto |
+| `docs/reference/REGISTRO-MVP-DEFINITION-2026-10-20.md` | Registro del paquete de alcance MVP propuesto y decisiones abiertas |
+
+### 7.3 Documentos de producto MVP propuestos
+
+Los tres archivos de `docs/product/` son propuestas, no arquitectura normativa: `MVP-PRD.md` define alcance/aceptación; `MVP-DELIVERY-PLAN.md`, incrementos y gates; `MVP-TRACEABILITY-MATRIX.md`, trazabilidad a contratos y evidencia. Sus espejos de lectura están en `docs/es/product/`. No forman parte de los 30 documentos normativos de arquitectura hasta su aceptación expresa y conciliación con la política del manifiesto.
 
 ## 8. Registro de revisiones
 
@@ -90,3 +97,5 @@ El material de referencia **no normativo** vive en `docs/reference/` y está lis
 - **2026-10-19 (ADR-011 aceptado)** — el responsable de producto aceptó `ADR-011` (**Propuesto → Aceptado**) y con eso la sustitución pasó a ser **normativa**: los componentes reemplazados fueron renombrados en `00-INDEX.md`, `02` §4, `04`, `05` §1, `06` §7, `07`, `09` §2, `10` §1–§3, la nota de implementación de `ADR-007`, los espejos en español y la explicación no técnica. **No se cambió ninguna decisión arquitectónica ni se cerró ninguna prueba.** Detalle: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-ADR-011-ACEPTADO.md`.
 - **2026-10-19 (decisiones del responsable)** — el responsable del producto resolvió ocho puntos abiertos. Tres exigieron un **ADR** y se crearon como **Aceptados**: `ADR-012` (almacén de checkpoints del runtime: PostgreSQL, esquema de runtime separado, retención de 7 días), `ADR-013` (sin ejecución arbitraria de código del agente en el MVP; servicio restringido de generación de artefactos) y `ADR-014` (envejecimiento de aprobaciones: **sin** cancelación ni rechazo automáticos, en reemplazo del "rechazo por defecto" de `05` §10.1). Los valores de línea base de ingeniería del MVP (presupuestos, delegación, alertas, retención, RPO/RTO, aceptación de calidad y seguridad) se escribieron en `04` §16/§23, `09` §12.1/§13, `10` §9, `01` §7.1/§8 y DP-18; los *Search Attributes* operativos quedaron definidos en `04` §22.1 (DP-20); DP-19 se cerró en la opción (a) y DP-1/DP-2 conservan la decisión adoptada con las pruebas pendientes. Los validadores documentales se publicaron en `tools/docs-verify/` y se conectaron a CI (`.github/workflows/docs-verify.yml`) por autorización del responsable. **Ninguna sustitución está técnicamente validada y la distribución comercial sigue bloqueada.** Trazabilidad: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-DECISIONES-RESPONSABLE.md`.
 - **2026-10-19 (recuentos del manifiesto)** — la prosa de §7 de este manifiesto seguía declarando el inventario anterior a `ADR-012`–`ADR-014` (**27 archivos: 11 de arquitectura, 11 ADR y 5 guías**) mientras que la tabla de §7.2 ya decía **30 (11/14/5)**; se corrigió la prosa a 30 (11/14/5) y se agregó una comprobación determinista (`tools/docs-verify/check_counts.py`, enchufada a `verify_docs.py` y por lo tanto a la CI) para que una cantidad obsoleta —en la prosa o en una tabla— haga fallar la construcción. El **26** de la línea base del 2026-09-21 y el **27** de la auditoría del 2026-10-19 quedan en este registro como hitos fechados. **No se cambió ninguna decisión arquitectónica ni se validó ninguna prueba técnica.** Trazabilidad: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-DECISIONES-RESPONSABLE.md` §7.
+
+- **2026-10-20 (propuesta de definición del MVP)** — se agregaron tres documentos de producto propuestos en `docs/product/`, sus espejos en `docs/es/product/` y un registro no normativo en `docs/reference/`. El inventario total Markdown pasa de 82 a 89; la arquitectura normativa sigue en 30 documentos. Cobranzas y la consola web quedan como recomendaciones hasta la aceptación explícita del responsable. No se modificaron ADR ni gates de validación técnica.

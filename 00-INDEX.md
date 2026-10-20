@@ -16,6 +16,7 @@ Proyecto de la **Digital Employee Platform**: plataforma B2B para construir, ope
 - **`docs/architecture/00-ARCHITECTURE-INDEX.md`** — índice, reglas normativas y orden de lectura (empezar acá).
 - **`docs/adr/`** — decisiones inmutables.
 - **`docs/development/`** — reglas para implementar (incluye `CLAUDE-CODE-GUIDELINES.md`).
+- **`docs/product/`** — definición propuesta del MVP: PRD, plan de entrega M0–M4 y matriz de trazabilidad. No es normativa hasta la aceptación del responsable del producto.
 - **`docs/reference/`** — anexos **no-normativos**: detalle operativo heredado del anexo ARCHITECTURE-03 (supersedido), investigación del SPIKE Fase 1, y el paquete de investigación/cruce con **Kortix/Suna** (`KORTIX-INVESTIGACION-v0.14.3.md`, `KORTIX-CROSS-MATRIX.md`, `STACK-LICENCIAS.md`) más los registros de cambios (revisión documental, auditoría de consistencia y **aceptación de `ADR-011`**), las decisiones pendientes, el informe de auditoría y la matriz de invariantes. Índice completo en `docs/architecture/00-ARCHITECTURE-INDEX.md` §10.
 
 ## Stack objetivo

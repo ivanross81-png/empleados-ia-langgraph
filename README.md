@@ -18,7 +18,8 @@ Documentación normativa de la plataforma de **Empleados Digitales**: agentes qu
 | `docs/adr/ADR-001`–`014` | Decisiones arquitectónicas inmutables (una por decisión) | **Normativo** — cambiarlas requiere un ADR nuevo |
 | `docs/development/` | Guías para implementar: flujo, estándares, pruebas, reglas de seguridad y contrato para agentes de código | **Normativo** para la implementación |
 | `docs/es/` | Espejo en español (rioplatense) de los 30 documentos normativos, para lectura humana | No normativo — el inglés manda |
-| `docs/reference/` | Investigación (Kortix/Suna), inventario de licencias, matriz de cruce, auditoría, decisiones pendientes, invariantes y anexo heredado | **No normativo** |
+| `docs/reference/` | Investigación (Kortix/Suna), licencias, auditorías y decisiones pendientes | **No normativo** |
+| `docs/product/` | Propuesta de MVP, plan de entrega y matriz de trazabilidad; requieren aceptación del responsable del producto | **Propuesto / no normativo** |
 
 ## Reglas del paquete
 

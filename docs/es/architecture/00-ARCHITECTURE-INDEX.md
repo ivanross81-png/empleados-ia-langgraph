@@ -4,7 +4,7 @@
 **Estado:** Línea base normativa  
 **Fecha:** 2026-09-21  
 **Creado:** 2026-09-21  
-**Actualizado:** 2026-10-19
+**Actualizado:** 2026-10-20
 
 ## 1. Propósito
 
@@ -130,6 +130,10 @@ Estos documentos no definen la arquitectura; la sostienen y son la base de evide
 | `REGISTRO-CAMBIOS-2026-10-19-DECISIONES-RESPONSABLE.md` | Registro de cambios de las decisiones del responsable del producto del 2026-10-19 (`ADR-012`–`ADR-014`, DP-1/DP-2/DP-5/DP-6/DP-18/DP-19/DP-20, validadores publicados y conectados a CI) |
 | `COMPATIBILIDAD-Y-LICENCIAS-PREPARACION.md` | Preparación de las pruebas de compatibilidad y de la revisión de licencias del artefacto distribuible: versiones de referencia verificadas, usos a probar, entregables y riesgos |
 | `DECISIONES-PENDIENTES.md` | Decisiones que no pueden cerrarse solo con análisis documental |
+
+### Documentos de producto MVP propuestos (2026-10-20)
+
+La propuesta de producto vive en `docs/product/` y sus espejos en `docs/es/product/`: `MVP-PRD.md`, `MVP-DELIVERY-PLAN.md` y `MVP-TRACEABILITY-MATRIX.md`. Limita el primer demostrador a un Empleado Digital de Cobranzas, consola web propia mínima, datos sintéticos, integración simulada, aprobación humana durable y pruebas medibles. **El alcance aún no está aceptado**: Cobranzas y el primer canal siguen siendo recomendaciones; DP-3 continúa abierta. La propuesta no modifica arquitectura ni ADR y no cierra gates técnicos, de licencia o legales. Registro: `docs/reference/REGISTRO-MVP-DEFINITION-2026-10-20.md`.
 
 Regla de cita: el anexo y el spike conservan **numeraciones de sección heredadas** (§64, §66, §89…) que no existen en los documentos normativos. Citar siempre el documento y la sección normativos; los números heredados son punteros históricos.
 
