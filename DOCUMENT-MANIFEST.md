@@ -35,7 +35,7 @@
 
 ## 7. Documentation set
 
-The architecture package contains 30 files: 11 architecture documents, 14 ADRs and 5 development guides. They are the normative baseline; `docs/es/` mirrors them in Spanish for human reading. (It was 26 at the 2026-09-21 baseline and 27 after the 2026-10-19 audit; those numbers are kept in the revision log as dated milestones, not as the current inventory.)
+The architecture package contains 27 files: 11 architecture documents, 11 ADRs and 5 development guides. They are the normative baseline; `docs/es/` mirrors them in Spanish for human reading. (It was 26 at the 2026-09-21 baseline and 27 after the 2026-10-19 audit; those numbers are kept in the revision log as dated milestones, not as the current inventory.)
 
 ### 7.1 Package root
 
