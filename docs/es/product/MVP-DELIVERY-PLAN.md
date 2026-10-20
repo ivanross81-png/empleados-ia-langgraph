@@ -1,103 +1,191 @@
 # Plan de entrega del MVP — Porción vertical
 
-**Estado:** Propuesta de implementación; no normativa hasta aceptar el alcance  
+**Estado:** Plan de implementación propuesto; no normativo hasta que el responsable acepte el alcance del MVP  
 **Revisión:** 2026-10-20  
-**Complemento:** MVP-PRD.md
+**Documento complementario:** MVP-PRD.md  
+**Principio de planificación:** demostrar un workflow completo y gobernado antes de ampliar el alcance de la plataforma
 
-## Estrategia
+## 1. Estrategia de entrega
 
-Construir una porción vertical del Empleado Digital de Cobranzas. Cada incremento debe dejar el repositorio ejecutable y aportar evidencia. No convertir cada caja de arquitectura en un microservicio: conservar límites claros y consolidar despliegues cuando sea razonable. Docker Compose basta para el MVP dedicado.
+Construir una porción vertical alrededor del Empleado Digital de Cobranzas propuesto en MVP-PRD.md. Cada incremento debe dejar el repositorio ejecutable y aportar evidencia de que los riesgos arquitectónicos más importantes están controlados.
 
-## M0 — Cerrar alcance
+No se debe implementar cada componente del diagrama como un microservicio independiente. Hay que conservar límites limpios entre dominio y aplicación, pero consolidar los procesos desplegables cuando sea práctico para el MVP dedicado. Docker Compose es suficiente; Kubernetes, service mesh y SaaS multiempresa con recursos compartidos no son requisitos previos.
 
-- Aceptar Cobranzas y la consola web como primera superficie.
-- Confirmar esquema de facturas sintéticas, roles y matriz de riesgo.
-- Definir contratos de ejecución, estado, propuesta, aprobación y resultado.
-- Crear escenarios ALLOW, DENY, REQUIRE_APPROVAL y efecto externo incierto.
-- Asignar responsable y evidencia a cada decisión pendiente.
+## 2. Secuencia de implementación y gates
 
-**Salida:** DP-3 cerrada para el canal o implementación del canal bloqueada explícitamente; cada requisito del PRD tiene prueba o actividad de validación.
+### M0 — Cierre de alcance y contrato de implementación
 
-## M1 — Base ejecutable y workflow durable
+**Objetivo:** evitar que la implementación resuelva vacíos de producto mediante supuestos implícitos.
 
-1. Configuración, dependencias fijadas, Compose y datos sintéticos.
-2. Tipos de dominio e interfaces para solicitud, estado, versiones e idempotencia.
-3. Esquemas PostgreSQL de dominio/runtime con roles separados y prueba negativa de permisos.
-4. Workflow Temporal con activities tipadas y clasificación de errores.
-5. LangGraph dentro de la activity cognitiva; Temporal conserva ciclo de vida y esperas largas.
-6. Gateway LLM con modo mock determinista para CI.
-7. IDs de correlación, logs estructurados y eventos de auditoría.
+**Entregables:**
+- Decisión del responsable del producto sobre Cobranzas y la consola web propia.
+- Esquema confirmado de facturas sintéticas, roles de usuario y matriz de riesgo/acción.
+- Contratos de API y dominio para creación de ejecución, estado, propuesta de acción, decisión de aprobación y resultado.
+- Un escenario de aceptación para ALLOW, uno para DENY, uno para REQUIRE_APPROVAL y uno para resultado externo incierto.
+- Registro de las decisiones restantes con responsables y evidencia necesaria para cerrarlas.
 
-**Salida:** solicitud durable con ID; misma clave idempotente no duplica ejecución; reinicio/reanudación probados o falla registrada como bloqueante. DP-1 no se declara validada sin evidencia.
+**Criterios de salida:**
+- DP-3 está cerrada para el canal del MVP o la implementación específica del canal permanece expresamente bloqueada.
+- No hay ambigüedad sobre si se permiten efectos externos simulados o reales.
+- Cada requisito del PRD tiene al menos una prueba o una actividad de validación asignada.
 
-## M2 — Acciones gobernadas y aprobación
+### M1 — Base ejecutable y ejecución durable
 
-1. Propuesta de acción tipada y hash/clave idempotente inmutable.
-2. Política determinista ALLOW, DENY y REQUIRE_APPROVAL.
-3. Ejecución por MCP Gateway/adaptador aprobado; llamadas directas no autorizadas fallan.
-4. Aprobación en el sistema de dominio y señales/timers Temporal, no polling.
-5. Vistas web de ejecución, propuesta, decisión y resultado.
-6. Avisos/escalamiento a 24 h, 72 h y revisión a 7 días; nunca decisión automática solo por antigüedad.
-7. Revalidar autorización antes de ejecutar; aprobación vinculada a la acción exacta.
+**Objetivo:** demostrar los límites mínimos de runtime y persistencia.
 
-**Salida:** ALLOW funciona, DENY se bloquea y REQUIRE_APPROVAL espera durablemente; aprobación sobrevive reinicio y es idempotente; acción modificada no reutiliza aprobación; bypass falla cerrado.
+**Orden de implementación:**
+1. Establecer configuración, dependencias fijadas, topología local de Compose y datos sintéticos iniciales.
+2. Implementar tipos de dominio e interfaces de API/aplicación para Execution Request, estado de ejecución, referencias de versiones e idempotencia.
+3. Aprovisionar el esquema de dominio de PostgreSQL y un esquema/roles de checkpoint de runtime separados. Agregar una prueba negativa que demuestre que el rol de runtime no puede acceder a las tablas de dominio.
+4. Implementar un workflow Temporal con activities tipadas y clasificación de errores.
+5. Invocar LangGraph únicamente dentro de la activity cognitiva definida; Temporal conserva la responsabilidad de las esperas prolongadas y del ciclo de vida del workflow.
+6. Agregar un adaptador del gateway LLM con modo simulado y determinista para CI y modo de proveedor configurable para pruebas de integración local.
+7. Agregar IDs de correlación, logs estructurados y eventos de ejecución/auditoría.
 
-## M3 — Cobranzas y evaluación
+**Criterios de salida:**
+- Una solicitud crea una ejecución durable y devuelve un identificador de ejecución.
+- Una solicitud duplicada con la misma clave de idempotencia no crea una segunda ejecución lógica.
+- Pasan las pruebas de reinicio del worker y recuperación para el workflow implementado.
+- El enfoque de checkpoints pasa las pruebas de fallos de DP-1 o el fallo no resuelto queda registrado como bloqueo. Nunca se describe como validado antes de tener evidencia.
 
-1. Cargar lote sintético mediante adaptador simulado tipado.
-2. Clasificar/priorizar con atributos deterministas más explicación/borrador LLM; invariantes y autorización quedan fuera del modelo.
-3. Generar recomendación y borrador. Los archivos descargables, si se incluyen, usan el catálogo restringido de ADR-013.
-4. Registrar acciones en bandeja simulada; no contactar clientes.
-5. Crear corpus etiquetado normal, de borde, denegado, aprobación y adversarial.
-6. Medir éxito, política, herramientas, coste y duración; fijar versiones del modelo/proveedor.
-7. Manejar datos faltantes/contradictorios y efectos inciertos con resultados tipados.
+### M2 — Acciones gobernadas y aprobación humana
 
-**Salida:** umbral de evaluación aprobado; pruebas deterministas de seguridad al 100 %; sin efectos simulados duplicados; trazabilidad de solicitud a resultado.
+**Objetivo:** establecer el diferencial de la plataforma: ninguna acción propuesta por el modelo puede eludir los controles deterministas.
 
-## M4 — Endurecimiento y piloto
+**Orden de implementación:**
+1. Definir una propuesta de acción tipada y una huella inmutable de acción/clave de idempotencia.
+2. Evaluar la política y el riesgo de forma determinista, incluidos ALLOW, DENY y REQUIRE_APPROVAL.
+3. Hacer cumplir la ejecución de acciones por MCP Gateway o el adaptador aprobado. Las invocaciones directas sin el contexto de autorización esperado deben fallar.
+4. Persistir el estado de aprobación en el sistema de registro oficial del dominio. Usar señales y temporizadores de Temporal para las esperas durables, no polling.
+5. Agregar vistas de consola para estado de ejecución, propuesta, decisión del aprobador y resultado.
+6. Implementar avisos y escalamiento a las 24 horas, 72 horas y revisión a los 7 días. Nunca aprobar, rechazar o cancelar automáticamente solo por antigüedad.
+7. Volver a autorizar inmediatamente antes de ejecutar y vincular la aprobación a la versión/huella exacta de la acción.
 
-Entregables: instalación limpia reproducible, versiones fijadas, runbook backup/restore con RPO/RTO observados, SBOM, comprobaciones de licencias, pruebas de compatibilidad ADR-011, secretos/egreso/prompt injection/bypass/redacción, alertas y runbooks de incidentes/reconciliación. Elegir conector real y límites de datos solo si el piloto lo requiere.
+**Criterios de salida:**
+- ALLOW funciona, DENY se bloquea y REQUIRE_APPROVAL espera de forma durable hasta que exista una decisión autorizada.
+- La aprobación sobrevive al reinicio del worker y los envíos duplicados son idempotentes.
+- Una acción modificada no puede reutilizar una aprobación anterior.
+- Una prueba de bypass de política/gateway falla de forma segura.
 
-**Salida:** DP-1, DP-2, DP-4 y DP-20 con evidencia o no-go documentado; DP-5/DP-6 siguen sujetos a revisión; responsable del piloto aprueba conector, datos, riesgo y objetivos. SLO basados en evidencia.
+### M3 — Workflow de Cobranzas y evaluación medida
 
-## Camino crítico
+**Objetivo:** demostrar la utilidad empresarial de punta a punta con evidencia repetible.
 
-**Alcance → contratos de ejecución/idempotencia → workflow durable → política/gateway → aprobación durable → efecto simulado/reconciliación → evaluación → endurecimiento.**
+**Orden de implementación:**
+1. Cargar un lote acotado de facturas sintéticas mediante un adaptador simulado y tipado.
+2. Clasificar y priorizar casos usando atributos deterministas del negocio más explicación/borrador generado por LLM. Las invariantes del negocio y la autorización permanecen fuera del modelo.
+3. Producir una recomendación estructurada y un borrador de seguimiento. Si se incluyen reportes descargables, generarlos únicamente mediante el catálogo restringido de plantillas/bibliotecas definido por ADR-013.
+4. Encauzar acciones por los tres resultados de política y registrar el resultado en una bandeja de salida simulada; no se contactan clientes reales.
+5. Construir un conjunto de referencia etiquetado con casos normales, de borde, denegados, de aprobación y de entrada adversarial.
+6. Medir éxito, cumplimiento de políticas, corrección de uso de herramientas, costo y duración. Registrar proveedor/modelo y versiones del empleado, tarea y política para poder repetir la evaluación.
+7. Agregar tratamiento controlado de datos faltantes/contradictorios y resultados tipados para herramientas no disponibles o efectos externos inciertos.
 
-El conector real no bloquea el demostrador inicial.
+**Criterios de salida:**
+- Se alcanza el umbral de evaluación de bajo riesgo aprobado.
+- Las pruebas deterministas de seguridad pasan al 100 %; no ocurre ninguna acción externa no autorizada en el conjunto probado.
+- Los reintentos, el timeout posterior al éxito y el reinicio del worker no duplican efectos empresariales simulados.
+- El operador puede seguir el recorrido desde la solicitud inicial hasta la política, la aprobación y el resultado final.
 
-## Trabajo paralelo seguro
+### M4 — Endurecimiento y preparación para el piloto
 
-Wireframes/API, dataset sintético, corpus de evaluación, CI, preparación de SBOM/compatibilidad y runbooks pueden avanzar en paralelo una vez acordadas interfaces. No crear autoridades competidoras para workflow, aprobación o autorización.
+**Objetivo:** convertir el demostrador en un candidato controlado para un piloto con un cliente de diseño.
 
-## Módulos lógicos
+**Entregables:**
+- Instalación y configuración limpia reproducibles; versiones fijadas de dependencias e imágenes.
+- Runbook de backup/restore con RPO/RTO observados, no solo objetivos.
+- Generación de SBOM y comprobaciones de licencias para el artefacto distribuible real.
+- Resultados de pruebas de compatibilidad para las sustituciones de componentes de ADR-011.
+- Pruebas de gestión de secretos, restricción de egreso, prompt injection, bypass de autorización, límites de recursos para artefactos y redacción de logs.
+- Paneles/alertas operativas para errores, latencia, ejecuciones atascadas, consumo de presupuesto, envejecimiento de aprobaciones y profundidad de colas.
+- Runbooks para pausar/deshabilitar, cancelar, responder a incidentes y reconciliar acciones inciertas.
+- Límites de tratamiento de datos del piloto y selección de un conector real si el cliente de diseño lo requiere.
+
+**Criterios de salida:**
+- DP-1, DP-2, DP-4 y DP-20 tienen evidencia de pruebas o un no-go documentado para la capacidad correspondiente.
+- Los gates de compatibilidad y licencia/legal de DP-5/DP-6 están explícitamente controlados; no se declara aprobada la distribución comercial sin la revisión requerida.
+- El responsable del piloto aprueba conector real, clasificación de datos, matriz de riesgos de acción y objetivos operativos.
+- Los RPO/RTO y SLO de latencia/concurrencia de producción se basan en evidencia de la carga objetivo.
+
+## 3. Camino crítico
+
+El camino crítico es:
+
+**cierre de alcance → contratos de ejecución/idempotencia → workflow durable → enforcement de política/gateway → aprobación durable → efecto simulado/reconciliación → evidencia de evaluación → endurecimiento del piloto.**
+
+Un conector real de CRM/correo no es necesario para el primer demostrador. Se incorpora solo después de que el flujo gobernado y la semántica de fallos funcionen frente al simulador.
+
+## 4. Trabajo paralelo seguro
+
+Las siguientes actividades pueden avanzar en paralelo cuando las interfaces estén acordadas:
+
+- Wireframes de la consola web y ejemplos del contrato API.
+- Dataset sintético y casos de evaluación etiquetados.
+- Harness de CI, formato, chequeos de tipos/seguridad y validación documental.
+- Preparación de pruebas de compatibilidad y pipeline de SBOM.
+- Runbooks de despliegue y recuperación.
+
+No deben desarrollarse en paralelo implementaciones competidoras del estado del workflow, la verdad de las aprobaciones o la autorización de acciones. Cada aspecto debe tener una única autoridad definida.
+
+## 5. Módulos lógicos sugeridos para el repositorio
+
+La siguiente tabla es una guía lógica, no una instrucción para crear un servicio por fila.
 
 | Límite | Responsabilidad |
 |---|---|
-| Dominio | IDs, versiones, propuestas, aprobaciones, resultados y fallos tipados |
-| Aplicación | Iniciar ejecución, evaluar acción, decidir, cancelar/reconciliar |
-| API/Web | Crear solicitud, consultar estado, bandeja y decisión |
-| Workflow | Temporal, timers, reintentos, señales y recuperación |
-| Runtime | LangGraph dentro de activity acotada |
-| Políticas | ALLOW/DENY/REQUIRE_APPROVAL deterministas |
-| Integración | MCP Gateway y adaptador simulado de cobranzas |
-| Persistencia | Esquemas de dominio/runtime, auditoría y metadatos |
-| Evaluación | Casos de referencia y suite de seguridad |
-| Operación | Compose, health checks, backup/restore, logs y métricas |
+| Dominio | IDs de ejecución, versiones inmutables, propuestas de acción, aprobaciones, resultados y fallos tipados |
+| Aplicación | Iniciar ejecución, evaluar acción, enviar decisión, cancelar y reconciliar |
+| API/Web | Crear solicitud, consultar estado/detalle, bandeja de aprobación y envío de decisión |
+| Workflow | Orquestación Temporal, temporizadores, reintentos, señales y recuperación |
+| Runtime del agente | Cognición LangGraph dentro de la activity acotada |
+| Políticas | ALLOW/DENY/REQUIRE_APPROVAL deterministas y versionadas |
+| Integración | MCP Gateway y adaptador tipado simulado de cobranzas |
+| Persistencia | Esquema de dominio, esquema de checkpoints de runtime, auditoría y metadatos de artefactos |
+| Evaluación | Casos de referencia, suite de seguridad determinista y puntuación de resultados |
+| Operación | Compose, health checks, backup/restore, logs, métricas y runbooks |
 
-Es una guía lógica, no una orden de crear un servicio por fila.
+Se deben usar los contratos arquitectónicos y ADR aceptados para determinar nombres de paquetes e interfaces públicas antes de implementar. La tabla no autoriza nuevas fronteras de servicios.
 
-## Evidencia y liberación
+## 6. Plan de pruebas requerido por incremento
 
-| Gate | Evidencia |
+| Gate | Evidencia requerida |
 |---|---|
-| M1 | Contratos, idempotencia, permisos de BD, reanudación Temporal y fallos de checkpoint |
-| M2 | ALLOW/DENY/aprobación, bypass denegado, identidad/hash, espera durable |
-| M3 | Casos de negocio, 95 % de éxito de bajo riesgo, cero acciones no autorizadas, timeout tras éxito, presupuesto y auditoría |
-| M4 | Restauración, compatibilidad, SBOM/licencias, redacción, egreso denegado, límites y runbooks |
+| M1 | Pruebas de contrato API/dominio; idempotencia; permisos de BD del runtime; reanudación Temporal; pruebas de fallos del checkpoint LangGraph |
+| M2 | Contratos ALLOW/DENY/aprobación; rechazo de llamadas directas no autorizadas; identidad/hash de acción; espera durable y reinicio |
+| M3 | Escenarios empresariales de referencia; línea base del 95 % para casos de bajo riesgo; cero acciones no autorizadas; timeout posterior al éxito; agotamiento de presupuesto; reconstrucción de auditoría |
+| M4 | Prueba de restauración; suite de compatibilidad; SBOM/revisión de licencias; redacción de secretos/logs; egreso denegado; límites de recursos; runbooks |
 
-Demo lista significa M1–M3 aprobados con datos sintéticos y efectos simulados. Candidato a piloto requiere M4 y aprobación de conector/datos. Distribución comercial requiere además revisión legal/licencias completa. CI documental verde no valida runtime ni seguridad.
+Un diseño o una CI documental en verde no demuestra que el runtime, los límites de seguridad o los productos sustituidos hayan sido validados técnicamente.
 
-## Informe de cierre
+## 7. Incrementos de liberación
 
-Por gate registrar commit/entorno, requisitos, comandos/resultados reales, fallos, decisiones abiertas/responsable y GO/NO-GO con evidencia. Nunca declarar pruebas no ejecutadas ni cerrar gates por inferencia.
+- **Demostración lista:** M1–M3 aprobados con datos sintéticos y acciones externas simuladas.
+- **Candidato a piloto con cliente de diseño:** gates M4 aprobados, conector y tratamiento de datos autorizados y objetivos operativos medidos.
+- **Versión distribuible comercialmente:** además requiere revisión completa de licencias/legal y todos los controles de liberación del producto.
+
+No se debe llamar al demostrador “listo para producción” ni al piloto “autorizado comercialmente” solo porque funcione la interfaz o pase la CI.
+
+## 8. Riesgos que deben gestionarse activamente
+
+| Riesgo | Mitigación |
+|---|---|
+| Inflación de alcance | Un empleado, una tarea acotada, un simulador y un canal |
+| Efectos externos duplicados | Clave de idempotencia, huella de acción, pruebas de timeout posterior al éxito y reconciliación |
+| Escalada de permisos dirigida por el modelo | Política determinista, enforcement del gateway y pruebas negativas de bypass |
+| Conflicto de durabilidad | Temporal como autoridad del ciclo de vida; checkpoint LangGraph limitado a la corrida cognitiva |
+| Sustituciones de software sin demostrar | Evidencia de compatibilidad y gates de SBOM/legal |
+| Sobreestimar calidad por un corpus pequeño | Corpus etiquetado, limitaciones declaradas, suite de regresión y evaluación repetida |
+| Crecimiento del costo | Presupuestos por ejecución comprobados antes de nuevas llamadas y perfil versionado |
+| Supuestos de producción ocultos | Conector del piloto, identidad, clasificación de datos, SLO y prueba de restauración explícitos |
+
+## 9. Formato del informe de cierre
+
+Para cada gate, informar:
+
+- Commit y entorno probados.
+- Requisitos cubiertos.
+- Comandos/pruebas y resultados reales.
+- Fallos y limitaciones conocidas.
+- Decisiones abiertas y responsable asignado.
+- Recomendación GO/NO-GO sustentada en evidencia.
+
+Nunca se debe afirmar que una prueba pasó si no se ejecutó. Tampoco se debe cerrar un gate de producto, seguridad o legal por inferencia.
