@@ -13,7 +13,7 @@ Los documentos de arquitectura son normativos. Las guías de desarrollo y los AD
 | Ubicación | Contenido | Autoridad |
 |---|---|---|
 | `docs/es/architecture/` | 11 documentos: arquitectura, dominio, runtime, persistencia/API, seguridad, MCP, memoria, observabilidad, despliegue | Espejo del normativo |
-| `docs/es/adr/` | 11 decisiones arquitectónicas (las 11 aceptadas, incluida la política de licencias libres) | Espejo del normativo |
+| `docs/es/adr/` | 14 decisiones arquitectónicas (las 14 aceptadas, incluida la política de licencias libres y, desde el 2026-10-19, el almacén de checkpoints, la frontera de cómputo y la semántica de aprobaciones) | Espejo del normativo |
 | `docs/es/development/` | 5 guías para implementar (flujo, estándares, pruebas, seguridad, contrato para agentes de código) | Espejo del normativo |
 | `docs/reference/` | Material no normativo: investigación, licencias, matriz de cruce, auditoría, invariantes y decisiones pendientes (sin espejo: se conserva solo en un idioma) | No normativo |
 

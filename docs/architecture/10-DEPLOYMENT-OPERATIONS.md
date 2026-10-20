@@ -76,6 +76,8 @@ Use rate limits, concurrency limits and circuit breakers per integration. A Digi
 
 Define RPO/RTO per deployment. Backup and restore procedures must be tested, not merely documented.
 
+**MVP engineering baseline (DP-18, 2026-10-19).** Pilot: **RPO 24 hours** and **RTO 8 hours**. Production target — **future, not contractual**, and conditional on passing restore tests: **RPO 1 hour** and **RTO 4 hours**. These are engineering objectives, not a commercial SLA or a legal obligation; `I-12` requires the restore test before either figure is presented as achieved.
+
 The critical durable assets include:
 
 - PostgreSQL;

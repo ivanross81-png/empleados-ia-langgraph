@@ -91,6 +91,8 @@ Están previstas dos modalidades comerciales y **ninguna cambia la arquitectura 
 
 Ambas modalidades comparten *metering*, *entitlements* y cuotas (`09` §12), y la modalidad privada agrega el ciclo de instalación/actualización de `10` §17 y la operación sin conexión. El diseño de medición y entitlements puede prepararse para la modalidad SaaS sin introducir multi-tenencia dinámica.
 
+**Decisión del responsable del producto (2026-10-19).** Ambas modalidades siguen siendo objetivos de producto y **la primera etapa productiva son instalaciones dedicadas por cliente**. Se mantiene la **misma base de código y los mismos contratos de dominio** para las dos (`tenant_id`, autorización, auditoría y límites de consumo presentes desde el principio); una modalidad SaaS con **recursos compartidos** se evalúa recién después de validar el aislamiento y cerrar un **ADR específico**. Hasta entonces, la multi-tenencia dinámica compartida sigue siendo el *non-goal* de `ADR-001` y `02` §11.
+
 ## 8. Criterios de éxito
 
 Un Empleado Digital útil debería poder medirse por:
@@ -104,6 +106,8 @@ Un Empleado Digital útil debería poder medirse por:
 - recuperación ante fallas;
 - calidad de los resultados finales;
 - completitud de la auditoría.
+
+**Línea base de aceptación del MVP (DP-18, 2026-10-19).** Calidad: **al menos 95 % de éxito** en el conjunto representativo de tareas de bajo riesgo, sin **regresiones superiores a 2 puntos porcentuales** sin justificación aprobada. Seguridad: **100 % de cumplimiento** de las pruebas deterministas de autorización y **cero acciones externas no autorizadas** en el conjunto de pruebas. Son criterios de aceptación de ingeniería del MVP, que se miden con evidencia registrada: no son un SLA comercial ni tienen relación con una validación de licencias o legal.
 
 El producto debe optimizar para **resultados de negocio bajo controles explícitos**, no para máxima autonomía.
 

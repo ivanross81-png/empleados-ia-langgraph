@@ -217,6 +217,13 @@ Toda ejecución debe tener límites para:
 - costo estimado;
 - acciones concurrentes.
 
+**Línea base de ingeniería del MVP (DP-18, 2026-10-19).** El perfil inicial de bajo costo por ejecución es: **15 minutos** de cómputo activo, **20** llamadas al modelo, **40** llamadas a herramientas, **50.000** tokens y **USD 2** de presupuesto estimado. Los valores son configurables por entorno y por perfil de tarea; son una línea base para ingeniería y pruebas, **no** un SLA comercial.
+
+Dos reglas rigen la aplicación de los límites:
+
+1. Los límites se aplican **antes** de iniciar una nueva llamada al modelo, una llamada a herramienta o una acción externa: la ejecución se detiene en la frontera, con un resultado tipado, en lugar de descubrir el exceso después.
+2. Un **efecto externo en curso no se interrumpe** sin gestión del resultado y reconciliación (`§18`): el corte impide trabajo nuevo y deja registrada la reconciliación pendiente.
+
 ## 17. Inyección de prompts
 
 El contenido externo, los documentos recuperados y las salidas de herramientas no son confiables. Pueden contener instrucciones que intenten alterar el comportamiento del agente. El runtime debe mantener los datos y las instrucciones de control estructuralmente separados, y nunca otorgar autoridad solo porque el texto diga que debería otorgarse.
@@ -274,7 +281,7 @@ El estado de una corrida de agente puede persistirse entre pasos para permitir l
 | Recuperación de una **activity fallida** | Política de reintentos de Temporal (`§13`) | Reagendar la activity que falló, con la clasificación de errores reintentables y no reintentables |
 | Persistencia de **resultados de negocio** | Almacén de dominio (PostgreSQL, `05` §1) | Estado de la ejecución, resultados, artefactos y registros de auditoría |
 
-Por lo tanto el almacén de checkpoints **nunca** sostiene una espera humana ni estado de negocio: si una pausa debe sobrevivir más que la corrida misma, el runtime devuelve el control a la activity, que espera una señal duradera (`§11`). El modo de durabilidad elegido para el runtime del agente se documenta por despliegue y está cubierto por DP-1 en `docs/reference/DECISIONES-PENDIENTES.md` (aún pendiente de la prueba comparativa).
+Por lo tanto el almacén de checkpoints **nunca** sostiene una espera humana ni estado de negocio: si una pausa debe sobrevivir más que la corrida misma, el runtime devuelve el control a la activity, que espera una señal duradera (`§11`). El modo de durabilidad y el backend del runtime del agente están fijados por `ADR-012` (decisión del responsable del producto, 2026-10-19): persistencia por paso en **PostgreSQL**, en un **esquema de runtime separado** con roles y permisos propios, con el historial eliminado **7 días después de que la ejecución alcance un estado terminal** (línea base de ingeniería del MVP, DP-18). La decisión de diseño está adoptada, pero el almacén **no está validado**: `ADR-012` enumera las pruebas de fallo que deben ejecutarse (costo por paso, caída a mitad de nodo, reanudación, retención y ausencia de efectos externos duplicados). Por eso DP-1 sigue abierta en su capa de **prueba**, no en la de diseño.
 
 ### 21.3 Re-ejecución al reanudar
 
@@ -315,6 +322,31 @@ Toda operación de control produce un evento auditable con actor, ejecución, es
 - **Ordenar un cambio** usa **signals** (asíncronas, sin valor de retorno) o **updates** (sincrónicas, validadas): una operación de control de la tabla anterior lleva payload validado, es idempotente ante entrega repetida y queda registrada como evento de ejecución.
 - Una operación que muta la ejecución nunca debe implementarse como query, y una lectura nunca debe implementarse como signal.
 
+### 22.1 Atributos operativos (Search Attributes)
+
+*Agregado 2026-10-19 — decisión del responsable del producto (DP-20); cierra el hallazgo K-T5 de `docs/reference/KORTIX-CROSS-MATRIX.md`.*
+
+Los *Search Attributes* de Temporal se usan para **localizar y filtrar** ejecuciones — por ejemplo, las aprobaciones que esperan una persona (`05` §10.1). El conjunto mínimo del MVP es:
+
+| Atributo | Tipo (Temporal) | Para qué |
+|---|---|---|
+| `TenantId` | Keyword | Aislamiento por tenant/despliegue en las consultas |
+| `EmployeeId` | Keyword | A qué Empleado Digital pertenece la ejecución |
+| `ApprovalStatus` | Keyword | Si la ejecución espera una aprobación y en qué estado |
+| `ApprovalType` | Keyword | Clase de la aprobación pendiente |
+| `ApprovalPriority` | Keyword o entero | Orden de la cola |
+| `AssignedGroup` | Keyword | Grupo o rol que debe decidir |
+| `ApprovalDueAt` | Datetime | Envejecimiento y escalamiento (`ADR-014`) |
+| `ApproverSubjectId` | Keyword — **solo identificador opaco** | Opcional: bandeja personal, cuando haga falta |
+
+Reglas:
+
+1. Son un **índice operativo**. La fuente de verdad del estado de aprobación, de los permisos y del estado de negocio es el almacén de dominio (`05` §1); encontrar un workflow por un atributo no demuestra nada sobre la autorización.
+2. **La API verifica los permisos y lee los detalles de la aprobación desde el almacén de dominio.** Una decisión de autorización nunca se deriva del valor de un atributo.
+3. Los valores se escriben con la misma disciplina que los datos de dominio: con alcance de tenant, sin datos personales más allá de un identificador opaco y sin secretos (`06` §7).
+4. Agregar o cambiar un atributo es un **cambio gobernado**: debe registrarse en el namespace de Temporal, documentarse acá con su tipo y sus tipos y su registro deben ser compatibles con la versión de Temporal en uso — una prueba de contrato (DP-20).
+5. El filtrado por atributos **nunca** es el mecanismo de aislamiento (`02` §11, `06` §3): el aislamiento no descansa en una protección revocable.
+
 ## 23. Delegación (sub-agentes, sub-grafos)
 
 *Agregado 2026-10-19 — cierra el hallazgo K-03 de la matriz de cruce.*
@@ -323,7 +355,7 @@ Si el runtime soporta delegar trabajo a un sub-grafo o sub-agente, la delegació
 
 - el trabajo delegado corre **dentro** de la misma ejecución y del mismo camino de enforcement; no puede crear una nueva ejecución ni una nueva identidad;
 - el contexto delegado hereda la **intersección** de permisos de herramientas, presupuestos y alcance de política del padre — nunca un superconjunto;
-- la profundidad máxima de delegación y la cantidad máxima de delegados concurrentes se configuran por tarea y los aplica el runtime;
+- la profundidad máxima de delegación y la cantidad máxima de delegados concurrentes se configuran por tarea y los aplica el runtime. Línea base de ingeniería del MVP (DP-18, 2026-10-19): profundidad máxima **3**, **5** agentes delegados concurrentes y **3** acciones externas concurrentes por ejecución;
 - el padre sigue siendo responsable del resultado; el razonamiento delegado es salida de modelo no confiable como cualquier otra;
 - la delegación queda trazada por completo (qué delegado, qué contexto, qué llamadas a herramientas) para poder reconstruir la ejecución.
 
@@ -341,6 +373,6 @@ Si el runtime soporta delegar trabajo a un sub-grafo o sub-agente, la delegació
 
 *Registradas 2026-10-19. Son brechas sin diseño cerrado: no deben resolverse implícitamente desde una implementación.*
 
-1. **Entorno de ejecución del empleado.** Esta arquitectura da capacidades al empleado exclusivamente a través de herramientas gobernadas; no define un entorno donde el empleado pueda *computar* (generar un archivo, armar una planilla, correr un script) para producir un entregable. Si ese entorno es necesario y con qué reglas de aislamiento (efímero, sin red, sin exposición de credenciales, artefactos gobernados por `05` §21) es una decisión de producto abierta (hallazgo K-12/K-21; ver `docs/reference/DECISIONES-PENDIENTES.md`).
+1. **Entorno de ejecución del empleado — decidido 2026-10-19 (`ADR-013`).** El MVP **no** permite ejecución arbitraria de código del agente dentro del proceso principal. Los entregables los produce un **servicio restringido de generación de artefactos** (bibliotecas y plantillas aprobadas, límites de recursos, sin secretos y sin salida de red por defecto), y los artefactos que produce quedan gobernados por `05` §21. La variante de **sandbox efímero** sigue abierta: requiere su propia decisión y sus propias pruebas de aislamiento. Hallazgo K-12/K-21; DP-2 sigue abierta en sus capas de implementación y prueba.
 2. **Superficies de canal.** Cuando se implemente el primer canal conversacional, los requisitos mínimos son: vinculación de identidad del remitente humano, política de acceso a la sesión/hilo, autorización por acción, capacidad de detener una corrida desde el canal, y auditoría de cada mensaje que llegó al agente (hallazgo K-40).
 3. **Enforcement de costos y cuotas.** Qué cuotas (tenant, empleado, tarea) detienen una ejecución y qué hace la ejecución cuando la cuota se agota (hallazgo K-42).

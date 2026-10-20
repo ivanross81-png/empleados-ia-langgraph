@@ -24,11 +24,14 @@
 | 20 | `docs/adr/ADR-009-evaluation-framework.md` | Evaluation decision |
 | 21 | `docs/adr/ADR-010-llm-gateway.md` | LLM gateway decision |
 | 22 | `docs/adr/ADR-011-free-licence-stack.md` | **Accepted** (2026-10-19) — free-licence-only stack policy |
-| 23 | `docs/development/DEVELOPMENT-GUIDELINES.md` | Engineering workflow |
-| 24 | `docs/development/CODING-STANDARDS.md` | Coding standards |
-| 25 | `docs/development/TESTING-STRATEGY.md` | Testing strategy |
-| 26 | `docs/development/SECURITY-RULES.md` | Security rules |
-| 27 | `docs/development/CLAUDE-CODE-GUIDELINES.md` | AI coding-agent contract |
+| 23 | `docs/adr/ADR-012-runtime-checkpoint-store.md` | **Accepted** (2026-10-19) — runtime checkpoint store: PostgreSQL, separate schema |
+| 24 | `docs/adr/ADR-013-agent-compute-boundary.md` | **Accepted** (2026-10-19) — no arbitrary code execution in the MVP; restricted artifact service |
+| 25 | `docs/adr/ADR-014-approval-aging-expiry.md` | **Accepted** (2026-10-19) — approval aging: no automatic cancellation or rejection |
+| 26 | `docs/development/DEVELOPMENT-GUIDELINES.md` | Engineering workflow |
+| 27 | `docs/development/CODING-STANDARDS.md` | Coding standards |
+| 28 | `docs/development/TESTING-STRATEGY.md` | Testing strategy |
+| 29 | `docs/development/SECURITY-RULES.md` | Security rules |
+| 30 | `docs/development/CLAUDE-CODE-GUIDELINES.md` | AI coding-agent contract |
 
 ## 7. Documentation set
 
@@ -47,12 +50,13 @@ The architecture package contains 27 files: 11 architecture documents, 11 ADRs a
 
 | Category | Files |
 |---|---|
-| Normative (English): `docs/architecture` (11), `docs/adr` (11), `docs/development` (5) | 27 |
-| Spanish mirrors: `docs/es/architecture`, `docs/es/adr`, `docs/es/development` | 27 |
+| Normative (English): `docs/architecture` (11), `docs/adr` (14), `docs/development` (5) | 30 |
+| Spanish mirrors: `docs/es/architecture`, `docs/es/adr`, `docs/es/development` | 30 |
 | Spanish mirrors of root files: `docs/es/README.md`, `docs/es/DOCUMENT-MANIFEST.md` | 2 |
 | Package root (English) | 4 |
-| Non-normative reference: `docs/reference/` | 14 |
-| **Total `.md` files** | **74** |
+| Non-normative reference: `docs/reference/` | 16 |
+| **Total `.md` files** | **82** |
+| Repository tooling (not `.md`): `tools/docs-verify/` (validators). The CI workflow is **prepared but not published** (the publishing token lacks the `workflow` scope) | — |
 
 Non-normative reference material lives in `docs/reference/` and is listed in `00-ARCHITECTURE-INDEX.md` §10:
 
@@ -71,6 +75,8 @@ Non-normative reference material lives in `docs/reference/` and is listed in `00
 | `docs/reference/REGISTRO-CAMBIOS-2026-10-19-ADR-011-ACEPTADO.md` | Change log for the acceptance of `ADR-011` and the resulting component renames |
 | `docs/reference/VERIFICACION-POST-AUDITORIA-2026-10-19.md` | Post-audit verification report: what was checked, what was reproducible, the reusable-code question and open risks |
 | `docs/reference/REGISTRO-CAMBIOS-2026-10-19-VERIFICACION-POST-AUDITORIA.md` | Change log for the post-audit verification (V-1…V-8) |
+| `docs/reference/REGISTRO-CAMBIOS-2026-10-19-DECISIONES-RESPONSABLE.md` | Change log for the product-owner decisions of 2026-10-19 (`ADR-012`–`ADR-014`, DP-1/DP-2/DP-5/DP-6/DP-18/DP-19/DP-20, validators published in `tools/docs-verify/`) |
+| `docs/reference/COMPATIBILIDAD-Y-LICENCIAS-PREPARACION.md` | Preparation of the compatibility tests and the licence review of the distributable artifact (versions, uses to test, deliverables, risks) |
 | `docs/reference/DECISIONES-PENDIENTES.md` | Open decisions requiring test, legal review or product judgement |
 
 ## 8. Revision log
@@ -80,4 +86,4 @@ Non-normative reference material lives in `docs/reference/` and is listed in `00
 - **2026-10-19 (later)** — `ADR-011` added as **Proposed**: free-licence-only stack, per the product owner's decision. Its acceptance (and the consequent component-name updates in `00-INDEX`, `02` §4, `05` §1, `09` §2, `ADR-007` and the Spanish mirrors) was pending. Detail: `docs/reference/DECISIONES-PENDIENTES.md` DP-17. **(Accepted the same day: see the entry below.)**
 - **2026-10-19 (audit)** — consistency audit of the whole package: inventories and counts corrected (the package is 27 normative files, not 26), `Created`/`Updated`/`Date` metadata added to every normative header, the LangGraph/Temporal durability boundary clarified in `04` §21.2, read-versus-command semantics and Temporal patching documented, the commercial modalities separated from the architectural limit in `01` §7.1, ADR-011 formalisation layers stated, and the Spanish mirror of this manifest brought up to date. Evidence and findings: `docs/reference/AUDITORIA-CONSISTENCIA-2026-10-19.md`.
 - **2026-10-19 (ADR-011 accepted)** — the product owner accepted `ADR-011` (**Proposed → Accepted**) and, with it, the substitution became normative: the replaced components were renamed in `00-INDEX.md`, `02` §4, `04`, `05` §1, `06` §7, `07`, `09` §2, `10` §1–§3, the `ADR-007` implementation note, the Spanish mirrors and the non-technical explanation. **No architectural decision was changed and no test was closed.** Detail: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-ADR-011-ACEPTADO.md`.
-- **2026-10-19 (post-audit verification)** — follow-up review of the **published** files, which found residues the previous revisions had not reached: both manifests still showed `ADR-011` with its pre-acceptance status (now `Accepted`), `DP-17` contradicted its own state, `DP-6` presented substituted components as the current stack, `ADR-011` §Context lacked its date note, and `00-INDEX.md` did not separate the historical count (26) from the current one (**27**). Claims of **reusable code** were removed: the platform is built **from scratch** on this documentary package, and the Hermes-OS question is registered as **DP-19**. **No architectural decision was changed and no test was closed** (DP-5, DP-6 remain open). Report: `docs/reference/VERIFICACION-POST-AUDITORIA-2026-10-19.md`; trace: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-VERIFICACION-POST-AUDITORIA.md`.
+- **2026-10-19 (product-owner decisions)** — the product owner resolved eight open items. Three required an **ADR** and were created as **Accepted**: `ADR-012` (runtime checkpoint store: PostgreSQL, separate runtime schema, 7-day retention), `ADR-013` (no arbitrary agent code execution in the MVP; restricted artifact-generation service) and `ADR-014` (approval aging: **no** automatic cancellation or rejection, replacing the "reject by default" of `05` §10.1). The MVP engineering baseline values (budgets, delegation, alerts, retention, RPO/RTO, quality and security acceptance) were written into `04` §16/§23, `09` §12.1/§13, `10` §9, `01` §7.1/§8 and DP-18; the operational Search Attributes were defined in `04` §22.1 (DP-20); DP-19 was closed as option (a) and DP-1/DP-2 keep the decision adopted with the tests pending. The documentation validators were published in `tools/docs-verify/` at the owner's authorization. The **CI workflow is prepared and pending publication**: the publishing token does not have GitHub's `workflow` scope, so `.github/workflows/docs-verify.yml` cannot be pushed from this environment. **No substitution is technically validated and the commercial distribution stays blocked.** Trace: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-DECISIONES-RESPONSABLE.md`.

@@ -25,7 +25,7 @@ Componentes de referencia:
 - Langfuse para trazado de LLM/agentes;
 - PostgreSQL para metadatos de auditoría durables.
 
-El stack de referencia está sujeto a la política de licencias libres, vigente desde la aceptación de `ADR-011` (2026-10-19): `docs/reference/STACK-LICENCIAS.md`. Nombrar un componente aquí no es una aprobación para desplegarlo: aplica el *license gate* de `06` §18. Los *Search Attributes* de Temporal son el mecanismo previsto para consultas operativas sobre ejecuciones abiertas (por ejemplo, "ejecuciones esperando una aprobación del empleado X"), en lugar de consultas ad-hoc contra tablas de dominio.
+El stack de referencia está sujeto a la política de licencias libres, vigente desde la aceptación de `ADR-011` (2026-10-19): `docs/reference/STACK-LICENCIAS.md`. Nombrar un componente aquí no es una aprobación para desplegarlo: aplica el *license gate* de `06` §18. Los *Search Attributes* de Temporal son el mecanismo previsto para consultas operativas sobre ejecuciones abiertas (por ejemplo, "ejecuciones esperando una aprobación del empleado X"), en lugar de consultas ad-hoc contra tablas de dominio. El conjunto operativo mínimo —y la regla de que son un índice y **no** la fuente de verdad del estado de aprobación, de la autorización ni del aislamiento— está definido en `04` §22.1 (`ADR-014`, DP-20).
 
 ## 3. Identificadores de correlación
 
@@ -146,7 +146,11 @@ Reglas:
 - todo corte es **explícito y auditable**: una ejecución detenida por presupuesto registra quién/qué la detuvo y por qué;
 - el consumo es medible por tenant, empleado, tarea y modelo — es también la base del metering comercial SaaS (`10`);
 - los límites "blandos" (alertar) y los "duros" (detener) son ajustes distintos, nunca el mismo número;
-- una alerta de anomalía de costo (`§13`) no sustituye un límite duro.
+- una alerta de anomalía de costo (`§13`) no sustituye un límite duro;
+- los límites se aplican **antes** de iniciar una nueva llamada al modelo, una llamada a herramienta o una acción externa, de modo que el exceso se evita y no solo se detecta (`04` §16);
+- un **efecto externo en curso nunca se interrumpe** sin gestión del resultado y reconciliación (`04` §18): el corte detiene el trabajo nuevo y deja la reconciliación pendiente registrada y resoluble por un operador.
+
+**Línea base de ingeniería del MVP (DP-18, 2026-10-19).** Perfil por ejecución: 15 minutos de cómputo activo, 20 llamadas al modelo, 40 llamadas a herramientas, 50.000 tokens y USD 2 de presupuesto estimado. Anomalía de costo: **alerta por encima de 2× la mediana** del perfil de tarea y versión en una **ventana móvil de 30 días**, con **al menos 20 observaciones**. Configurable por entorno y por perfil; es una línea base para ingeniería y pruebas, no un SLA contractual.
 
 ## 13. Alertas
 
@@ -161,6 +165,17 @@ Ejemplos:
 - volumen inusual de llamadas de herramienta.
 
 Además, del cruce (2026-10-19): antigüedad de la cola de aprobaciones por encima del SLA (`05` §10.1), ejecuciones pausadas o suspendidas más de lo esperado, costo por ejecución negativo o anómalo, operaciones de control emitidas por operadores (pausar/interrumpir/terminar) y huecos de cobertura de auditoría detectados por pruebas de contrato (`05` §5.2).
+
+**Línea base de ingeniería del MVP (DP-18, 2026-10-19).** Las ventanas y los umbrales son por entorno y por perfil de tarea:
+
+| Alerta | Umbral inicial |
+|---|---|
+| Envejecimiento de aprobaciones | Aviso a las **24 h**, escalamiento a las **72 h**, revisión operativa a los **7 días**; sin cancelación ni rechazo automáticos (`ADR-014`) |
+| Ejecución sin progreso inesperado | Aviso a los **15 min**, alerta crítica a los **60 min**, **excluyendo esperas explícitas** (una aprobación o una espera externa declarada no es "falta de progreso") |
+| Anomalía de costo | Por encima de **2×** la mediana del perfil y versión, ventana móvil de 30 días, mínimo **20** observaciones |
+| Retención de la evidencia | Auditoría **365 días** (sujeta a contrato y requisitos aplicables); logs operativos **30 días**; trazas detalladas del agente **14 días con redacción de datos sensibles**; prompts completos **desactivados por defecto**, con depuración temporal de hasta **7 días** bajo autorización |
+
+Estos valores son línea base para ingeniería y pruebas, **no** un SLA contractual, y requieren evidencia de producción antes de considerarse validados.
 
 ## 14. Compuertas de lanzamiento
 

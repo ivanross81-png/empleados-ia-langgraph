@@ -219,6 +219,13 @@ Every execution should have limits for:
 - estimated cost;
 - concurrent actions.
 
+**MVP engineering baseline (DP-18, 2026-10-19).** The initial low-cost profile per execution is: **15 minutes** of active compute, **20** model calls, **40** tool calls, **50,000** tokens and **USD 2** estimated budget. Values are configurable per environment and per task profile; they are a baseline for engineering and testing, **not** a commercial SLA.
+
+Two rules govern enforcement:
+
+1. Limits are applied **before** starting a new model call, tool call or external action: the execution stops at the boundary, with a typed outcome, instead of discovering the overrun afterwards.
+2. An **in-flight external effect is not interrupted** without outcome management and reconciliation (`§18`): the cut-off prevents new work and records the pending reconciliation.
+
 ## 17. Prompt injection
 
 External content, retrieved documents and tool outputs are untrusted. They may contain instructions that attempt to change agent behavior. The runtime must keep data and control instructions structurally separate and never grant authority merely because text says it should be granted.
@@ -276,7 +283,7 @@ Agent-run state may be persisted between steps to allow resume inside a single r
 | Recovery of a **failed activity** | Temporal retry policy (`§13`) | Re-scheduling the activity that failed, with the classification of retryable vs non-retryable errors |
 | Persistence of **business results** | Domain store (PostgreSQL, `05` §1) | Execution status, outcomes, artifacts and audit records |
 
-The checkpoint store therefore never carries a human wait and never carries business state: if a pause must survive longer than the run itself, the runtime returns control to the activity, which waits on a durable signal (`§11`). The durability mode chosen for the agent runtime is documented per deployment and covered by DP-1 in `docs/reference/DECISIONES-PENDIENTES.md` (still pending the comparative test).
+The checkpoint store therefore never carries a human wait and never carries business state: if a pause must survive longer than the run itself, the runtime returns control to the activity, which waits on a durable signal (`§11`). The durability mode and backend of the agent runtime are fixed by `ADR-012` (product-owner decision, 2026-10-19): per-step persistence in **PostgreSQL**, in a **separate runtime schema** with its own roles and permissions, with history deleted **7 days after the execution reaches a terminal state** (MVP engineering baseline, DP-18). The design decision is adopted, but the store is **not validated**: `ADR-012` lists the failure tests that must be executed (cost per step, crash mid-node, resume, retention, no duplicated external effects). DP-1 therefore stays open in its **test** layer, not in its design layer.
 
 ### 21.3 Re-execution on resume
 
@@ -317,6 +324,31 @@ Every control operation produces an auditable event with actor, execution, previ
 - **Ordering a change** uses **signals** (asynchronous, no return value) or **updates** (synchronous, validated): a control operation of the table above carries a validated payload, is idempotent for repeated delivery, and is recorded as an execution event.
 - An operation that mutates the execution must never be implemented as a query, and a read must never be implemented as a signal.
 
+### 22.1 Operational Search Attributes
+
+*Added 2026-10-19 — product-owner decision (DP-20); closes finding K-T5 of `docs/reference/KORTIX-CROSS-MATRIX.md`.*
+
+Temporal Search Attributes are used to **locate and filter** executions — for example, the approvals waiting for a person (`05` §10.1). The MVP minimal set is:
+
+| Attribute | Type (Temporal) | Purpose |
+|---|---|---|
+| `TenantId` | Keyword | Tenant/deployment isolation in queries |
+| `EmployeeId` | Keyword | Which Digital Employee the execution belongs to |
+| `ApprovalStatus` | Keyword | Whether the execution is waiting for an approval, and in which state |
+| `ApprovalType` | Keyword | Class of the pending approval |
+| `ApprovalPriority` | Keyword or integer | Queue ordering |
+| `AssignedGroup` | Keyword | Group or role that must decide |
+| `ApprovalDueAt` | Datetime | Aging and escalation (`ADR-014`) |
+| `ApproverSubjectId` | Keyword — **opaque identifier only** | Optional: personal inbox, when one is needed |
+
+Rules:
+
+1. They are an **operational index**. The source of truth for approval state, permissions and business state is the domain store (`05` §1); finding a workflow through an attribute proves nothing about authorization.
+2. **The API verifies permissions and reads approval details from the domain store.** An authorization decision is never derived from an attribute value.
+3. Values are written with the same discipline as domain data: tenant-scoped, no personal data beyond an opaque identifier, no secrets (`06` §7).
+4. Adding or changing an attribute is a **governed change**: it must be registered in the Temporal namespace, documented here with its type, and its types and registration must be compatible with the Temporal version in use — a contract test (DP-20).
+5. Attribute-based filtering is **never** the isolation mechanism (`02` §11, `06` §3): isolation does not rest on a revocable protection.
+
 ## 23. Delegation (sub-agents, sub-graphs)
 
 *Added 2026-10-19 — closes finding K-03 in the cross matrix.*
@@ -325,7 +357,7 @@ If the agent runtime supports delegating work to a sub-graph or sub-agent, deleg
 
 - the delegated work runs **inside** the same execution and the same enforcement path; it cannot create a new execution or a new identity;
 - the delegated context inherits the **intersection** of the parent's tool grants, budgets and policy scope — never a superset;
-- maximum delegation depth and maximum concurrent delegates are configured per task and enforced by the runtime;
+- maximum delegation depth and maximum concurrent delegates are configured per task and enforced by the runtime. MVP engineering baseline (DP-18, 2026-10-19): maximum depth **3**, **5** concurrent delegated agents and **3** concurrent external actions per execution;
 - the parent remains responsible for the outcome; delegated reasoning is untrusted model output like any other;
 - delegation is fully traced (which delegate, which context, which tool calls) so the execution can be reconstructed.
 
@@ -343,6 +375,6 @@ If the agent runtime supports delegating work to a sub-graph or sub-agent, deleg
 
 *Recorded 2026-10-19. These are gaps with no closed design; they must not be resolved implicitly by an implementation.*
 
-1. **Employee execution environment.** This architecture gives the employee capabilities exclusively through governed tools; it does not define an environment where an employee can *compute* (generate a file, build a spreadsheet, run a script) to produce a deliverable. Whether such an environment is needed, and under which isolation rules (ephemeral, network-restricted, no credential exposure, artifacts governed by `05` §21), is an open product decision (finding K-12/K-21; see `docs/reference/DECISIONES-PENDIENTES.md`).
+1. **Employee execution environment — decided 2026-10-19 (`ADR-013`).** The MVP does **not** allow arbitrary agent code execution inside the main process. Deliverables are produced by a **restricted artifact-generation service** (approved libraries and templates, resource limits, no secrets, no egress by default), and the artifacts it produces are governed by `05` §21. The **ephemeral sandbox** variant remains open: it requires its own decision and its own isolation tests. Finding K-12/K-21; DP-2 stays open in its implementation and test layers.
 2. **Channel surfaces.** When the first conversational channel is implemented, minimum requirements are: identity linking of the human sender, access policy for the session/thread, per-action authorization, ability to stop a run from the channel, and audit of every message that reached the agent (finding K-40).
 3. **Cost and quota enforcement.** Which quotas (tenant, employee, task) hard-stop an execution, and what the execution does when a quota is exhausted (finding K-42).

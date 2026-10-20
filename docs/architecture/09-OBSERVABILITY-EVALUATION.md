@@ -25,7 +25,7 @@ Reference components:
 - Langfuse for LLM/agent tracing;
 - PostgreSQL for durable audit metadata.
 
-The reference stack is bound by the free-licence policy, in force since `ADR-011` was accepted (2026-10-19): `docs/reference/STACK-LICENCIAS.md`. Naming a component here is not an approval to deploy it: the licence gate of `06` §18 applies. Temporal Search Attributes are the intended mechanism for operational queries over open executions (for example "executions waiting for an approval of employee X"), instead of ad-hoc queries against domain tables.
+The reference stack is bound by the free-licence policy, in force since `ADR-011` was accepted (2026-10-19): `docs/reference/STACK-LICENCIAS.md`. Naming a component here is not an approval to deploy it: the licence gate of `06` §18 applies. Temporal Search Attributes are the intended mechanism for operational queries over open executions (for example "executions waiting for an approval of employee X"), instead of ad-hoc queries against domain tables. The minimal operational set — and the rule that they are an index and **not** the source of truth of approval state, authorization or isolation — is defined in `04` §22.1 (`ADR-014`, DP-20).
 
 ## 3. Correlation identifiers
 
@@ -146,7 +146,11 @@ Rules:
 - every cut-off is **explicit and auditable**: an execution stopped for budget records who/what stopped it and why;
 - consumption is measurable per tenant, employee, task and model — this is also the basis of SaaS commercial metering (`10`);
 - "soft" limits (alerting) and "hard" limits (stopping) are different settings, never the same number;
-- a cost anomaly alert (`§13`) is not a substitute for a hard limit.
+- a cost anomaly alert (`§13`) is not a substitute for a hard limit;
+- limits are applied **before** starting a new model call, tool call or external action, so that an overrun is prevented and not merely detected (`04` §16);
+- an **in-flight external effect is never interrupted** without outcome management and reconciliation (`04` §18): the cut-off stops new work and leaves the pending reconciliation recorded and resolvable by an operator.
+
+**MVP engineering baseline (DP-18, 2026-10-19).** Per-execution profile: 15 minutes of active compute, 20 model calls, 40 tool calls, 50,000 tokens, USD 2 estimated budget. Cost anomaly: **alert above 2× the median** of the task profile and version in a **rolling 30-day window**, requiring **at least 20 observations**. Configurable per environment and per profile; a baseline for engineering and testing, not a contractual SLA.
 
 ## 13. Alerts
 
@@ -161,6 +165,17 @@ Examples:
 - unusual tool-call volume.
 
 Plus, from the cross-check (2026-10-19): approval queue aging beyond SLA (`05` §10.1), executions paused or suspended beyond an expected duration, negative or anomalous cost per execution, control operations issued by operators (pause/interrupt/terminate), and audit-coverage gaps detected by contract tests (`05` §5.2).
+
+**MVP engineering baseline (DP-18, 2026-10-19).** Windows and thresholds are per environment and per task profile:
+
+| Alert | Initial threshold |
+|---|---|
+| Approval aging | Notice at **24 h**, escalation at **72 h**, operational review at **7 days**; no automatic cancellation or rejection (`ADR-014`) |
+| Execution without unexpected progress | Warning at **15 min**, critical alert at **60 min**, **excluding explicit waits** (an approval or a declared external wait is not "no progress") |
+| Cost anomaly | Above **2×** the median of the profile and version, rolling 30-day window, minimum **20** observations |
+| Retention of the evidence | Audit **365 days** (subject to contract and applicable requirements); operational logs **30 days**; detailed agent traces **14 days with redaction of sensitive data**; full prompts **off by default**, with temporary debugging up to **7 days** under authorization |
+
+These values are a baseline for engineering and testing, **not** a contractual SLA, and require production evidence before being treated as validated.
 
 ## 14. Release gates
 

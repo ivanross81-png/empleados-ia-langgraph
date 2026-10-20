@@ -127,6 +127,8 @@ These documents do not define the architecture; they support it and are the evid
 | `REGISTRO-CAMBIOS-2026-10-19-ADR-011-ACEPTADO.md` | Change log for the acceptance of `ADR-011` and the normative component renames it enabled |
 | `VERIFICACION-POST-AUDITORIA-2026-10-19.md` | Post-audit verification report (state of the published files, reusable-code question, open risks) |
 | `REGISTRO-CAMBIOS-2026-10-19-VERIFICACION-POST-AUDITORIA.md` | Change log for the post-audit verification (V-1…V-8) |
+| `REGISTRO-CAMBIOS-2026-10-19-DECISIONES-RESPONSABLE.md` | Change log for the product-owner decisions of 2026-10-19 (`ADR-012`–`ADR-014`, DP-1/DP-2/DP-5/DP-6/DP-18/DP-19/DP-20, validators published in `tools/docs-verify/`) |
+| `COMPATIBILIDAD-Y-LICENCIAS-PREPARACION.md` | Preparation of the compatibility tests and the licence review of the distributable artifact: verified reference versions, uses to test, deliverables and risks |
 | `DECISIONES-PENDIENTES.md` | Decisions that cannot be closed by documentary analysis alone |
 
 Citation rule: the annex and the spike keep **legacy section numbers** (§64, §66, §89…) that do not exist in the normative documents. Always cite the normative document and section; treat legacy numbers as historical pointers only.
@@ -162,3 +164,20 @@ Follow-up review of the **published** state (commit `8c881ea`), to check whether
 - **Not reproducible:** the alleged persistence of "26 documents", of the `docs/DOCUMENT-MANIFEST.md` path and of `Redis`/`Vault` in the `00-INDEX.md` stack. In the published files those were already corrected (`51f7f686` for count and path, `8c881ea` for the stack); what remained was the lack of separation between historical and current count, now added.
 - **Unchanged:** no architectural decision, boundary, contract or dependency. DP-5 and DP-6 remain open (no substitution is technically validated) and the historical, research and comparative documents keep their former component names.
 - Report: `docs/reference/VERIFICACION-POST-AUDITORIA-2026-10-19.md`. Trace: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-VERIFICACION-POST-AUDITORIA.md`.
+
+## 15. Product-owner decisions 2026-10-19
+
+Eight open items were resolved by the product owner. Three of them changed a boundary or a normative contract, so they went through an **ADR** instead of a silent edit:
+
+| Decision | Where it lives now |
+|---|---|
+| **DP-1** — LangGraph per-step persistence in **PostgreSQL, separate runtime schema**, retention 7 days after terminal state; Temporal stays the only durability authority | `ADR-012`, `04` §21.2, `05` §1 (tests pending) |
+| **DP-2** — **no arbitrary agent code execution** in the MVP; restricted **artifact-generation service** | `ADR-013`, `04` §25 (item 1) (tests pending) |
+| **Approval semantics** — aging produces **neither cancellation nor automatic rejection** (24 h / 72 h / 7 days); replaces "reject by default" of `05` §10.1 | `ADR-014`, `05` §10.1 |
+| **Search Attributes** — minimal operational set `TenantId`, `EmployeeId`, `ApprovalStatus`, `ApprovalType`, `ApprovalPriority`, `AssignedGroup`, `ApprovalDueAt` (+ optional `ApproverSubjectId`); an index, never a source of truth | `04` §22.1 (DP-20, contract test pending) |
+| **DP-18** — MVP engineering baseline values: budgets, delegation, alerts, retention, RPO/RTO, quality and security acceptance | `04` §16/§23, `09` §12.1/§13, `10` §9, `01` §8, DP-18 |
+| **DP-19** — Hermes-OS is a **design reference, not a system to integrate** (closed, option a) | `00-INDEX.md`, `EXPLICACION-NO-TECNICA.md`, DP-19 |
+| **SaaS modality** — dedicated installations per customer in the first production stage; shared-resource SaaS only after the isolation is validated and a specific ADR is closed | `01` §7.1, DP-7 |
+| **P-27** — documentation validators **published** (`tools/docs-verify/`); the CI workflow is **prepared and pending publication** | `tools/docs-verify/`; the workflow lives outside the repository until a token with the `workflow` scope is available |
+
+**Layer discipline:** these are **decisions adopted** and **design documented**. No substitution is technically validated, no test has been executed, and the licence review of the distributable artifact has not been issued: **commercial distribution stays blocked** (DP-5, DP-6). Trace: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-DECISIONES-RESPONSABLE.md`; preparation: `docs/reference/COMPATIBILIDAD-Y-LICENCIAS-PREPARACION.md`.

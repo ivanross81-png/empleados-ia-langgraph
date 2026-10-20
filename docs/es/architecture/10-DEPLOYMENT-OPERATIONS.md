@@ -76,6 +76,8 @@ Usar límites de peticiones, límites de concurrencia y cortacircuitos (circuit 
 
 Definir RPO/RTO por despliegue. Los procedimientos de backup y restauración deben probarse, no solo documentarse.
 
+**Línea base de ingeniería del MVP (DP-18, 2026-10-19).** Piloto: **RPO 24 horas** y **RTO 8 horas**. Objetivo futuro de producción — **no contractual** y condicionado a superar las pruebas de restauración: **RPO 1 hora** y **RTO 4 horas**. Son objetivos de ingeniería, no un SLA comercial ni una obligación legal; I-12 exige la prueba de restauración antes de presentar cualquiera de los dos valores como alcanzado.
+
 Los activos durables críticos incluyen:
 
 - PostgreSQL;

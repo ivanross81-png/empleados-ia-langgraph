@@ -15,7 +15,7 @@ Existe un tercer almacén **acotado**: el almacén de estado del runtime del age
 |---|---|
 | Estado de dominio/negocio (empleados, tareas, ejecuciones, acciones, aprobaciones, artefactos) | PostgreSQL |
 | Ciclo de vida durable del workflow (temporizadores, señales, reintentos, esperas, recuperación) | Persistencia de Temporal |
-| Estado de la corrida del agente dentro de una corrida | Almacén del runtime del agente (acotado, clasificado, con retención limitada) |
+| Estado de la corrida del agente dentro de una corrida | Almacén del runtime del agente — PostgreSQL en un **esquema de runtime separado** con roles propios (`ADR-012`); acotado, clasificado, con retención limitada |
 | Caché/coordinación transitoria | Valkey *(BSD-3-Clause; reemplaza a Redis 8 según `ADR-011` Aceptado)* (nunca autoritativo) |
 
 El progreso y el estado se leen de la capa durable con **queries** que no mutan, mientras que los comandos se entregan como **signals/updates** (`04` §22).
@@ -197,7 +197,7 @@ Una ejecución esperando no sirve de nada si nadie la ve. La cola de aprobacione
 - `GET /api/v1/approvals?status=PENDING&assignee=me|role|team` — filtros: estado, rol requerido, empleado, tarea, clase de riesgo, antigüedad, tenant;
 - cada ítem expone: acción pedida, argumentos exactos (o representación redactada + referencia), evaluación de riesgo, referencia de la decisión de política, contexto de versiones, solicitante, vencimiento y la ejecución a la que pertenece;
 - el orden y la **antigüedad** son explícitos: por defecto la más vieja primero, con indicadores de SLA para que una aprobación perdida se vea como métrica (`09` §13);
-- **vencimiento**: una aprobación que vence debe producir un resultado determinista (rechazo por defecto) registrado en la ejecución y en la auditoría;
+- **envejecimiento y escalamiento** (2026-10-19, `ADR-014`): una aprobación que envejece **no** produce cancelación ni rechazo automático — el silencio nunca es una decisión. Línea base de ingeniería del MVP: **aviso a las 24 horas**, **escalamiento a las 72 horas** y **revisión operativa a los 7 días**, con la ejecución todavía esperando de forma durable (`ADR-003`). Una política del inquilino puede definir una ventana de rechazo explícita, pero queda registrada en la aprobación y en la auditoría, nunca aplicada como valor por defecto oculto;
 - la **delegación** y la **separación de funciones** se evalúan al momento de decidir, no al momento de pedir;
 - una aprobación ya otorgada pero no consumida puede **revocarse** si cambia la política o cambia la acción; la revocación es auditable;
 - las decisiones son idempotentes: reenviar la misma decisión devuelve el mismo resultado.

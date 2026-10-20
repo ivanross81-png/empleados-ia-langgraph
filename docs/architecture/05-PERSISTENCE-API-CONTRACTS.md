@@ -15,7 +15,7 @@ A third, **bounded** store exists: the agent-runtime state store (the runtime's 
 |---|---|
 | Domain/business state (employees, tasks, executions, actions, approvals, artifacts) | PostgreSQL |
 | Durable workflow lifecycle (timers, signals, retries, waits, recovery) | Temporal persistence |
-| Agent-run state inside one run | Agent-runtime store (bounded, classified, retention-limited) |
+| Agent-run state inside one run | Agent-runtime store — PostgreSQL in a **separate runtime schema** with its own roles (`ADR-012`); bounded, classified, retention-limited |
 | Cache/transient coordination | Valkey *(BSD-3-Clause; replaces Redis 8 per `ADR-011` Accepted)* (never authoritative) |
 
 Progress and status are read from the durable layer with non-mutating **queries**, while commands are delivered as **signals/updates** (`04` §22).
@@ -197,7 +197,7 @@ A waiting execution is useless if nobody can see it. The approval queue is a fir
 - `GET /api/v1/approvals?status=PENDING&assignee=me|role|team` — filters: state, required role, employee, task, risk class, age, tenant;
 - each item exposes: requested action, exact arguments (or a redacted representation plus reference), risk assessment, policy decision reference, version context, requester, expiry and the execution it belongs to;
 - ordering and **aging** are explicit: oldest first by default, with SLA indicators so that approvals lost in a queue are visible as a metric (`09` §13);
-- **expiry**: an approval that expires must produce a deterministic outcome (reject by default) recorded in the execution and the audit trail;
+- **aging and escalation** (2026-10-19, `ADR-014`): an approval that ages produces **neither cancellation nor automatic rejection** — silence is never a decision. MVP engineering baseline: **notice at 24 hours**, **escalation at 72 hours** and **operational review at 7 days**, with the execution still durably waiting (`ADR-003`). A tenant policy may define an explicit rejection window, but it is recorded in the approval and in the audit trail, never applied as a hidden default;
 - **delegation** and **separation of duties** are evaluated at decision time, not at request time;
 - an approval already granted but not yet consumed may be **revoked** if policy changes or the action changes; revocation is auditable;
 - decisions are idempotent: re-submitting the same decision returns the same result.

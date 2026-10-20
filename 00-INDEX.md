@@ -2,17 +2,17 @@
 
 Proyecto de la **Digital Employee Platform**: plataforma B2B para construir, operar y gobernar Empleados Digitales que ejecutan trabajo empresarial sobre workflows durables, tools controladas y governance humana.
 
-> **Base documental:** paquete **arquitectura v0.1 canónica** (27 archivos: 11 de arquitectura, 11 ADR y 5 guías de desarrollo) más los espejos en `docs/es/` y los documentos de referencia no normativos. Los documentos de arquitectura son **normativos**: el código debe implementarlos y no redefinirlos silenciosamente; los cambios de límites/seguridad/contratos/exclusión requieren un **ADR**.
+> **Base documental:** paquete **arquitectura v0.1 canónica** (30 archivos: 11 de arquitectura, 14 ADR y 5 guías de desarrollo) más los espejos en `docs/es/` y los documentos de referencia no normativos. Los documentos de arquitectura son **normativos**: el código debe implementarlos y no redefinirlos silenciosamente; los cambios de límites/seguridad/contratos/exclusión requieren un **ADR**.
 >
 > **Estado:** línea base `v0.1.0` creada 2026-09-21 · revisada 2026-10-19 (auditoría de consistencia). Inventario y revisiones: `DOCUMENT-MANIFEST.md`.
 >
-> **Trazabilidad del recuento:** la línea base **inicial** (2026-09-21) tenía **26** archivos normativos (11 de arquitectura, **10** ADR y 5 guías). El paquete **vigente** tiene **27**, por la incorporación de `ADR-011` (11 ADR en total). El espejo `docs/es/` refleja los mismos 27. Cualquier recuento vigente es **27**; el 26 es histórico y no debe presentarse como actual.
+> **Trazabilidad del recuento:** la línea base **inicial** (2026-09-21) tenía **26** archivos normativos (11 de arquitectura, **10** ADR y 5 guías). Pasó a **27** con `ADR-011` (11 ADR) y a **30** el **2026-10-19** con `ADR-012`, `ADR-013` y `ADR-014` (14 ADR en total). El paquete **vigente** tiene **30** y el espejo `docs/es/` refleja los mismos 30. Los recuentos **26** y **27** son **históricos** y no deben presentarse como actuales.
 
 ## Fuentes de verdad
 
 - **`EXPLICACION-NO-TECNICA.md`** — explicación llana del proyecto para compartir con no técnicos.
-- **`DOCUMENT-MANIFEST.md`** — inventario de los 27 documentos normativos, los 4 archivos de raíz y el material de referencia, con su rol y sus revisiones.
-- **`docs/es/`** — versión en **español (rioplatense)** de los 27 documentos (misma estructura). El paquete **inglés** (`docs/architecture`, `docs/adr`, `docs/development`) sigue siendo la **fuente normativa** para agentes de codificación y referencias cruzadas; `docs/es/` es la lectura humana en castellano.
+- **`DOCUMENT-MANIFEST.md`** — inventario de los 30 documentos normativos, los 4 archivos de raíz y el material de referencia, con su rol y sus revisiones.
+- **`docs/es/`** — versión en **español (rioplatense)** de los 30 documentos (misma estructura). El paquete **inglés** (`docs/architecture`, `docs/adr`, `docs/development`) sigue siendo la **fuente normativa** para agentes de codificación y referencias cruzadas; `docs/es/` es la lectura humana en castellano.
 - **`docs/architecture/00-ARCHITECTURE-INDEX.md`** — índice, reglas normativas y orden de lectura (empezar acá).
 - **`docs/adr/`** — decisiones inmutables.
 - **`docs/development/`** — reglas para implementar (incluye `CLAUDE-CODE-GUIDELINES.md`).
@@ -30,7 +30,7 @@ LiteLLM · OPA · MCP Gateway · OpenBao¹ · OpenTelemetry · Langfuse
 ## Principios de decisión (definición con Iván)
 
 - **La plataforma se construye desde cero.** No existe código propio de esta plataforma que se pueda reutilizar: la base de diseño es **este paquete documental** (principios, contratos, ADR y reglas de seguridad), que se preserva y se enriquece.
-- **Hermes-OS es un sistema aparte**, de otro proyecto. En este paquete **no se afirma** que su código forme parte de la plataforma ni que se reutilice. Su relación —origen de supuestos de diseño o sistema a integrar— exige declarar alcance e **interfaces**, y está **pendiente de decisión del responsable** (`docs/reference/DECISIONES-PENDIENTES.md` DP-19). Sin esa decisión no se asume reutilización ni integración.
+- **Hermes-OS es un sistema aparte**, de otro proyecto, y es **referencia de diseño, no un sistema a integrar** (decisión del responsable del producto, 2026-10-19; `docs/reference/DECISIONES-PENDIENTES.md` **DP-19 cerrada en la opción (a)**). En este paquete **no se afirma** que su código forme parte de la plataforma ni que se reutilice: **no se crean dependencias de integración** sin repositorio verificable, contratos identificados y una decisión posterior expresa.
 - **Sí se cambia de enfoque** en la capa commodity y difícil (el loop de agente): adoptar un executor maduro (LangGraph) detrás de una interfaz intercambiable, no construirlo a mano.
 - **Evolución por fases** (`10-DEPLOYMENT-OPERATIONS.md` §17 y el plan de fases del SPIKE en `docs/reference/`): Foundation → Governance → Durable → Enterprise Ops → Scale. *(El detalle histórico de fases vivía en la sección §89 del anexo heredado hoy supersedido: ver nota de trazabilidad en `docs/reference/SPIKE-FASE1-FOUNDATION-investigacion.md`.)*
 - Validar en vivo (spike / rebanada vertical) antes de comprometer.

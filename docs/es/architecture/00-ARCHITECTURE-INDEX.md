@@ -127,6 +127,8 @@ Estos documentos no definen la arquitectura; la sostienen y son la base de evide
 | `REGISTRO-CAMBIOS-2026-10-19-ADR-011-ACEPTADO.md` | Registro de cambios de la aceptación de `ADR-011` y de los renombres normativos de componentes que habilitó |
 | `VERIFICACION-POST-AUDITORIA-2026-10-19.md` | Informe de verificación posterior (estado de los archivos publicados, cuestión del código reutilizable, riesgos abiertos) |
 | `REGISTRO-CAMBIOS-2026-10-19-VERIFICACION-POST-AUDITORIA.md` | Registro de cambios de la verificación posterior (V-1…V-8) |
+| `REGISTRO-CAMBIOS-2026-10-19-DECISIONES-RESPONSABLE.md` | Registro de cambios de las decisiones del responsable del producto del 2026-10-19 (`ADR-012`–`ADR-014`, DP-1/DP-2/DP-5/DP-6/DP-18/DP-19/DP-20, validadores publicados en `tools/docs-verify/`) |
+| `COMPATIBILIDAD-Y-LICENCIAS-PREPARACION.md` | Preparación de las pruebas de compatibilidad y de la revisión de licencias del artefacto distribuible: versiones de referencia verificadas, usos a probar, entregables y riesgos |
 | `DECISIONES-PENDIENTES.md` | Decisiones que no pueden cerrarse solo con análisis documental |
 
 Regla de cita: el anexo y el spike conservan **numeraciones de sección heredadas** (§64, §66, §89…) que no existen en los documentos normativos. Citar siempre el documento y la sección normativos; los números heredados son punteros históricos.
@@ -162,3 +164,20 @@ Revisión de seguimiento del estado **publicado** (commit `8c881ea`), para compr
 - **No reproducible:** la presunta persistencia de "26 documentos", de la ruta `docs/DOCUMENT-MANIFEST.md` y de `Redis`/`Vault` en el stack de `00-INDEX.md`. En los archivos publicados ya estaban corregidas (`51f7f686` para recuento y ruta, `8c881ea` para el stack); lo que faltaba era separar el recuento histórico del vigente, y eso se agregó.
 - **Sin cambios:** ninguna decisión arquitectónica, frontera, contrato ni dependencia. DP-5 y DP-6 siguen abiertas (ninguna sustitución está validada técnicamente) y los documentos históricos, de investigación y comparativos conservan los nombres anteriores de los componentes.
 - Informe: `docs/reference/VERIFICACION-POST-AUDITORIA-2026-10-19.md`. Trazabilidad: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-VERIFICACION-POST-AUDITORIA.md`.
+
+## 15. Decisiones del responsable del producto 2026-10-19
+
+El responsable del producto resolvió ocho puntos abiertos. Tres cambiaban una frontera o un contrato normativo, así que pasaron por un **ADR** en lugar de una edición silenciosa:
+
+| Decisión | Dónde vive ahora |
+|---|---|
+| **DP-1** — persistencia por paso de LangGraph en **PostgreSQL, esquema de runtime separado**, retención 7 días tras el estado terminal; Temporal sigue siendo la única autoridad de durabilidad | `ADR-012`, `04` §21.2, `05` §1 (pruebas pendientes) |
+| **DP-2** — **sin ejecución arbitraria de código** del agente en el MVP; **servicio restringido de generación de artefactos** | `ADR-013`, `04` §25 (punto 1) (pruebas pendientes) |
+| **Semántica de aprobaciones** — el envejecimiento **no** produce cancelación ni rechazo automáticos (24 h / 72 h / 7 días); reemplaza el "rechazo por defecto" de `05` §10.1 | `ADR-014`, `05` §10.1 |
+| **Search Attributes** — conjunto operativo mínimo `TenantId`, `EmployeeId`, `ApprovalStatus`, `ApprovalType`, `ApprovalPriority`, `AssignedGroup`, `ApprovalDueAt` (+ `ApproverSubjectId` opcional); índice, nunca fuente de verdad | `04` §22.1 (DP-20, prueba de contrato pendiente) |
+| **DP-18** — valores de línea base de ingeniería del MVP: presupuestos, delegación, alertas, retención, RPO/RTO, aceptación de calidad y seguridad | `04` §16/§23, `09` §12.1/§13, `10` §9, `01` §8, DP-18 |
+| **DP-19** — Hermes-OS es **referencia de diseño, no un sistema a integrar** (cerrada, opción a) | `00-INDEX.md`, `EXPLICACION-NO-TECNICA.md`, DP-19 |
+| **Modalidad SaaS** — instalaciones dedicadas por cliente en la primera etapa productiva; SaaS con recursos compartidos solo tras validar el aislamiento y cerrar un ADR específico | `01` §7.1, DP-7 |
+| **P-27** — validadores documentales **publicados** (`tools/docs-verify/`); el workflow de CI está **preparado y pendiente de publicar** | `tools/docs-verify/`; el workflow vive fuera del repositorio hasta contar con un token con el alcance `workflow` |
+
+**Disciplina de capas:** son **decisiones adoptadas** y **diseño documentado**. Ninguna sustitución está técnicamente validada, no se ejecutó ninguna prueba y la revisión de licencias del artefacto distribuible no fue emitida: **la distribución comercial sigue bloqueada** (DP-5, DP-6). Trazabilidad: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-DECISIONES-RESPONSABLE.md`; preparación: `docs/reference/COMPATIBILIDAD-Y-LICENCIAS-PREPARACION.md`.

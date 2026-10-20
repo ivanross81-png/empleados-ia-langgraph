@@ -91,6 +91,8 @@ Two commercial modalities are planned, and **neither changes the architecture of
 
 Both modalities share metering, entitlements and quotas (`09` §12), and the private modality adds the installation/upgrade cycle of `10` §17 and offline operation. Metering and entitlement design may be prepared for the SaaS modality without introducing dynamic multi-tenancy.
 
+**Product-owner decision (2026-10-19).** Both modalities stay as product objectives, and the **first production stage is dedicated installations per customer**. The same **code base and domain contracts** are kept for both (`tenant_id`, authorization, audit and consumption limits are present from the start); a SaaS modality with **shared resources** is evaluated only after the isolation is validated and a **specific ADR** is closed. Until then, dynamic shared multi-tenancy remains the non-goal of `ADR-001` and `02` §11.
+
 ## 8. Success criteria
 
 A useful Digital Employee should be measurable by:
@@ -104,6 +106,8 @@ A useful Digital Employee should be measurable by:
 - recovery from failures;
 - quality of final outcomes;
 - audit completeness.
+
+**MVP acceptance baseline (DP-18, 2026-10-19).** Quality: **at least 95% success** on the representative set of low-risk tasks, with **no regression greater than 2 percentage points** without an approved justification. Security: **100% compliance** with the deterministic authorization tests, and **zero unauthorized external actions** in the test set. These are engineering acceptance criteria for the MVP, to be measured with recorded evidence — not a commercial SLA, and unrelated to any licence or legal validation.
 
 The product should optimize for **business outcomes under explicit controls**, not for maximum autonomy.
 
