@@ -19,8 +19,14 @@ ROOT_MD = {
 }
 # Menciones deliberadas que NO son rutas vigentes y no deben reportarse:
 #  - docs/DOCUMENT-MANIFEST.md: ruta defectuosa citada a propósito en los registros
-#    de auditoría y verificación que describen el defecto histórico.
-IGNORAR = {"docs/DOCUMENT-MANIFEST.md"}
+#    de auditoría y verificación que describen el defecto histórico;
+#  - .github/workflows/docs-verify.yml: workflow **preparado y pendiente de publicar**
+#    (el token de publicación no tiene el alcance `workflow`). La documentación lo
+#    nombra para dejarlo trazado; el archivo se publica cuando exista ese permiso.
+IGNORAR = {
+    "docs/DOCUMENT-MANIFEST.md",
+    ".github/workflows/docs-verify.yml",
+}
 TOKEN = re.compile(r"`([^`]+)`")
 
 

@@ -92,4 +92,6 @@ python3 tools/docs-verify/verify_docs.py .
 | Inventarios, manifiestos, estados de ADR, refs cruzadas | `verify_all.py` | 14 ADR `Accepted` EN=ES, espejos 30 (esperado 30), metadatos faltantes 0, refs roídas 0, enlaces roídos 0, contadores declarados 82 = reales 82, **0 hallazgos** |
 | Paridad estructural EN↔ES | `check_parity.py` | **0 divergencias / 32 pares** |
 
+**Excepción declarada del validador:** `check_paths.py` mantiene una lista de rutas ignoradas, con el motivo escrito en el código. Hoy tiene dos entradas y ninguna oculta un problema real: `docs/DOCUMENT-MANIFEST.md` (ruta defectuosa que los registros de auditoría citan **a propósito** para describir el defecto histórico) y `.github/workflows/docs-verify.yml` (workflow preparado y pendiente de publicar que la documentación nombra para dejarlo trazado).
+
 **Lo que esta validación NO prueba:** consistencia semántica, validez técnica de las sustituciones, compatibilidad de versiones ni licencias. El resultado limpio es condición **necesaria, no suficiente**.
