@@ -947,3 +947,110 @@ svg { flex: 0 0 auto; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
+
+/* Readability pass: raise the compact initial scale, especially for supporting copy. */
+body { font-size: 15px; }
+.brand-copy small, .nav-label, .plan-card p, .user-meta small, .app-footer,
+.table-head, .capability-label, .future-tag, .profile-tags, .timeline-extra,
+.integration-category, .integration-list-title, .integration-card-foot > span,
+.settings-nav button small, .settings-field small, .settings-form-foot > span,
+.policy-settings-foot, .settings-disclaimer { font-size: 10px; }
+.workspace-text strong, .workspace-text small, .nav-link, .help-link,
+.user-meta strong, .breadcrumb, .help-top, .button, .text-link,
+.panel-heading p, .page-header p, .welcome-copy p, .welcome-link,
+.metric-label, .run-primary strong, .employee-list-copy strong,
+.employee-card-name > span:last-child, .employee-card-description,
+.employee-card-foot, .employee-card-link, .employee-department,
+.employee-summary-strip strong, .strip-note, .search-field input,
+.filter-select-wrap select, .results-count, .profile-role, .purpose-copy > p,
+.task-row strong, .task-row small, .detail-capabilities span,
+.profile-integrations > div, .panel-bottom-link, .config-readonly > div,
+.simple-run-list strong, .simple-run-list small, .execution-callout strong,
+.execution-callout small, .callout-right, .execution-summary > span:nth-child(2),
+.execution-table td, .timeline-title, .timeline-event > p, .action-title-row h3,
+.action-description, .run-fact, .input-summary strong, .trace-card p,
+.approval-inbox-head h2, .approval-list-title strong, .review-reason p,
+.review-context > div > strong, .decision-reason-input, .integration-card > p,
+.integration-capabilities span, .policy-rule > div small, .settings-field label,
+.settings-readonly-value, .settings-future p { font-size: 12px; }
+.nav-link, .help-link { font-size: 13px; }
+.breadcrumb { font-size: 12px; }
+.eyebrow, .nav-label { font-size: 10px; }
+.page-header h1 { font-size: 30px; }
+.panel-heading h2, .empty-state h3, .daily-title h2, .integration-section-heading h2,
+.settings-content-head h2 { font-size: 15px; }
+.welcome-copy h1 { font-size: 33px; }
+.welcome-meta, .metric-foot, .run-primary small, .employee-list-copy small,
+.employee-list-footer, .quick-card-link, .summary-line, .summary-foot,
+.employee-summary-strip small, .employee-card-name > span:last-child,
+.profile-tabs button, .task-index, .task-status, .profile-integrations small,
+.readonly-note, .execution-legend, .date-cell, .timeline-summary time,
+.timeline-decision > span:last-child, .action-facts > div,
+.action-facts > div > strong, .run-fact strong, .input-summary small,
+.input-synthetic-note, .approval-inbox-head p, .approval-list-title small,
+.approval-list-bottom, .review-action-title h3, .review-reason > span,
+.review-context > div > span, .approval-integrity strong,
+.approval-integrity small, .approval-boundary-note, .integration-section-heading p,
+.integration-permissions strong, .permission-chips code, .settings-nav button strong,
+.settings-field label, .settings-future h3 { font-size: 11px; }
+.status-badge, .decision-badge { font-size: 10px; }
+.demo-tiny, .integration-card-head .status-badge, .employee-list-row .status-badge { font-size: 9px; }
+.table-head, .execution-table th { font-size: 10px; }
+.run-primary strong, .employee-list-copy strong, .employee-card-description,
+.approval-highlight > p, .approval-quick-card > strong, .summary-line,
+.employee-card-foot, .employee-card-link, .purpose-note, .profile-integrations > div,
+.panel-bottom-link, .config-readonly > div, .simple-run-list strong,
+.execution-table td, .timeline-event > p, .review-reason p,
+.integration-capabilities span, .settings-field input { font-size: 12px; }
+.capability-chips > span, .detail-capabilities span, .permission-chips code { font-size: 10px; }
+.employee-card { min-height: 275px; }
+.table-row { min-height: 60px; }
+.employee-list-row { min-height: 55px; }
+.status-badge { min-height: 24px; padding-right: 8px; padding-left: 8px; }
+.decision-badge { padding: 5px 7px; }
+.metric-label { font-size: 12px; }
+.timeline-summary time, .timeline-decision > span:last-child, .action-facts > div,
+.action-facts > div > strong, .approval-risk, .approval-list-bottom,
+.review-context > div > span, .approval-actor label, .approval-actor > span,
+.approval-integrity small, .integration-overview > div:not(.overview-enforcement),
+.integration-section-heading > span, .integration-permissions strong,
+.settings-nav button small, .settings-field small, .policy-settings-foot,
+.rule-version, .modal > p, .help-note span, .scenario-copy small,
+.synthetic-note, .safe-note { font-size: 11px; }
+.approval-inbox-head h2, .approval-list-title strong, .approval-policy-note strong,
+.integration-warning strong, .integration-card-foot > span, .settings-nav button strong,
+.settings-field label, .settings-readonly-value, .policy-rule > div strong,
+.scenario-copy strong, .field-label, .help-note strong, .outcome-box strong,
+.trace-card strong { font-size: 13px; }
+.approval-inbox-head p, .approval-list-title small, .approval-risk,
+.approval-list-bottom, .approval-policy-note p, .review-reason > span,
+.review-context > div > strong, .approval-integrity strong, .approval-actor select,
+.decision-record strong, .approval-boundary-note, .integration-warning p,
+.overview-enforcement, .integration-card > p, .integration-capabilities span,
+.integration-permissions > div:first-child, .integration-card-foot .button,
+.settings-content-head p, .settings-form-foot > span, .policy-settings-intro,
+.policy-rule > div small, .policy-settings-foot, .settings-future p,
+.future-link, .modal-actions .button, .field-row-label, .scenario-tag { font-size: 12px; }
+.approval-list-title strong, .review-context > div > strong,
+.integration-capabilities span, .scenario-copy strong { font-size: 13px; }
+.approval-filter-select select, .approval-context a, .review-context a,
+.action-binding > span, .action-binding small, .outcome-box p, .run-fact,
+.trace-card p, .inline-error, .form-warning, .policy-note-tag,
+.integration-warning-tag, .integration-category, .integration-list-title,
+.permission-chips code, .settings-disclaimer, .policy-rule code,
+.settings-future .future-pill, .review-action-title > div:last-child > span,
+.operational-label, .approval-integrity small, .scenario-tag { font-size: 10px; }
+.timeline-extra, .action-facts > div, .run-fact strong { font-size: 12px; }
+.outcome-box p, .timeline-event > p, .action-description, .timeline-empty,
+.execution-legend, .approval-boundary-note, .integration-bottom-note,
+.settings-disclaimer { font-size: 12px; }
+.scenario-option { min-height: 54px; padding-top: 9px; padding-bottom: 9px; }
+.settings-field input, .settings-readonly-value, .select-wrap select,
+.approval-actor select, .search-field input, .filter-select-wrap select { font-size: 13px; }
+.modal { padding: 25px; }
+
+@media (max-width: 540px) {
+  .page-header h1 { font-size: 24px; }
+  .welcome-copy h1 { font-size: 27px; }
+  .app-footer, .welcome-meta { font-size: 10px; }
+}
