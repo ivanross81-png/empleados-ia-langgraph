@@ -26,7 +26,9 @@ MERMAID_TYPES = ("flowchart", "graph", "sequenceDiagram", "classDiagram", "state
 
 def load(root):
     docs = {}
-    for dirpath, _dirs, files in os.walk(root):
+    generated = {".git", "node_modules", "dist", "coverage"}
+    for dirpath, dirs, files in os.walk(root):
+        dirs[:] = [directory for directory in dirs if directory not in generated]
         for f in files:
             if f.endswith(".md"):
                 p = os.path.join(dirpath, f)

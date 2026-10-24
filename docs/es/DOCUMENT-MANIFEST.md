@@ -59,7 +59,9 @@ El paquete de arquitectura contiene 30 archivos: 11 documentos de arquitectura, 
 | Referencia no normativa: `docs/reference/` | 17 |
 | Documentos de producto propuestos: `docs/product/` | 3 |
 | Espejos de producto en español: `docs/es/product/` | 3 |
-| **Total de archivos `.md`** | **89** |
+| Guía de OpenCode en la raíz del repositorio: `AGENTS.md` | 1 |
+| Documentación del prototipo frontend: `frontend/README.md`, `frontend/INTERFACE-DECISIONS.md` | 2 |
+| **Total de archivos `.md`** | **92** |
 | Herramientas del repositorio (no son `.md`): `tools/docs-verify/` (validadores, ejecutados por `.github/workflows/docs-verify.yml` en CI) | — |
 
 El material de referencia **no normativo** vive en `docs/reference/` y está listado en `00-ARCHITECTURE-INDEX.md` §10:
@@ -88,6 +90,10 @@ El material de referencia **no normativo** vive en `docs/reference/` y está lis
 
 Los tres archivos de `docs/product/` son propuestas, no arquitectura normativa: `MVP-PRD.md` define alcance/aceptación; `MVP-DELIVERY-PLAN.md`, incrementos y gates; `MVP-TRACEABILITY-MATRIX.md`, trazabilidad a contratos y evidencia. Sus espejos de lectura están en `docs/es/product/`. No forman parte de los 30 documentos normativos de arquitectura hasta su aceptación expresa y conciliación con la política del manifiesto.
 
+### 7.4 Documentación del prototipo frontend
+
+`frontend/README.md` contiene instrucciones de instalación, ejecución local y pruebas. `frontend/INTERFACE-DECISIONS.md` registra las decisiones visuales y de interacción del prototipo, junto con los límites de las simulaciones. Ambos son documentación de implementación para una demostración local; no cambian el alcance propuesto del producto ni la arquitectura normativa. `AGENTS.md` dirige a los agentes de codificación a las reglas existentes del repositorio y no las reemplaza.
+
 ## 8. Registro de revisiones
 
 - **2026-09-21** — línea base normativa v0.1.0 (26 archivos).
@@ -99,3 +105,4 @@ Los tres archivos de `docs/product/` son propuestas, no arquitectura normativa: 
 - **2026-10-19 (recuentos del manifiesto)** — la prosa de §7 de este manifiesto seguía declarando el inventario anterior a `ADR-012`–`ADR-014` (**27 archivos: 11 de arquitectura, 11 ADR y 5 guías**) mientras que la tabla de §7.2 ya decía **30 (11/14/5)**; se corrigió la prosa a 30 (11/14/5) y se agregó una comprobación determinista (`tools/docs-verify/check_counts.py`, enchufada a `verify_docs.py` y por lo tanto a la CI) para que una cantidad obsoleta —en la prosa o en una tabla— haga fallar la construcción. El **26** de la línea base del 2026-09-21 y el **27** de la auditoría del 2026-10-19 quedan en este registro como hitos fechados. **No se cambió ninguna decisión arquitectónica ni se validó ninguna prueba técnica.** Trazabilidad: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-DECISIONES-RESPONSABLE.md` §7.
 
 - **2026-10-20 (propuesta de definición del MVP)** — se agregaron tres documentos de producto propuestos en `docs/product/`, sus espejos en `docs/es/product/` y un registro no normativo en `docs/reference/`. El inventario total Markdown pasa de 82 a 89; la arquitectura normativa sigue en 30 documentos. Cobranzas y la consola web quedan como recomendaciones hasta la aceptación explícita del responsable. No se modificaron ADR ni gates de validación técnica.
+- **2026-10-24 (prototipo frontend)** — se agregó la consola de demostración local en React/TypeScript, sus guías de ejecución/pruebas y decisiones de interfaz, y la guía raíz `AGENTS.md`. El inventario se actualiza a 92 archivos Markdown; no se modificó ningún documento de arquitectura ni ADR.

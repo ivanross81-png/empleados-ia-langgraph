@@ -14,7 +14,8 @@ REPO = Path(sys.argv[1] if len(sys.argv) > 1 else ".")
 findings = []
 
 def md_files():
-    return sorted(p for p in REPO.rglob("*.md") if ".git" not in p.parts)
+    generated = {".git", "node_modules", "dist", "coverage"}
+    return sorted(p for p in REPO.rglob("*.md") if not generated.intersection(p.parts))
 
 # 1. INVENTARIO
 files = md_files()
