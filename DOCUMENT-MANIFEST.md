@@ -57,7 +57,9 @@ The architecture package contains 30 files: 11 architecture documents, 14 ADRs a
 | Non-normative reference: `docs/reference/` | 17 |
 | Proposed product documents: `docs/product/` | 3 |
 | Spanish product mirrors: `docs/es/product/` | 3 |
-| **Total `.md` files** | **89** |
+| OpenCode repository guidance: `AGENTS.md` | 1 |
+| Frontend prototype documentation: `frontend/README.md`, `frontend/INTERFACE-DECISIONS.md` | 2 |
+| **Total `.md` files** | **92** |
 | Repository tooling (not `.md`): `tools/docs-verify/` (validators, run by `.github/workflows/docs-verify.yml` in CI) | — |
 
 Non-normative reference material lives in `docs/reference/` and is listed in `00-ARCHITECTURE-INDEX.md` §10:
@@ -86,6 +88,10 @@ Non-normative reference material lives in `docs/reference/` and is listed in `00
 
 The three files in `docs/product/` are proposals, not normative architecture: `MVP-PRD.md` defines scope and acceptance; `MVP-DELIVERY-PLAN.md` defines increments and exit gates; `MVP-TRACEABILITY-MATRIX.md` maps requirements to contracts and test evidence. Their Spanish reading mirrors live in `docs/es/product/`. They are not part of the 30-file normative architecture count until explicitly accepted and reconciled with the manifest policy.
 
+### 7.4 Frontend prototype documentation
+
+`frontend/README.md` contains installation, local-run and test instructions. `frontend/INTERFACE-DECISIONS.md` records the prototype's visual and interaction decisions and its simulation boundaries. Both are implementation documentation for a local demonstration; they do not change the proposed product scope or normative architecture. `AGENTS.md` points coding agents to the existing repository rules and does not replace them.
+
 ## 8. Revision log
 
 - **2026-09-21** — v0.1.0 initial normative baseline (26 files).
@@ -97,3 +103,4 @@ The three files in `docs/product/` are proposals, not normative architecture: `M
 - **2026-10-19 (manifest counts)** — the §7 prose of this manifest still declared the pre-`ADR-012`–`ADR-014` inventory (**27 files: 11 architecture, 11 ADR, 5 guides**) while the §7.2 table already said **30 (11/14/5)**; the prose was corrected to 30 (11/14/5) and a deterministic check was added (`tools/docs-verify/check_counts.py`, wired into `verify_docs.py` and therefore into CI) so that a stale quantity — in prose or in a table — fails the build. The **26** of the 2026-09-21 baseline and the **27** of the 2026-10-19 audit stay in this log as dated milestones. **No architectural decision was changed and no technical test was validated.** Trace: `docs/reference/REGISTRO-CAMBIOS-2026-10-19-DECISIONES-RESPONSABLE.md` §7.
 
 - **2026-10-20 (MVP definition proposal)** — added three proposed product documents in `docs/product/`, Spanish reading mirrors in `docs/es/product/`, and a non-normative record in `docs/reference/`. The whole-package Markdown inventory increases from 82 to 89; normative architecture count remains 30. Collections and the first-party web console remain recommendations pending explicit product-owner acceptance. No ADR or technical validation gate was changed.
+- **2026-10-24 (frontend prototype)** — added the local React/TypeScript demonstration console, its run/test and interface-decision guides, and root `AGENTS.md` guidance. Inventory updated to 92 Markdown files; no architecture document or ADR was changed.

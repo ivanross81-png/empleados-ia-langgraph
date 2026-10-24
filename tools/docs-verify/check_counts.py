@@ -69,7 +69,7 @@ def reales() -> dict:
         "adr": adr,
         "guias": dev,
         "normativo": arq + adr + dev,
-        "md": len([p for p in REPO.rglob("*.md") if ".git" not in p.parts]),
+        "md": len([p for p in REPO.rglob("*.md") if not {".git", "node_modules", "dist", "coverage"}.intersection(p.parts)]),
     }
 
 

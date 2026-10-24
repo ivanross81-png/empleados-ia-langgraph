@@ -2,3 +2,9 @@
 .trash/
 *.tmp
 .DS_Store
+
+# Frontend prototype
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+frontend/.vite/
