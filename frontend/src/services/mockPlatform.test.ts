@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createSeedState } from '../data/seed'
-import { MockPlatformService, demoApprover } from './mockPlatform'
+import { MockPlatformService } from './mockPlatform'
+import { demoApprover } from '../data/demoActors'
 import { CURRENT_STORAGE_KEY, effectsFromExecutions, savePlatformSnapshot, type StoragePort } from './persistence'
 
 class MemoryStorage implements StoragePort {
@@ -29,13 +30,24 @@ describe('MockPlatformService: límites de gobernanza de la demostración', () =
   ])('rechaza iniciar ejecución para un perfil $status', ({ employeeId }) => {
     const service = new MockPlatformService(createSeedState(), 10)
     const countBefore = service.getSnapshot().executions.length
-    expect(() => service.startExecution(employeeId, 'allow')).toThrow('no está disponible')
+    expect(() => service.startExecution(employeeId, 'review-eligible')).toThrow('no está disponible')
     expect(service.getSnapshot().executions).toHaveLength(countBefore)
   })
 
   it('rechaza un empleado inexistente antes de crear una ejecución', () => {
     const service = new MockPlatformService(createSeedState(), 10)
-    expect(() => service.startExecution('no-existe', 'allow')).toThrow('No se encontró')
+    expect(() => service.startExecution('no-existe', 'review-eligible')).toThrow('No se encontró')
+    expect(service.getSnapshot().executions).toHaveLength(createSeedState().executions.length)
+  })
+
+  it('rechaza ejecutar un perfil de catálogo sin flujo completo', () => {
+    const service = new MockPlatformService(createSeedState(), 10)
+    expect(() => service.startExecution('finanzas', 'review-eligible')).toThrow('perfil de catálogo')
+  })
+
+  it('rechaza un escenario que no pertenece a la tarea del empleado', () => {
+    const service = new MockPlatformService(createSeedState(), 10)
+    expect(() => service.startExecution('compras', 'closed-case')).toThrow()
     expect(service.getSnapshot().executions).toHaveLength(createSeedState().executions.length)
   })
 
@@ -128,26 +140,27 @@ describe('MockPlatformService: límites de gobernanza de la demostración', () =
   })
 
   it.each([
-    { scenario: 'allow' as const, status: 'COMPLETED', outcome: 'SUCCESS', effects: 1 },
-    { scenario: 'deny' as const, status: 'COMPLETED', outcome: 'POLICY_DENIED', effects: 0 },
-    { scenario: 'failure' as const, status: 'FAILED', outcome: 'FAILURE', effects: 0 },
-    { scenario: 'uncertain' as const, status: 'OUTCOME_UNCERTAIN', outcome: 'UNCERTAIN', effects: 1 },
-  ])('recorre el escenario $scenario sin efectos no autorizados', async ({ scenario, status, outcome, effects }) => {
+    { scenario: 'review-eligible' as const, decision: 'ALLOW', status: 'COMPLETED', outcome: 'SUCCESS', effects: 1 },
+    { scenario: 'closed-case' as const, decision: 'DENY', status: 'COMPLETED', outcome: 'POLICY_DENIED', effects: 0 },
+    { scenario: 'tool-unavailable' as const, decision: 'ALLOW', status: 'FAILED', outcome: 'FAILURE', effects: 0 },
+    { scenario: 'uncertain-ack' as const, decision: 'ALLOW', status: 'OUTCOME_UNCERTAIN', outcome: 'UNCERTAIN', effects: 1 },
+  ])('recorre el escenario $scenario sin efectos no autorizados', async ({ scenario, decision, status, outcome, effects }) => {
     vi.useFakeTimers()
     const service = new MockPlatformService(createSeedState(), 10)
     const id = service.startExecution('cobranzas', scenario)
     await vi.advanceTimersByTimeAsync(60)
     const execution = service.getSnapshot().executions.find((run) => run.id === id)
+    expect(execution?.action?.policyDecision).toBe(decision)
     expect(execution?.status).toBe(status)
     expect(execution?.outcome).toBe(outcome)
     expect(execution?.sideEffectCount).toBe(effects)
-    if (scenario === 'deny') expect(execution?.events.some((item) => item.kind === 'tool')).toBe(false)
+    if (decision === 'DENY') expect(execution?.events.some((item) => item.kind === 'tool')).toBe(false)
   })
 
   it('suspende REQUIRE_APPROVAL indefinidamente hasta una decisión humana', async () => {
     vi.useFakeTimers()
     const service = new MockPlatformService(createSeedState(), 10)
-    const id = service.startExecution('cobranzas', 'approval')
+    const id = service.startExecution('cobranzas', 'follow-up-review')
     await vi.advanceTimersByTimeAsync(86_400_000)
     const execution = service.getSnapshot().executions.find((run) => run.id === id)
     const approval = service.getSnapshot().approvals.find((item) => item.executionId === id)
