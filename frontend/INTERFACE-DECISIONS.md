@@ -23,7 +23,8 @@
 
 - Los perfiles de Finanzas, Recursos Humanos, Compras y Operaciones son ejemplos ficticios para mostrar la amplitud prevista de la plataforma. No constituyen una aceptación del alcance de MVP propuesto en `docs/product/`.
 - Las integraciones son catálogos estáticos o simuladores locales. No hay credenciales, llamadas de red ni acciones sobre clientes.
-- `localStorage` sirve únicamente para conservar el estado sintético en el navegador. No equivale a persistencia de dominio, auditoría backend o durabilidad de Temporal.
+- `localStorage` sirve únicamente para conservar el estado sintético en un snapshot versionado y validado en el navegador. Un ledger local independiente registra efectos simulados por clave de idempotencia. Esto no equivale a persistencia de dominio, auditoría backend o durabilidad de Temporal.
+- Al recargar, las ejecuciones sin efecto registrado se cierran con una interrupción tipada; los efectos existentes se recuperan por su clave. Aprobaciones pendientes permanecen pendientes y las aprobadas solo se reanudan después de revalidar la acción exacta. Los resultados inciertos nunca disparan un reintento automático.
 - Las decisiones simuladas no demuestran que OPA, MCP Gateway, LangGraph, Temporal u otros componentes de arquitectura estén implementados o técnicamente validados.
 - Los apartados de configuración de usuarios, roles y proveedores son futuros/no disponibles; el editor de empleados y la conexión de integraciones no están implementados.
 

@@ -5,6 +5,13 @@ import { App } from './App'
 import { PlatformProvider } from '../hooks/usePlatform'
 import { createSeedState } from '../data/seed'
 import { MockPlatformService } from '../services/mockPlatform'
+import { CURRENT_STORAGE_KEY, type StoragePort } from '../services/persistence'
+
+class TestStorage implements StoragePort {
+  private values = new Map<string, string>()
+  getItem(key: string) { return this.values.get(key) ?? null }
+  setItem(key: string, value: string) { this.values.set(key, value) }
+}
 
 afterEach(() => {
   cleanup()
@@ -42,5 +49,17 @@ describe('Navegación de la consola', () => {
     expect(service.getSnapshot().executions[0]?.outcome).toBe('SUCCESS')
     expect(service.getSnapshot().executions[0]?.sideEffectCount).toBe(1)
     expect(screen.getByText('Resultado final')).toBeInTheDocument()
+  })
+
+  it('explica cuando los datos locales inválidos se restablecieron', async () => {
+    const user = userEvent.setup()
+    const storage = new TestStorage()
+    storage.setItem(CURRENT_STORAGE_KEY, '{ corrupto')
+    const service = new MockPlatformService(undefined, 5, storage)
+    render(<PlatformProvider service={service}><App /></PlatformProvider>)
+
+    expect(await screen.findByRole('status')).toHaveTextContent(/datos locales estaban dañados/i)
+    await user.click(screen.getByRole('button', { name: 'Cerrar aviso de recuperación' }))
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 })

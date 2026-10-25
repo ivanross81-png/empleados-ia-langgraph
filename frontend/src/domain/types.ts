@@ -74,6 +74,7 @@ export interface ExecutionRecord {
   scenario: RunScenario
   status: ExecutionStatus
   outcome?: ExecutionOutcome
+  failureCode?: string
   requestedAt: string
   startedAt?: string
   completedAt?: string
@@ -106,6 +107,7 @@ export interface Integration {
 export interface PlatformState {
   executions: ExecutionRecord[]
   approvals: Approval[]
+  recoveryNotice?: string
 }
 
 export interface ApprovalActor {
