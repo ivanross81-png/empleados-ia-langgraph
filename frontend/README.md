@@ -30,15 +30,17 @@ npm run preview
 
 ## Escenarios de demostración
 
-En **Nueva ejecución**, elige un perfil y uno de estos recorridos:
+Solo **Cobranzas** tiene un flujo de ejecución completo. Los demás perfiles del catálogo son demostrativos y no ejecutan trabajo. En **Nueva ejecución** puedes elegir uno de estos casos sintéticos:
 
-- **Requiere aprobación:** la ejecución se suspende hasta que una persona con el rol demostrativo de aprobación decida. La acción se revalida antes de continuar; aprobar/rechazar solicita motivo y confirmación.
-- **Permitida por política:** registra un efecto local simulado.
-- **Denegada por política:** cierra sin invocar la herramienta.
-- **Fallo simulado:** muestra un error tipado y ningún efecto.
-- **Respuesta incierta:** simula un efecto registrado cuyo acuse se perdió. Reconciliar o reintentar con la misma clave recupera el resultado sin duplicar el efecto.
+- **Revisar lote de facturas abierto:** caso abierto y de bajo riesgo. La política local devuelve `ALLOW`.
+- **Preparar seguimiento para revisión humana:** caso abierto y elegible. La política devuelve `REQUIRE_APPROVAL`; la ejecución se suspende hasta una decisión humana y se revalida antes de continuar.
+- **Proponer seguimiento a caso cerrado:** caso cerrado y no elegible. La política devuelve `DENY` y no se invoca la herramienta.
+- **Simular herramienta no disponible:** la política devuelve `ALLOW`, pero el adaptador sintético falla con un error tipado y sin efecto.
+- **Simular respuesta externa incierta:** la política devuelve `ALLOW`, el ledger registra el efecto y el acuse se pierde. Reconciliar o reintentar con la misma clave recupera el resultado sin duplicarlo.
 
-La consola parte de ejecuciones sintéticas para que el dashboard y la bandeja se puedan explorar desde el primer inicio. La información se conserva en un snapshot `schemaVersion: 2` del `localStorage` bajo `digital-employee-prototype-v2`; el esquema anterior `digital-employee-prototype-v1` se valida y migra de forma controlada.
+La decisión **no** la elige el escenario: se evalúa de forma determinista a partir del estado de las facturas, la elegibilidad de contacto, el tipo de acción y el riesgo. La interfaz explica el motivo de cada decisión. Este evaluador es una simulación local, no OPA.
+
+La consola parte de ejecuciones sintéticas para que el dashboard y la bandeja se puedan explorar desde el primer inicio. La información se conserva en un snapshot `schemaVersion: 3` del `localStorage` bajo `digital-employee-prototype-v3`; los esquemas anteriores `digital-employee-prototype-v2` y `digital-employee-prototype-v1` se validan y migran de forma controlada. El historial anterior se conserva como demostración histórica y no habilita nuevas ejecuciones.
 
 ### Qué ocurre si recargas durante una simulación
 
@@ -48,7 +50,7 @@ La consola parte de ejecuciones sintéticas para que el dashboard y la bandeja s
 - Un resultado `OUTCOME_UNCERTAIN` permanece incierto si su efecto consta en el ledger; se reconcilia explícitamente. Si falta ese registro, el reintento se bloquea y se muestra un fallo controlado.
 - JSON corrupto, estructura inválida o versión incompatible restaura los datos sintéticos iniciales y muestra un aviso.
 
-El ledger de efectos simulados es independiente de los registros de ejecución. Es almacenamiento local del navegador, no una base de datos ni durabilidad de Temporal. Para iniciar de cero, usa la consola de desarrollo del navegador y borra las claves `digital-employee-prototype-v2` y `digital-employee-prototype-v1`.
+El ledger de efectos simulados es independiente de los registros de ejecución. Es almacenamiento local del navegador, no una base de datos ni durabilidad de Temporal. Para iniciar de cero, usa la consola de desarrollo del navegador y borra las claves `digital-employee-prototype-v3`, `digital-employee-prototype-v2` y `digital-employee-prototype-v1`.
 
 ## Dependencias
 
