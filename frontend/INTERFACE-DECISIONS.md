@@ -8,6 +8,9 @@
 - La navegación lateral agrupa operación y configuración. Las páginas mantienen encabezado contextual, jerarquía tipográfica y acciones principales consistentes.
 - Dashboard y listados priorizan información operativa derivada del mismo servicio local. Se evita añadir visualizaciones decorativas sin una decisión de trabajo asociada.
 - Las ejecuciones muestran una cronología de eventos, decisiones, referencias y resultados. Los textos de cognición son resúmenes operativos simulados; nunca se presentan cadenas privadas de razonamiento.
+- La interfaz consume el contrato `PlatformService` (`getSnapshot`, `subscribe`, iniciar, decidir, reconciliar y cancelar). `MockPlatformService` es una implementación local sustituible por un cliente de API; los componentes no acceden a `localStorage` ni a temporizadores del simulador.
+- Las decisiones `ALLOW`, `DENY` y `REQUIRE_APPROVAL` se derivan de reglas deterministas locales sobre datos sintéticos (estado de la factura, elegibilidad, tipo de acción y riesgo), no del nombre del escenario. La interfaz explica el motivo de la decisión y no presenta el evaluador como OPA.
+- Solo Cobranzas tiene un flujo de ejecución completo. Los demás perfiles se identifican como catálogo demostrativo sin ejecución habilitada.
 - Las decisiones `ALLOW`, `DENY` y `REQUIRE_APPROVAL` tienen tratamientos visuales distintos. La aprobación se vincula a una huella demostrativa de la acción exacta, exige actor autorizado, motivo y confirmación, y vuelve a comprobar la acción antes de continuar.
 - Antigüedad de una aprobación no dispara decisiones. Un rechazo termina sin invocar herramientas. Un resultado incierto necesita reconciliación; el reintento reutiliza una clave idempotente simulada.
 

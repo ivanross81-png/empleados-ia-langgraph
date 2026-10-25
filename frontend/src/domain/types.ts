@@ -1,5 +1,11 @@
 export type PolicyDecision = 'ALLOW' | 'DENY' | 'REQUIRE_APPROVAL'
-export type RunScenario = 'approval' | 'allow' | 'deny' | 'failure' | 'uncertain'
+export type RunScenario = 'review-eligible' | 'follow-up-review' | 'closed-case' | 'tool-unavailable' | 'uncertain-ack'
+export type ExecutionScenario = RunScenario | LegacyRunScenario | 'HISTORICAL'
+export type DemoActionType = 'MARK_REVIEWED' | 'PREPARE_FOLLOW_UP'
+export type DemoAdapterOutcome = 'CONFIRMED' | 'FAILURE' | 'UNCERTAIN'
+export type EmployeeExecutionMode = 'FULL_DEMO' | 'PROFILE_ONLY'
+export type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH'
+export type LegacyRunScenario = 'approval' | 'allow' | 'deny' | 'failure' | 'uncertain'
 export type ExecutionStatus = 'PENDING' | 'RUNNING' | 'WAITING_APPROVAL' | 'COMPLETED' | 'FAILED' | 'CANCELLED' | 'OUTCOME_UNCERTAIN'
 export type ExecutionOutcome = 'SUCCESS' | 'POLICY_DENIED' | 'HUMAN_REJECTED' | 'FAILURE' | 'UNCERTAIN' | 'CANCELLED'
 export type ActionStatus = 'PROPOSED' | 'WAITING_APPROVAL' | 'APPROVED' | 'REJECTED' | 'DENIED' | 'INVOKED' | 'SUCCEEDED' | 'FAILED' | 'UNCERTAIN'
@@ -18,6 +24,7 @@ export interface DigitalEmployee {
   integrations: string[]
   version: string
   status: 'ACTIVE' | 'PAUSED' | 'DRAFT'
+  executionMode: EmployeeExecutionMode
   lastActivity: string
   initials: string
   color: string
@@ -30,13 +37,55 @@ export interface ProposedAction {
   summary: string
   reason: string
   targetReference: string
-  risk: 'LOW' | 'MEDIUM' | 'HIGH'
+  /** Missing only on migrated read-only history from a previous prototype schema. */
+  arguments?: DemoActionArguments
+  risk: RiskLevel
   policyDecision: PolicyDecision
   policyVersion: string
   status: ActionStatus
   idempotencyKey: string
   digest: string
   proposedAt: string
+}
+
+export type DemoActionArguments =
+  | { actionType: 'MARK_REVIEWED'; invoiceIds: string[]; reviewStatus: 'REVIEWED' }
+  | { actionType: 'PREPARE_FOLLOW_UP'; invoiceIds: string[]; destination: 'LOCAL_DRAFTS'; templateId: 'collections-follow-up-v1' }
+
+export interface SyntheticInvoice {
+  id: string
+  customerReference: string
+  amount: number
+  daysOverdue: number
+  status: 'OPEN' | 'CLOSED'
+  contactEligible: boolean
+}
+
+export interface DemoActionDefinition {
+  type: DemoActionType
+  name: string
+  summary: string
+  reason: string
+}
+
+export interface DemoScenario {
+  id: RunScenario
+  title: string
+  description: string
+  badge: string
+  employeeId: string
+  taskName: string
+  inputLabel: string
+  invoices: SyntheticInvoice[]
+  action: DemoActionDefinition
+  adapterOutcome: DemoAdapterOutcome
+}
+
+export interface PolicyEvaluation {
+  decision: PolicyDecision
+  reason: string
+  risk: RiskLevel
+  policyVersion: string
 }
 
 export interface Approval {
@@ -71,7 +120,7 @@ export interface ExecutionRecord {
   employeeId: string
   employeeVersion: string
   taskName: string
-  scenario: RunScenario
+  scenario: ExecutionScenario | LegacyRunScenario
   status: ExecutionStatus
   outcome?: ExecutionOutcome
   failureCode?: string

@@ -7,17 +7,19 @@ import type {
   ExecutionOutcome,
   ExecutionRecord,
   ExecutionStatus,
+  ExecutionScenario,
+  LegacyRunScenario,
   PlatformState,
   PolicyDecision,
   ProposedAction,
-  RunScenario,
 } from '../domain/types'
 import { createSeedState } from '../data/seed'
 import { actionDigest } from '../domain/policy'
 
-export const CURRENT_STORAGE_KEY = 'digital-employee-prototype-v2'
-export const LEGACY_STORAGE_KEY = 'digital-employee-prototype-v1'
-export const PERSISTENCE_SCHEMA_VERSION = 2 as const
+export const CURRENT_STORAGE_KEY = 'digital-employee-prototype-v3'
+export const LEGACY_STORAGE_KEY = 'digital-employee-prototype-v2'
+export const OLDER_STORAGE_KEY = 'digital-employee-prototype-v1'
+export const PERSISTENCE_SCHEMA_VERSION = 3 as const
 
 export interface SimulatedEffect {
   idempotencyKey: string
@@ -46,7 +48,8 @@ const executionOutcomes: ExecutionOutcome[] = ['SUCCESS', 'POLICY_DENIED', 'HUMA
 const actionStatuses: ActionStatus[] = ['PROPOSED', 'WAITING_APPROVAL', 'APPROVED', 'REJECTED', 'DENIED', 'INVOKED', 'SUCCEEDED', 'FAILED', 'UNCERTAIN']
 const approvalStatuses: ApprovalStatus[] = ['PENDING', 'APPROVED', 'REJECTED']
 const policyDecisions: PolicyDecision[] = ['ALLOW', 'DENY', 'REQUIRE_APPROVAL']
-const scenarios: RunScenario[] = ['approval', 'allow', 'deny', 'failure', 'uncertain']
+const scenarios: ExecutionScenario[] = ['review-eligible', 'follow-up-review', 'closed-case', 'tool-unavailable', 'uncertain-ack', 'HISTORICAL']
+const legacyScenarios: LegacyRunScenario[] = ['approval', 'allow', 'deny', 'failure', 'uncertain']
 const eventKinds: EventKind[] = ['request', 'start', 'read', 'analysis', 'proposal', 'policy', 'approval', 'tool', 'result', 'failure', 'reconciliation']
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -63,7 +66,14 @@ function isProposedAction(value: unknown): value is ProposedAction {
     isString(value.targetReference) && isOneOf(value.risk, ['LOW', 'MEDIUM', 'HIGH']) &&
     isOneOf(value.policyDecision, policyDecisions) && isString(value.policyVersion) &&
     isOneOf(value.status, actionStatuses) && isString(value.idempotencyKey) &&
-    isString(value.digest) && isDate(value.proposedAt)
+    isString(value.digest) && isDate(value.proposedAt) &&
+    (value.arguments === undefined || isDemoActionArguments(value.arguments))
+}
+
+function isDemoActionArguments(value: unknown): boolean {
+  if (!isRecord(value) || !Array.isArray(value.invoiceIds) || value.invoiceIds.length === 0 || !value.invoiceIds.every(isString)) return false
+  if (value.actionType === 'MARK_REVIEWED') return value.reviewStatus === 'REVIEWED'
+  return value.actionType === 'PREPARE_FOLLOW_UP' && value.destination === 'LOCAL_DRAFTS' && value.templateId === 'collections-follow-up-v1'
 }
 
 function isExecutionEvent(value: unknown): value is ExecutionEvent {
@@ -74,9 +84,20 @@ function isExecutionEvent(value: unknown): value is ExecutionEvent {
 }
 
 function isExecution(value: unknown): value is ExecutionRecord {
+  const compatibleScenarios = [...scenarios, ...legacyScenarios]
+  if (!isExecutionWithScenario(value, compatibleScenarios)) return false
+  const execution = value as ExecutionRecord
+  return execution.scenario === 'HISTORICAL' || legacyScenarios.includes(execution.scenario as LegacyRunScenario) || !execution.action || execution.action.arguments !== undefined
+}
+
+function isLegacyExecution(value: unknown): value is ExecutionRecord {
+  return isExecutionWithScenario(value, legacyScenarios)
+}
+
+function isExecutionWithScenario(value: unknown, allowedScenarios: readonly string[]): boolean {
   if (!isRecord(value)) return false
   return isString(value.id) && isString(value.employeeId) && isString(value.employeeVersion) &&
-    isString(value.taskName) && isOneOf(value.scenario, scenarios) &&
+    isString(value.taskName) && isOneOf(value.scenario, allowedScenarios) &&
     isOneOf(value.status, executionStatuses) &&
     (value.outcome === undefined || isOneOf(value.outcome, executionOutcomes)) &&
     isDate(value.requestedAt) && isOptionalString(value.startedAt) &&
@@ -122,6 +143,27 @@ export function isPlatformState(value: unknown): value is PlatformState {
   })
 }
 
+function isLegacyPlatformState(value: unknown): value is PlatformState {
+  if (!isRecord(value) || !Array.isArray(value.executions) || !Array.isArray(value.approvals)) return false
+  if (value.executions.length > 5_000 || value.approvals.length > 5_000 ||
+    !value.executions.every(isLegacyExecution) || !value.approvals.every(isApproval) || !isOptionalString(value.recoveryNotice)) return false
+  const executions = value.executions as ExecutionRecord[]
+  const approvals = value.approvals as Approval[]
+  const executionIds = new Set(executions.map((execution) => execution.id))
+  const approvalIds = new Set(approvals.map((approval) => approval.id))
+  if (executionIds.size !== executions.length || approvalIds.size !== approvals.length) return false
+  if (approvals.some((approval) => {
+    const execution = executions.find((item) => item.id === approval.executionId)
+    return !execution?.action || execution.action.id !== approval.actionId
+  })) return false
+  return executions.every((execution) => {
+    if (execution.status === 'WAITING_APPROVAL' && !execution.approvalId) return false
+    if (!execution.approvalId) return true
+    const approval = approvals.find((item) => item.id === execution.approvalId)
+    return Boolean(approval && approval.executionId === execution.id)
+  })
+}
+
 function isSimulatedEffect(value: unknown): value is SimulatedEffect {
   if (!isRecord(value)) return false
   return isString(value.idempotencyKey) && isString(value.executionId) && isString(value.actionId) &&
@@ -129,14 +171,13 @@ function isSimulatedEffect(value: unknown): value is SimulatedEffect {
     isOneOf(value.acknowledgement, ['CONFIRMED', 'UNCERTAIN'])
 }
 
-function isPersistedSnapshot(value: unknown): value is { schemaVersion: 2; state: PlatformState; effects: SimulatedEffect[] } {
-  if (!isRecord(value) || value.schemaVersion !== PERSISTENCE_SCHEMA_VERSION || !isPlatformState(value.state) || !Array.isArray(value.effects)) return false
-  if (value.effects.length > 10_000 || !value.effects.every(isSimulatedEffect)) return false
-  const keys = value.effects.map((effect) => (effect as SimulatedEffect).idempotencyKey)
+function hasValidEffectLedger(value: unknown, state: PlatformState): value is SimulatedEffect[] {
+  if (!Array.isArray(value) || value.length > 10_000 || !value.every(isSimulatedEffect)) return false
+  const effects = value as SimulatedEffect[]
+  const keys = effects.map((effect) => effect.idempotencyKey)
   if (new Set(keys).size !== keys.length) return false
-  const executions = value.state.executions
-  const approvals = value.state.approvals
-  const effects = value.effects as SimulatedEffect[]
+  const executions = state.executions
+  const approvals = state.approvals
   const linkedEffectsAreValid = effects.every((savedEffect) => {
     const execution = executions.find((item) => item.id === savedEffect.executionId)
     const action = execution?.action
@@ -150,6 +191,28 @@ function isPersistedSnapshot(value: unknown): value is { schemaVersion: 2; state
     if (['PENDING', 'RUNNING', 'WAITING_APPROVAL', 'OUTCOME_UNCERTAIN'].includes(execution.status)) return true
     return execution.sideEffectCount === effects.filter((effect) => effect.executionId === execution.id).length
   })
+}
+
+function isPersistedSnapshot(value: unknown): value is { schemaVersion: 3; state: PlatformState; effects: SimulatedEffect[] } {
+  if (!isRecord(value) || value.schemaVersion !== PERSISTENCE_SCHEMA_VERSION || !isPlatformState(value.state) || !Array.isArray(value.effects)) return false
+  return hasValidEffectLedger(value.effects, value.state)
+}
+
+function isLegacySnapshot(value: unknown): value is { schemaVersion: 2; state: PlatformState; effects: SimulatedEffect[] } {
+  if (!isRecord(value) || value.schemaVersion !== 2 || !isLegacyPlatformState(value.state)) return false
+  return hasValidEffectLedger(value.effects, value.state)
+}
+
+function migrateLegacyState(state: PlatformState): PlatformState {
+  return {
+    executions: state.executions.map((execution) => ({
+      ...execution,
+      scenario: execution.employeeId === 'cobranzas' && legacyScenarios.includes(execution.scenario as LegacyRunScenario)
+        ? execution.scenario as LegacyRunScenario
+        : 'HISTORICAL',
+    })),
+    approvals: state.approvals,
+  }
 }
 
 export function effectsFromExecutions(state: PlatformState): SimulatedEffect[] {
@@ -190,14 +253,26 @@ export function loadPlatformSnapshot(storage?: StoragePort): LoadedPlatformSnaps
       return freshSnapshot('Los datos locales tenían una versión o estructura incompatible; se restauró el conjunto sintético inicial.')
     }
 
-    const legacy = storage.getItem(LEGACY_STORAGE_KEY)
+    const previous = storage.getItem(LEGACY_STORAGE_KEY)
+    if (previous !== null) {
+      let parsed: unknown
+      try { parsed = parseJSON(previous) } catch { return freshSnapshot('Los datos locales de la versión anterior estaban dañados; se restauró el conjunto sintético inicial.') }
+      if (!isLegacySnapshot(parsed)) return freshSnapshot('Los datos locales de la versión anterior no pudieron validarse; se restauró el conjunto sintético inicial.')
+      const migratedState = migrateLegacyState(parsed.state)
+      const migrated = { schemaVersion: PERSISTENCE_SCHEMA_VERSION, state: migratedState, effects: parsed.effects }
+      if (!isPersistedSnapshot(migrated)) return freshSnapshot('El snapshot anterior no conserva coherencia entre acciones y efectos; se restauró el conjunto sintético inicial.')
+      return { state: migrated.state, effects: migrated.effects, source: 'migrated', notice: 'Se migró el snapshot versionado anterior; su historial quedó marcado como demostración histórica.' }
+    }
+
+    const legacy = storage.getItem(OLDER_STORAGE_KEY)
     if (legacy === null) return freshSnapshot()
     let parsed: unknown
     try { parsed = parseJSON(legacy) } catch { return freshSnapshot('Los datos locales anteriores estaban dañados; se restauró el conjunto sintético inicial.') }
-    if (!isPlatformState(parsed)) return freshSnapshot('Los datos locales anteriores no pudieron validarse; se restauró el conjunto sintético inicial.')
-    const migrated = { schemaVersion: PERSISTENCE_SCHEMA_VERSION, state: parsed, effects: effectsFromExecutions(parsed) }
+    if (!isLegacyPlatformState(parsed)) return freshSnapshot('Los datos locales anteriores no pudieron validarse; se restauró el conjunto sintético inicial.')
+    const migratedState = migrateLegacyState(parsed)
+    const migrated = { schemaVersion: PERSISTENCE_SCHEMA_VERSION, state: migratedState, effects: effectsFromExecutions(migratedState) }
     if (!isPersistedSnapshot(migrated)) return freshSnapshot('El estado anterior no conservaba coherencia entre acciones y efectos; se restauró el conjunto sintético inicial.')
-    return { state: migrated.state, effects: migrated.effects, source: 'migrated', notice: 'Se recuperó y migró el estado sintético guardado por la versión anterior.' }
+    return { state: migrated.state, effects: migrated.effects, source: 'migrated', notice: 'Se migró el estado local anterior; sus ejecuciones quedaron marcadas como historial demostrativo.' }
   } catch {
     return freshSnapshot('El almacenamiento local no está disponible; la sesión continúa con datos sintéticos en memoria.')
   }

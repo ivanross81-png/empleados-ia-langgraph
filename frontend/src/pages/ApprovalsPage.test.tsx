@@ -15,7 +15,7 @@ describe('Centro de aprobaciones', () => {
     const service = new MockPlatformService(createSeedState(), 5)
     render(<PlatformProvider service={service}><MemoryRouter initialEntries={['/aprobaciones']}><Routes><Route path="/aprobaciones" element={<ApprovalsPage />} /><Route path="/ejecuciones/:executionId" element={<p>Detalle de ejecución de demostración</p>} /></Routes></MemoryRouter></PlatformProvider>)
 
-    await user.click(screen.getByRole('button', { name: /Preparar seguimiento de cobranza/ }))
+    await user.click(screen.getByRole('button', { name: /Preparar borrador de seguimiento/ }))
     const approve = screen.getByRole('button', { name: /Aprobar y continuar/ })
     expect(approve).toBeDisabled()
     await user.type(screen.getByLabelText(/Motivo de la decisión/), 'Validé el caso sintético y autorizo la prueba.')
@@ -31,7 +31,7 @@ describe('Centro de aprobaciones', () => {
     const user = userEvent.setup()
     const service = new MockPlatformService(createSeedState(), 5)
     render(<PlatformProvider service={service}><MemoryRouter initialEntries={['/aprobaciones']}><ApprovalsPage /></MemoryRouter></PlatformProvider>)
-    await user.click(screen.getByRole('button', { name: /Preparar seguimiento de cobranza/ }))
+    await user.click(screen.getByRole('button', { name: /Preparar borrador de seguimiento/ }))
     await user.type(screen.getByLabelText(/Motivo de la decisión/), 'Falta una comprobación manual.')
     await user.click(screen.getByRole('button', { name: /Rechazar/ }))
     await user.click(screen.getByRole('button', { name: /Confirmar rechazo/ }))

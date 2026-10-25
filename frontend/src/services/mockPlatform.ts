@@ -1,10 +1,13 @@
 import type { Approval, ApprovalActor, ExecutionEvent, ExecutionRecord, PlatformState, RunScenario } from '../domain/types'
-import { actionDigest, decidePolicy } from '../domain/policy'
+import { actionDigest, argumentsForScenario, evaluateDemoPolicy, LEGACY_DEMO_POLICY_VERSION } from '../domain/policy'
 import { createSeedState } from '../data/seed'
 import { employees } from '../data/catalog'
+import { demoScenarioById } from '../data/demoScenarios'
 import { effectsFromExecutions, loadPlatformSnapshot, savePlatformSnapshot, type SimulatedEffect, type StoragePort } from './persistence'
+import { demoApprover } from '../data/demoActors'
+import type { PlatformService } from './platformService'
 
-const DEMO_ACTOR: ApprovalActor = { name: 'Elena García', role: 'Aprobador de cobranzas', authorized: true }
+const DEMO_ACTOR = demoApprover
 
 function browserStorage(): StoragePort | undefined {
   try {
@@ -14,7 +17,7 @@ function browserStorage(): StoragePort | undefined {
   }
 }
 
-export class MockPlatformService {
+export class MockPlatformService implements PlatformService {
   private state: PlatformState
   private effects: SimulatedEffect[]
   private listeners = new Set<() => void>()
@@ -71,35 +74,43 @@ export class MockPlatformService {
     this.listeners.forEach((listener) => listener())
   }
 
-  startExecution(employeeId: string, scenario: RunScenario, inputLabel = 'Lote sintético · abril'): string {
+  startExecution(employeeId: string, scenarioId: RunScenario, inputLabel?: string): string {
     const employee = employees.find((item) => item.id === employeeId)
     if (!employee) throw new Error('No se encontró el Empleado Digital seleccionado.')
     if (employee.status !== 'ACTIVE') throw new Error(`${employee.name} no está disponible para iniciar ejecuciones (${employee.status.toLowerCase()}).`)
-    const id = `ex-${Date.now().toString(36)}-${this.sequence++}`
-    const actionId = `act-${id}-${scenario}`
-    const actionBase = {
-      id: actionId,
-      name: scenario === 'deny' ? 'Iniciar seguimiento de caso no elegible' : scenario === 'allow' ? 'Marcar casos como revisados' : scenario === 'failure' ? 'Registrar revisión de lote' : scenario === 'uncertain' ? 'Registrar revisión interna' : 'Preparar seguimiento de cobranza',
-      summary: scenario === 'deny' ? 'Intento de seguimiento sobre un caso sintético cerrado.' : scenario === 'allow' ? 'Marcar 3 casos sintéticos como revisados.' : scenario === 'failure' ? 'Registrar la revisión del lote sintético.' : scenario === 'uncertain' ? 'Registrar una nota interna para los casos revisados.' : 'Preparar una propuesta de seguimiento para 3 facturas sintéticas.',
-      reason: scenario === 'deny' ? 'El caso sintético no cumple las condiciones de elegibilidad.' : scenario === 'approval' ? 'La comunicación requiere autorización humana explícita.' : 'Actualización de prueba acotada al conjunto de datos sintéticos.',
-      targetReference: `LOTE-SINT-${String(42 + this.sequence).padStart(3, '0')}`,
+    if (employee.executionMode !== 'FULL_DEMO') throw new Error(`${employee.name} es un perfil de catálogo; su ejecución todavía no está habilitada.`)
+    const scenario = demoScenarioById(scenarioId)
+    if (!scenario || scenario.employeeId !== employeeId || !employee.tasks.includes(scenario.taskName)) {
+      throw new Error('El escenario no corresponde a una tarea ejecutable de este Empleado Digital.')
     }
+    const policy = evaluateDemoPolicy(employee, scenario)
+    const id = `ex-${Date.now().toString(36)}-${this.sequence++}`
+    const actionId = `act-${id}-${scenario.id}`
+    const invoiceIds = scenario.invoices.map((invoice) => invoice.id)
+    const actionArguments = argumentsForScenario(scenario)
     const action = {
-      ...actionBase,
-      risk: scenario === 'approval' ? 'MEDIUM' as const : scenario === 'deny' ? 'HIGH' as const : 'LOW' as const,
-      policyDecision: decidePolicy(scenario),
-      policyVersion: 'pol-cobranza-v3',
+      id: actionId,
+      name: scenario.action.name,
+      summary: scenario.action.summary,
+      reason: policy.reason,
+      targetReference: invoiceIds.join(', '),
+      arguments: actionArguments,
+      risk: policy.risk,
+      policyDecision: policy.decision,
+      policyVersion: policy.policyVersion,
       status: 'PROPOSED' as const,
       idempotencyKey: `demo:${id}:${actionId}`,
-      digest: actionDigest(actionBase),
+      digest: '',
       proposedAt: new Date().toISOString(),
     }
+    action.digest = actionDigest(action)
     const now = new Date().toISOString()
     const record: ExecutionRecord = {
-      id, employeeId, employeeVersion: employee.version, taskName: employee.tasks[0] ?? 'Tarea demostrativa', scenario,
-      status: 'PENDING', requestedAt: now, requestedBy: DEMO_ACTOR.name, inputLabel, invoiceCount: 3, amountTotal: 12_480,
-      summary: 'Solicitud aceptada; preparando una ejecución con datos sintéticos.', correlationId: `corr-demo-${id}`, action,
-      events: [this.makeEvent('request', 'Solicitud recibida', `${employee.name} recibió una tarea manual con datos sintéticos.`)], attempts: 0, sideEffectCount: 0,
+      id, employeeId, employeeVersion: employee.version, taskName: scenario.taskName, scenario: scenario.id,
+      status: 'PENDING', requestedAt: now, requestedBy: DEMO_ACTOR.name, inputLabel: inputLabel ?? scenario.inputLabel,
+      invoiceCount: scenario.invoices.length, amountTotal: scenario.invoices.reduce((total, invoice) => total + invoice.amount, 0),
+      summary: `Solicitud aceptada; ${scenario.description.toLowerCase()}`, correlationId: `corr-demo-${id}`, action,
+      events: [this.makeEvent('request', 'Solicitud recibida', `${employee.name} recibió «${scenario.title}» con ${scenario.invoices.length} registro(s) sintético(s).`)], attempts: 0, sideEffectCount: 0,
     }
     this.update((state) => ({ ...state, executions: [record, ...state.executions] }))
     this.schedule(id, [
@@ -107,7 +118,7 @@ export class MockPlatformService {
       () => this.addEvent(id, 'read', 'Información consultada', '3 facturas sintéticas · identificadores ficticios · fuente local.'),
       () => this.addEvent(id, 'analysis', 'Análisis operativo', 'Resumen de casos preparado. El prototipo no expone razonamiento privado del modelo.'),
       () => this.addEvent(id, 'proposal', 'Acción propuesta', `${action.name}: ${action.summary}`),
-      () => this.evaluate(id, scenario),
+      () => this.evaluate(id),
     ])
     return id
   }
@@ -164,29 +175,33 @@ export class MockPlatformService {
     this.patchExecution(executionId, (current) => ({ ...current, status: 'CANCELLED', outcome: 'CANCELLED', completedAt: new Date().toISOString(), sideEffectCount: this.effectCount(executionId), summary: 'Cancelada por una persona operadora; no se inician nuevos pasos ni se revierten efectos ya registrados.', events: [...current.events, this.makeEvent('result', 'Ejecución cancelada', 'No se iniciaron nuevos pasos simulados. Los efectos ya registrados se conservan para reconciliación.')] }))
   }
 
-  private evaluate(id: string, scenario: RunScenario): void {
-    const decision = decidePolicy(scenario)
+  private evaluate(id: string): void {
+    const execution = this.state.executions.find((item) => item.id === id)
+    if (!execution?.action) return
+    const scenario = execution.scenario === 'HISTORICAL' ? undefined : demoScenarioById(execution.scenario)
+    const decision = execution.action.policyDecision
     if (decision === 'REQUIRE_APPROVAL') {
-      const execution = this.state.executions.find((item) => item.id === id)
-      if (!execution?.action) return
       const approvalId = `ap-${id}`
       const approval: Approval = { id: approvalId, executionId: id, employeeId: execution.employeeId, actionId: execution.action.id, actionDigest: execution.action.digest, title: execution.action.name, reason: execution.action.reason, risk: execution.action.risk, requiredRole: 'Aprobador de cobranzas', status: 'PENDING', requestedAt: new Date().toISOString() }
       this.update((state) => ({ ...state, approvals: [approval, ...state.approvals] }))
-      this.patchExecution(id, (current) => ({ ...current, status: 'WAITING_APPROVAL', approvalId, action: { ...current.action!, status: 'WAITING_APPROVAL' }, summary: 'La política requiere aprobación humana. La ejecución queda suspendida; el tiempo no decidirá por la persona.', events: [...current.events, this.makeEvent('policy', 'Decisión de política', 'REQUIRE_APPROVAL · no se ejecutará la acción hasta recibir una decisión humana.', 'REQUIRE_APPROVAL'), this.makeEvent('approval', 'Aprobación solicitada', `Solicitud ${approvalId} vinculada a la huella ${execution.action!.digest}.`)] }))
+      this.patchExecution(id, (current) => ({ ...current, status: 'WAITING_APPROVAL', approvalId, action: { ...current.action!, status: 'WAITING_APPROVAL' }, summary: 'La política requiere aprobación humana. La ejecución queda suspendida; el tiempo no decidirá por la persona.', events: [...current.events, this.makeEvent('policy', 'Decisión de política', `REQUIRE_APPROVAL · ${execution.action!.reason}`, 'REQUIRE_APPROVAL'), this.makeEvent('approval', 'Aprobación solicitada', `Solicitud ${approvalId} vinculada a la huella ${execution.action!.digest}.`)] }))
       return
     }
-    this.patchExecution(id, (current) => ({ ...current, action: { ...current.action!, status: decision === 'DENY' ? 'DENIED' : 'PROPOSED' }, events: [...current.events, this.makeEvent('policy', 'Decisión de política', decision === 'DENY' ? 'DENY · acción bloqueada. No se invoca la herramienta.' : 'ALLOW · acción acotada permitida por la política simulada.', decision)] }))
+    this.patchExecution(id, (current) => ({ ...current, action: { ...current.action!, status: decision === 'DENY' ? 'DENIED' : 'PROPOSED' }, events: [...current.events, this.makeEvent('policy', 'Decisión de política', `${decision} · ${execution.action!.reason}`, decision)] }))
     if (decision === 'DENY') {
-      this.patchExecution(id, (current) => ({ ...current, status: 'COMPLETED', outcome: 'POLICY_DENIED', completedAt: new Date().toISOString(), durationMs: Date.now() - new Date(current.requestedAt).getTime(), summary: 'Acción denegada por política. No se ejecutó ninguna herramienta.', events: [...current.events, this.makeEvent('result', 'Ejecución finalizada sin efecto', 'La política DENY prevalece; no hay operación registrada.')] }))
+      this.patchExecution(id, (current) => ({ ...current, status: 'COMPLETED', outcome: 'POLICY_DENIED', completedAt: new Date().toISOString(), durationMs: Date.now() - new Date(current.requestedAt).getTime(), summary: `Acción denegada por política. ${execution.action!.reason}`, events: [...current.events, this.makeEvent('result', 'Ejecución finalizada sin efecto', 'La política DENY prevalece; no hay operación registrada.')] }))
       return
     }
-    if (scenario === 'failure') {
-      this.patchExecution(id, (current) => ({ ...current, status: 'FAILED', outcome: 'FAILURE', failureCode: 'MOCK_TOOL_UNAVAILABLE', completedAt: new Date().toISOString(), durationMs: Date.now() - new Date(current.requestedAt).getTime(), action: { ...current.action!, status: 'FAILED' }, summary: 'MOCK_TOOL_UNAVAILABLE · fallo simulado tipado; no se registró ningún efecto.', events: [...current.events, this.makeEvent('failure', 'Herramienta simulada no disponible', 'MOCK_TOOL_UNAVAILABLE · error no reintentable en esta demostración.'), this.makeEvent('result', 'Ejecución fallida', 'Sin efectos simulados.')] }))
+    if (!scenario) {
+      this.failExecution(id, 'DEMO_SCENARIO_NOT_FOUND', 'El escenario demostrativo ya no está disponible; no se inició ninguna herramienta.')
       return
     }
-    if (scenario === 'uncertain') {
-      const execution = this.state.executions.find((item) => item.id === id)
-      if (!execution?.action) return
+    if (scenario.adapterOutcome === 'FAILURE') {
+      this.failExecution(id, 'MOCK_TOOL_UNAVAILABLE', 'El adaptador sintético no estuvo disponible. La política había permitido la acción, pero no se registró ningún efecto.')
+      this.addEvent(id, 'failure', 'Herramienta simulada no disponible', 'MOCK_TOOL_UNAVAILABLE · indisponibilidad del adaptador posterior a una decisión ALLOW.')
+      return
+    }
+    if (scenario.adapterOutcome === 'UNCERTAIN') {
       const effect = this.recordSimulatedEffect(execution, 'UNCERTAIN')
       this.patchExecution(id, (current) => ({ ...current, status: 'OUTCOME_UNCERTAIN', outcome: 'UNCERTAIN', action: { ...current.action!, status: 'UNCERTAIN' }, sideEffectCount: this.effectCount(id), attempts: 1, summary: 'TIMEOUT_AFTER_SIMULATED_COMMIT · el resultado requiere reconciliación; no reintentar a ciegas.', events: [...current.events, this.makeEvent('tool', 'Respuesta externa incierta', `${effect.operation} quedó registrado con la clave ${effect.idempotencyKey}, pero el acuse expiró. No se repetirá automáticamente.`)] }))
       return
@@ -194,21 +209,29 @@ export class MockPlatformService {
     this.invokeApprovedAction(id, false)
   }
 
+  private failExecution(id: string, failureCode: string, summary: string): void {
+    this.patchExecution(id, (current) => ({
+      ...current,
+      status: 'FAILED',
+      outcome: 'FAILURE',
+      failureCode,
+      completedAt: new Date().toISOString(),
+      durationMs: Date.now() - new Date(current.requestedAt).getTime(),
+      action: current.action ? { ...current.action, status: 'FAILED' } : undefined,
+      sideEffectCount: this.effectCount(id),
+      summary,
+      events: [...current.events, this.makeEvent('failure', failureCode, summary)],
+    }))
+  }
+
   private revalidateApprovedAction(id: string): void {
     const execution = this.state.executions.find((item) => item.id === id)
     const approval = execution?.approvalId ? this.state.approvals.find((item) => item.id === execution.approvalId) : undefined
-    const action = execution?.action
-    const currentDigest = action ? actionDigest(action) : ''
-    const bindingIsCurrent = Boolean(
-      approval && action && approval.status === 'APPROVED' && approval.actionId === action.id &&
-      approval.actionDigest === action.digest && approval.actionDigest === currentDigest &&
-      approval.requiredRole === DEMO_ACTOR.role && action.policyVersion === 'pol-cobranza-v3',
-    )
-    if (!bindingIsCurrent) {
+    if (!execution || !approval || !this.approvalBindingIsCurrent(execution, approval)) {
       this.failStaleApprovedAction(id)
       return
     }
-    this.addEvent(id, 'policy', 'Política revalidada', 'La autorización vigente y la huella de la acción exacta coinciden antes de continuar.', 'ALLOW')
+    this.addEvent(id, 'policy', 'Política revalidada', 'La regla sigue requiriendo aprobación; la decisión humana autorizada y la huella de la acción exacta coinciden.', 'REQUIRE_APPROVAL')
   }
 
   private invokeApprovedAction(id: string, alreadyScheduled: boolean): void {
@@ -217,9 +240,7 @@ export class MockPlatformService {
     if (execution.status !== 'RUNNING' && execution.status !== 'WAITING_APPROVAL') return
     if (execution.action.policyDecision === 'REQUIRE_APPROVAL') {
       const approval = this.state.approvals.find((item) => item.id === execution.approvalId)
-      const currentDigest = actionDigest(execution.action)
-      const bindingIsCurrent = approval?.status === 'APPROVED' && approval.actionId === execution.action.id && approval.actionDigest === execution.action.digest && approval.actionDigest === currentDigest && approval.requiredRole === DEMO_ACTOR.role && execution.action.policyVersion === 'pol-cobranza-v3'
-      if (!bindingIsCurrent) {
+      if (!approval || !this.approvalBindingIsCurrent(execution, approval)) {
         this.failStaleApprovedAction(id)
         return
       }
@@ -349,10 +370,19 @@ export class MockPlatformService {
   private approvalBindingIsCurrent(execution: ExecutionRecord, approval: Approval): boolean {
     const action = execution.action
     if (!action) return false
+    const scenario = execution.scenario === 'HISTORICAL' ? undefined : demoScenarioById(execution.scenario)
+    const employee = employees.find((item) => item.id === execution.employeeId)
+    if (!scenario || !employee) return false
+    const policy = evaluateDemoPolicy(employee, scenario)
     const fingerprint = actionDigest(action)
-    return approval.status === 'APPROVED' && approval.actionId === action.id &&
+    const isLegacyAction = action.arguments === undefined && action.policyVersion === LEGACY_DEMO_POLICY_VERSION
+    const versionIsSupported = action.policyVersion === policy.policyVersion || isLegacyAction
+    const normalizedArgumentsMatch = isLegacyAction || JSON.stringify(action.arguments) === JSON.stringify(argumentsForScenario(scenario))
+    return policy.decision === 'REQUIRE_APPROVAL' && policy.risk === action.risk &&
+      action.policyDecision === policy.decision && versionIsSupported && normalizedArgumentsMatch &&
+      approval.status === 'APPROVED' && approval.actionId === action.id &&
       approval.actionDigest === action.digest && approval.actionDigest === fingerprint &&
-      approval.requiredRole === DEMO_ACTOR.role && action.policyVersion === 'pol-cobranza-v3'
+      approval.requiredRole === DEMO_ACTOR.role
   }
 
   private completeFromRecordedEffect(executionId: string, effect: SimulatedEffect, recoverySummary: string): void {
@@ -436,4 +466,3 @@ export class MockPlatformService {
 }
 
 export const mockPlatform = new MockPlatformService()
-export const demoApprover = DEMO_ACTOR

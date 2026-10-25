@@ -1,11 +1,12 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useSyncExternalStore, type ReactNode } from 'react'
-import { mockPlatform, type MockPlatformService } from '../services/mockPlatform'
+import { mockPlatform } from '../services/mockPlatform'
+import type { PlatformService } from '../services/platformService'
 import type { PlatformState } from '../domain/types'
 
-const PlatformContext = createContext<MockPlatformService>(mockPlatform)
+const PlatformContext = createContext<PlatformService>(mockPlatform)
 
-export function PlatformProvider({ children, service = mockPlatform }: { children: ReactNode; service?: MockPlatformService }) {
+export function PlatformProvider({ children, service = mockPlatform }: { children: ReactNode; service?: PlatformService }) {
   return <PlatformContext.Provider value={service}>{children}</PlatformContext.Provider>
 }
 

@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
 import { App } from './App'
@@ -41,7 +41,7 @@ describe('Navegación de la consola', () => {
     render(<PlatformProvider service={service}><App /></PlatformProvider>)
 
     await user.click(screen.getByRole('button', { name: 'Iniciar ejecución' }))
-    await user.click(screen.getByRole('button', { name: /Permitida por política/ }))
+    await user.click(screen.getByRole('radio', { name: /Revisar lote de facturas abierto/ }))
     await user.click(screen.getByRole('button', { name: /Iniciar simulación/ }))
 
     expect(await screen.findByRole('heading', { name: 'Revisar facturas vencidas' })).toBeInTheDocument()
@@ -49,6 +49,28 @@ describe('Navegación de la consola', () => {
     expect(service.getSnapshot().executions[0]?.outcome).toBe('SUCCESS')
     expect(service.getSnapshot().executions[0]?.sideEffectCount).toBe(1)
     expect(screen.getByText('Resultado final')).toBeInTheDocument()
+  })
+
+  it('solo ofrece empleados con un flujo completo en el alta de ejecución', async () => {
+    const user = userEvent.setup()
+    const service = new MockPlatformService(createSeedState(), 5)
+    render(<PlatformProvider service={service}><App /></PlatformProvider>)
+
+    await user.click(screen.getByRole('button', { name: 'Iniciar ejecución' }))
+    const employeeSelect = screen.getByLabelText('Empleado Digital')
+    expect(within(employeeSelect).getAllByRole('option')).toHaveLength(1)
+    expect(within(employeeSelect).queryByRole('option', { name: /Mateo/ })).not.toBeInTheDocument()
+    expect(screen.getByText(/Solo Cobranzas tiene un flujo completo/i)).toBeInTheDocument()
+  })
+
+  it('mantiene deshabilitada la ejecución en un perfil de catálogo', async () => {
+    window.history.pushState({}, '', '/empleados/finanzas')
+    const service = new MockPlatformService(createSeedState(), 5)
+    render(<PlatformProvider service={service}><App /></PlatformProvider>)
+
+    expect(await screen.findByText(/Perfil de catálogo, sin ejecución habilitada/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Iniciar simulación/ })).toBeDisabled()
+    expect(screen.getAllByText('Solo referencia').length).toBeGreaterThan(0)
   })
 
   it('explica cuando los datos locales inválidos se restablecieron', async () => {
