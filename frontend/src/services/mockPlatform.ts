@@ -2,28 +2,50 @@ import type { Approval, ApprovalActor, ExecutionEvent, ExecutionRecord, Platform
 import { actionDigest, decidePolicy } from '../domain/policy'
 import { createSeedState } from '../data/seed'
 import { employees } from '../data/catalog'
+import { effectsFromExecutions, loadPlatformSnapshot, savePlatformSnapshot, type SimulatedEffect, type StoragePort } from './persistence'
 
-const STORAGE_KEY = 'digital-employee-prototype-v1'
 const DEMO_ACTOR: ApprovalActor = { name: 'Elena García', role: 'Aprobador de cobranzas', authorized: true }
 
-function readSavedState(): PlatformState {
+function browserStorage(): StoragePort | undefined {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved) return JSON.parse(saved) as PlatformState
+    return typeof window === 'undefined' ? undefined : window.localStorage
   } catch {
-    // A malformed or unavailable browser store falls back to fresh synthetic data.
+    return undefined
   }
-  return createSeedState()
 }
 
 export class MockPlatformService {
   private state: PlatformState
+  private effects: SimulatedEffect[]
   private listeners = new Set<() => void>()
   private timers = new Map<string, number[]>()
   private sequence = 1
+  private readonly storage: StoragePort | undefined
+  private readonly delayMs: number
 
-  constructor(initialState = readSavedState(), private readonly delayMs = 420) {
-    this.state = initialState
+  constructor(initialState?: PlatformState, delayMs = 420, storage = browserStorage()) {
+    this.storage = storage
+    this.delayMs = delayMs
+    if (initialState) {
+      this.state = structuredClone(initialState)
+      this.effects = effectsFromExecutions(this.state)
+      return
+    }
+
+    const loaded = loadPlatformSnapshot(storage)
+    this.state = { ...loaded.state, ...(loaded.notice ? { recoveryNotice: loaded.notice } : {}) }
+    this.effects = loaded.effects
+    if (loaded.source === 'current' || loaded.source === 'migrated') {
+      const recoveredCount = this.recoverPersistedExecutions()
+      if (recoveredCount > 0) {
+        const notice = this.state.recoveryNotice
+        this.state = {
+          ...this.state,
+          recoveryNotice: [notice, `Se recuperaron ${recoveredCount} ejecución(es) interrumpida(s) tras recargar.`].filter(Boolean).join(' '),
+        }
+      }
+    }
+    if (loaded.notice || loaded.source === 'migrated' || loaded.source === 'recovered') this.persist()
   }
 
   getSnapshot = (): PlatformState => this.state
@@ -37,12 +59,22 @@ export class MockPlatformService {
     this.timers.forEach((timers) => timers.forEach(window.clearTimeout))
     this.timers.clear()
     this.state = createSeedState()
+    this.effects = effectsFromExecutions(this.state)
     this.publish()
+  }
+
+  dismissRecoveryNotice(): void {
+    if (!this.state.recoveryNotice) return
+    const nextState = { ...this.state }
+    delete nextState.recoveryNotice
+    this.state = nextState
+    this.listeners.forEach((listener) => listener())
   }
 
   startExecution(employeeId: string, scenario: RunScenario, inputLabel = 'Lote sintético · abril'): string {
     const employee = employees.find((item) => item.id === employeeId)
     if (!employee) throw new Error('No se encontró el Empleado Digital seleccionado.')
+    if (employee.status !== 'ACTIVE') throw new Error(`${employee.name} no está disponible para iniciar ejecuciones (${employee.status.toLowerCase()}).`)
     const id = `ex-${Date.now().toString(36)}-${this.sequence++}`
     const actionId = `act-${id}-${scenario}`
     const actionBase = {
@@ -82,14 +114,20 @@ export class MockPlatformService {
 
   decideApproval(approvalId: string, decision: 'APPROVED' | 'REJECTED', actor: ApprovalActor, reason: string): void {
     const approval = this.state.approvals.find((item) => item.id === approvalId)
-    if (!approval || approval.status !== 'PENDING') throw new Error('Esta solicitud ya fue resuelta o no está disponible.')
+    if (!approval) throw new Error('Esta solicitud no está disponible.')
     if (!actor.authorized || actor.role !== approval.requiredRole) throw new Error('El rol actual no está autorizado para esta aprobación.')
+    const normalizedReason = reason.trim()
+    if (!normalizedReason) throw new Error('La decisión necesita un motivo registrado.')
+    if (approval.status !== 'PENDING') {
+      if (approval.status === decision && approval.decidedBy === actor.name && approval.decisionReason === normalizedReason) return
+      throw new Error('Esta solicitud ya fue resuelta con una decisión distinta o con otro motivo.')
+    }
     const execution = this.state.executions.find((item) => item.id === approval.executionId)
     if (!execution?.action || execution.action.id !== approval.actionId || execution.action.digest !== approval.actionDigest || actionDigest(execution.action) !== approval.actionDigest) {
       throw new Error('La acción cambió desde que se solicitó la aprobación. Se requiere una nueva revisión.')
     }
     const decidedAt = new Date().toISOString()
-    const updatedApproval: Approval = { ...approval, status: decision, decidedAt, decidedBy: actor.name, decisionReason: reason.trim() }
+    const updatedApproval: Approval = { ...approval, status: decision, decidedAt, decidedBy: actor.name, decisionReason: normalizedReason }
     const updatedAction = { ...execution.action, status: decision }
     this.update((state) => ({ ...state, approvals: state.approvals.map((item) => item.id === approvalId ? updatedApproval : item), executions: state.executions.map((item) => item.id === execution.id ? { ...item, action: updatedAction } : item) }))
     if (decision === 'REJECTED') {
@@ -106,14 +144,15 @@ export class MockPlatformService {
   reconcileUncertainExecution(executionId: string, retryWithSameKey = false): void {
     const execution = this.state.executions.find((item) => item.id === executionId)
     if (execution?.status !== 'OUTCOME_UNCERTAIN' || !execution.action) throw new Error('Esta ejecución no requiere reconciliación.')
-    const priorEffect = execution.sideEffectCount > 0
-    if (retryWithSameKey && !priorEffect) throw new Error('El resultado no está registrado; se bloquea el reintento automático para evitar duplicados.')
+    const recordedEffect = this.findEffect(execution)
+    if (!recordedEffect) throw new Error('No existe un registro idempotente del efecto; se bloquea el reintento para evitar duplicados.')
     this.patchExecution(executionId, (current) => ({
       ...current, status: 'COMPLETED', outcome: 'SUCCESS', completedAt: new Date().toISOString(), durationMs: Date.now() - new Date(current.requestedAt).getTime(),
       attempts: retryWithSameKey ? current.attempts + 1 : current.attempts,
+      sideEffectCount: this.effectCount(executionId),
       action: { ...current.action!, status: 'SUCCEEDED' },
-      summary: retryWithSameKey ? 'Reintento con la misma clave idempotente: se recuperó el resultado registrado; no se duplicó el efecto.' : 'Reconciliación: se confirmó el único efecto registrado en el simulador.',
-      events: [...current.events, this.makeEvent('reconciliation', retryWithSameKey ? 'Reintento idempotente' : 'Resultado reconciliado', retryWithSameKey ? 'La misma clave devolvió el registro existente. Efectos simulados: 1.' : 'El registro local confirma un efecto simulado y no se ejecutó una segunda operación.')],
+      summary: retryWithSameKey ? 'Reintento con la misma clave idempotente: se recuperó el resultado del ledger; no se duplicó el efecto.' : 'Reconciliación: se confirmó el efecto del ledger local de demostración.',
+      events: [...current.events, this.makeEvent('reconciliation', retryWithSameKey ? 'Reintento idempotente' : 'Resultado reconciliado', retryWithSameKey ? `La clave ${recordedEffect.idempotencyKey} devolvió el efecto registrado. No se creó un segundo efecto.` : 'El registro local confirma el efecto previamente guardado; no se invocó una operación nueva.')],
     }))
   }
 
@@ -122,7 +161,7 @@ export class MockPlatformService {
     if (!execution || !['PENDING', 'RUNNING'].includes(execution.status)) throw new Error('Esta ejecución ya no puede cancelarse.')
     this.timers.get(executionId)?.forEach(window.clearTimeout)
     this.timers.delete(executionId)
-    this.patchExecution(executionId, (current) => ({ ...current, status: 'CANCELLED', outcome: 'CANCELLED', completedAt: new Date().toISOString(), summary: 'Cancelada por una persona operadora; no se inician nuevos pasos.', events: [...current.events, this.makeEvent('result', 'Ejecución cancelada', 'No se iniciaron nuevos efectos simulados.')] }))
+    this.patchExecution(executionId, (current) => ({ ...current, status: 'CANCELLED', outcome: 'CANCELLED', completedAt: new Date().toISOString(), sideEffectCount: this.effectCount(executionId), summary: 'Cancelada por una persona operadora; no se inician nuevos pasos ni se revierten efectos ya registrados.', events: [...current.events, this.makeEvent('result', 'Ejecución cancelada', 'No se iniciaron nuevos pasos simulados. Los efectos ya registrados se conservan para reconciliación.')] }))
   }
 
   private evaluate(id: string, scenario: RunScenario): void {
@@ -142,11 +181,14 @@ export class MockPlatformService {
       return
     }
     if (scenario === 'failure') {
-      this.patchExecution(id, (current) => ({ ...current, status: 'FAILED', outcome: 'FAILURE', completedAt: new Date().toISOString(), durationMs: Date.now() - new Date(current.requestedAt).getTime(), action: { ...current.action!, status: 'FAILED' }, summary: 'MOCK_TOOL_UNAVAILABLE · fallo simulado tipado; no se registró ningún efecto.', events: [...current.events, this.makeEvent('failure', 'Herramienta simulada no disponible', 'MOCK_TOOL_UNAVAILABLE · error no reintentable en esta demostración.'), this.makeEvent('result', 'Ejecución fallida', 'Sin efectos simulados.')] }))
+      this.patchExecution(id, (current) => ({ ...current, status: 'FAILED', outcome: 'FAILURE', failureCode: 'MOCK_TOOL_UNAVAILABLE', completedAt: new Date().toISOString(), durationMs: Date.now() - new Date(current.requestedAt).getTime(), action: { ...current.action!, status: 'FAILED' }, summary: 'MOCK_TOOL_UNAVAILABLE · fallo simulado tipado; no se registró ningún efecto.', events: [...current.events, this.makeEvent('failure', 'Herramienta simulada no disponible', 'MOCK_TOOL_UNAVAILABLE · error no reintentable en esta demostración.'), this.makeEvent('result', 'Ejecución fallida', 'Sin efectos simulados.')] }))
       return
     }
     if (scenario === 'uncertain') {
-      this.patchExecution(id, (current) => ({ ...current, status: 'OUTCOME_UNCERTAIN', outcome: 'UNCERTAIN', action: { ...current.action!, status: 'UNCERTAIN' }, sideEffectCount: 1, attempts: 1, summary: 'TIMEOUT_AFTER_SIMULATED_COMMIT · el resultado requiere reconciliación; no reintentar a ciegas.', events: [...current.events, this.makeEvent('tool', 'Respuesta externa incierta', 'El simulador registró una operación con clave idempotente, pero la respuesta expiró. No se repetirá automáticamente.')] }))
+      const execution = this.state.executions.find((item) => item.id === id)
+      if (!execution?.action) return
+      const effect = this.recordSimulatedEffect(execution, 'UNCERTAIN')
+      this.patchExecution(id, (current) => ({ ...current, status: 'OUTCOME_UNCERTAIN', outcome: 'UNCERTAIN', action: { ...current.action!, status: 'UNCERTAIN' }, sideEffectCount: this.effectCount(id), attempts: 1, summary: 'TIMEOUT_AFTER_SIMULATED_COMMIT · el resultado requiere reconciliación; no reintentar a ciegas.', events: [...current.events, this.makeEvent('tool', 'Respuesta externa incierta', `${effect.operation} quedó registrado con la clave ${effect.idempotencyKey}, pero el acuse expiró. No se repetirá automáticamente.`)] }))
       return
     }
     this.invokeApprovedAction(id, false)
@@ -172,6 +214,7 @@ export class MockPlatformService {
   private invokeApprovedAction(id: string, alreadyScheduled: boolean): void {
     const execution = this.state.executions.find((item) => item.id === id)
     if (!execution?.action) return
+    if (execution.status !== 'RUNNING' && execution.status !== 'WAITING_APPROVAL') return
     if (execution.action.policyDecision === 'REQUIRE_APPROVAL') {
       const approval = this.state.approvals.find((item) => item.id === execution.approvalId)
       const currentDigest = actionDigest(execution.action)
@@ -181,8 +224,13 @@ export class MockPlatformService {
         return
       }
     }
-    const wasApplied = execution.sideEffectCount > 0
-    this.patchExecution(id, (current) => ({ ...current, status: 'COMPLETED', outcome: 'SUCCESS', completedAt: new Date().toISOString(), durationMs: Date.now() - new Date(current.requestedAt).getTime(), action: { ...current.action!, status: 'SUCCEEDED' }, sideEffectCount: wasApplied ? current.sideEffectCount : current.sideEffectCount + 1, summary: 'Operación completada en el registro local de demostración. No se contactó a clientes ni a sistemas reales.', events: [...current.events, this.makeEvent('tool', alreadyScheduled ? 'Herramienta simulada ejecutada' : 'Acción simulada registrada', wasApplied ? 'La clave idempotente devolvió el efecto existente; no hubo duplicación.' : `Acción ${execution.action!.name} registrada solo en memoria local de demostración.`), this.makeEvent('result', 'Resultado final', 'Ejecución completada · acción gobernada y trazable · integración simulada.')] }))
+    const actionName = execution.action.name
+    const effect = this.recordSimulatedEffect(execution, 'CONFIRMED')
+    if (effect.acknowledgement === 'UNCERTAIN') {
+      this.patchExecution(id, (current) => ({ ...current, status: 'OUTCOME_UNCERTAIN', outcome: 'UNCERTAIN', action: { ...current.action!, status: 'UNCERTAIN' }, sideEffectCount: this.effectCount(id), summary: 'El ledger ya contiene una respuesta incierta. Reconcíliala antes de completar la ejecución.', events: [...current.events, this.makeEvent('reconciliation', 'Se conserva el resultado incierto', 'La clave idempotente ya tiene un efecto cuyo acuse no fue confirmado. No se creó otro efecto.')] }))
+      return
+    }
+    this.patchExecution(id, (current) => ({ ...current, status: 'COMPLETED', outcome: 'SUCCESS', completedAt: new Date().toISOString(), durationMs: Date.now() - new Date(current.requestedAt).getTime(), action: { ...current.action!, status: 'SUCCEEDED' }, sideEffectCount: this.effectCount(id), summary: 'Operación completada en el registro local de demostración. No se contactó a clientes ni a sistemas reales.', events: [...current.events, this.makeEvent('tool', alreadyScheduled ? 'Herramienta simulada ejecutada' : 'Acción simulada registrada', effect.wasExisting ? `La clave ${effect.idempotencyKey} devolvió el efecto del ledger; no se duplicó.` : `${actionName} quedó registrada solo en el ledger local de demostración.`), this.makeEvent('result', 'Resultado final', 'Ejecución completada · acción gobernada y trazable · integración simulada.')] }))
   }
 
   private failStaleApprovedAction(id: string): void {
@@ -190,12 +238,167 @@ export class MockPlatformService {
       ...current,
       status: 'FAILED',
       outcome: 'FAILURE',
+      failureCode: 'ACTION_APPROVAL_BINDING_INVALID',
       completedAt: new Date().toISOString(),
       durationMs: Date.now() - new Date(current.requestedAt).getTime(),
       action: current.action ? { ...current.action, status: 'FAILED' } : undefined,
       summary: 'La acción cambió después de solicitar o recibir aprobación. No se ejecutó; hace falta una nueva revisión.',
       events: [...current.events, this.makeEvent('failure', 'Revalidación de acción fallida', 'La huella, el rol o la versión de política ya no coinciden. No se invocó la herramienta.'), this.makeEvent('result', 'Ejecución cerrada sin efecto', 'La aprobación anterior no autoriza una acción distinta.')],
     }))
+  }
+
+  private recoverPersistedExecutions(): number {
+    let recovered = 0
+    const persistedExecutions = [...this.state.executions]
+    for (const execution of persistedExecutions) {
+      if (execution.status === 'PENDING' || execution.status === 'RUNNING') {
+        const effect = this.findEffect(execution)
+        if (!effect) {
+          this.patchExecution(execution.id, (current) => ({
+            ...current,
+            status: 'FAILED',
+            outcome: 'FAILURE',
+            failureCode: 'MOCK_EXECUTION_INTERRUPTED_ON_RELOAD',
+            completedAt: new Date().toISOString(),
+            action: current.action ? { ...current.action, status: 'FAILED' } : undefined,
+            sideEffectCount: this.effectCount(execution.id),
+            summary: 'La simulación se interrumpió al recargar. No existe un efecto en el ledger, por lo que no se reintentó automáticamente.',
+            events: [...current.events, this.makeEvent('failure', 'Simulación interrumpida al recargar', 'No había un efecto idempotente registrado. Se cerró de forma controlada y no se reanudó trabajo incierto.')],
+          }))
+        } else if (effect.acknowledgement === 'UNCERTAIN') {
+          this.patchExecution(execution.id, (current) => ({
+            ...current,
+            status: 'OUTCOME_UNCERTAIN',
+            outcome: 'UNCERTAIN',
+            action: current.action ? { ...current.action, status: 'UNCERTAIN' } : undefined,
+            sideEffectCount: this.effectCount(execution.id),
+            summary: 'Se recuperó un efecto del ledger cuyo acuse es incierto. Reconcílialo antes de reintentar.',
+            events: [...current.events, this.makeEvent('reconciliation', 'Resultado incierto recuperado', `El ledger conserva la clave ${effect.idempotencyKey}; no se creó un efecto adicional.`)],
+          }))
+        } else {
+          this.completeFromRecordedEffect(execution.id, effect, 'Ejecución recuperada del ledger tras recargar.')
+        }
+        recovered += 1
+        continue
+      }
+
+      if (execution.status === 'WAITING_APPROVAL') {
+        const approval = this.state.approvals.find((item) => item.id === execution.approvalId)
+        if (!approval || approval.status === 'PENDING') continue
+        if (approval.status === 'REJECTED') {
+          this.patchExecution(execution.id, (current) => ({
+            ...current,
+            status: 'CANCELLED',
+            outcome: 'HUMAN_REJECTED',
+            completedAt: approval.decidedAt ?? new Date().toISOString(),
+            failureCode: undefined,
+            summary: 'La decisión de rechazo recuperada cierra la ejecución sin invocar herramientas.',
+            action: current.action ? { ...current.action, status: 'REJECTED' } : undefined,
+            events: [...current.events, this.makeEvent('reconciliation', 'Rechazo humano recuperado', 'La aprobación estaba rechazada antes de la recarga. No se ejecutó la acción.')],
+          }))
+          recovered += 1
+          continue
+        }
+        if (!this.approvalBindingIsCurrent(execution, approval)) {
+          this.failStaleApprovedAction(execution.id)
+          recovered += 1
+          continue
+        }
+        const effect = this.findEffect(execution)
+        if (effect?.acknowledgement === 'UNCERTAIN') {
+          this.patchExecution(execution.id, (current) => ({
+            ...current,
+            status: 'OUTCOME_UNCERTAIN',
+            outcome: 'UNCERTAIN',
+            action: current.action ? { ...current.action, status: 'UNCERTAIN' } : undefined,
+            sideEffectCount: this.effectCount(execution.id),
+            summary: 'La aprobación y el efecto se recuperaron, pero el acuse es incierto. Reconcílialo antes de continuar.',
+            events: [...current.events, this.makeEvent('reconciliation', 'Aprobación y efecto recuperados', 'No se repitió la acción; el ledger requiere reconciliación explícita.')],
+          }))
+        } else {
+          const recorded = effect ?? this.recordSimulatedEffect(execution, 'CONFIRMED')
+          this.completeFromRecordedEffect(execution.id, recorded, 'Aprobación recuperada; la acción exacta se reanudó en el simulador local.')
+        }
+        recovered += 1
+        continue
+      }
+
+      if (execution.status === 'OUTCOME_UNCERTAIN') {
+        const effect = this.findEffect(execution)
+        if (!effect) {
+          this.patchExecution(execution.id, (current) => ({
+            ...current,
+            status: 'FAILED',
+            outcome: 'FAILURE',
+            failureCode: 'MOCK_UNCERTAIN_EFFECT_MISSING',
+            completedAt: new Date().toISOString(),
+            sideEffectCount: this.effectCount(execution.id),
+            summary: 'No se encontró en el ledger el efecto de resultado incierto. El reintento queda bloqueado para evitar duplicados.',
+            events: [...current.events, this.makeEvent('failure', 'Ledger de efecto no disponible', 'La ejecución se cerró de forma controlada. Se requiere revisión manual del prototipo.')],
+          }))
+          recovered += 1
+        } else if (effect.acknowledgement === 'CONFIRMED') {
+          this.completeFromRecordedEffect(execution.id, effect, 'El ledger confirma el resultado previamente incierto.')
+          recovered += 1
+        }
+      }
+    }
+    return recovered
+  }
+
+  private approvalBindingIsCurrent(execution: ExecutionRecord, approval: Approval): boolean {
+    const action = execution.action
+    if (!action) return false
+    const fingerprint = actionDigest(action)
+    return approval.status === 'APPROVED' && approval.actionId === action.id &&
+      approval.actionDigest === action.digest && approval.actionDigest === fingerprint &&
+      approval.requiredRole === DEMO_ACTOR.role && action.policyVersion === 'pol-cobranza-v3'
+  }
+
+  private completeFromRecordedEffect(executionId: string, effect: SimulatedEffect, recoverySummary: string): void {
+    this.patchExecution(executionId, (current) => ({
+      ...current,
+      status: 'COMPLETED',
+      outcome: 'SUCCESS',
+      completedAt: new Date().toISOString(),
+      durationMs: Date.now() - new Date(current.requestedAt).getTime(),
+      action: current.action ? { ...current.action, status: 'SUCCEEDED' } : undefined,
+      sideEffectCount: this.effectCount(executionId),
+      summary: recoverySummary,
+      events: [...current.events, this.makeEvent('reconciliation', 'Efecto recuperado sin duplicarlo', `Se usó el resultado existente de la clave ${effect.idempotencyKey}. No se creó un efecto nuevo.`), this.makeEvent('result', 'Resultado final recuperado', effect.resultSummary)],
+    }))
+  }
+
+  private recordSimulatedEffect(execution: ExecutionRecord, acknowledgement: SimulatedEffect['acknowledgement']): SimulatedEffect & { wasExisting: boolean } {
+    if (!execution.action) throw new Error('No se puede registrar un efecto sin una acción tipada.')
+    const existing = this.effects.find((effect) => effect.idempotencyKey === execution.action!.idempotencyKey)
+    if (existing) {
+      if (existing.executionId !== execution.id || existing.actionId !== execution.action.id) {
+        throw new Error('La clave de idempotencia ya pertenece a otra acción; se bloqueó el efecto simulado.')
+      }
+      return { ...existing, wasExisting: true }
+    }
+    const effect: SimulatedEffect = {
+      idempotencyKey: execution.action.idempotencyKey,
+      executionId: execution.id,
+      actionId: execution.action.id,
+      operation: execution.action.name,
+      resultSummary: `Efecto local simulado: ${execution.action.summary}`,
+      committedAt: new Date().toISOString(),
+      acknowledgement,
+    }
+    this.effects = [...this.effects, effect]
+    this.persist()
+    return { ...effect, wasExisting: false }
+  }
+
+  private findEffect(execution: ExecutionRecord): SimulatedEffect | undefined {
+    if (!execution.action) return undefined
+    return this.effects.find((effect) => effect.idempotencyKey === execution.action!.idempotencyKey && effect.executionId === execution.id && effect.actionId === execution.action!.id)
+  }
+
+  private effectCount(executionId: string): number {
+    return this.effects.filter((effect) => effect.executionId === executionId).length
   }
 
   private addEvent(id: string, kind: ExecutionEvent['kind'], title: string, description: string, decision?: ExecutionEvent['decision']): void {
@@ -212,8 +415,14 @@ export class MockPlatformService {
   }
 
   private publish(): void {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state)) } catch { /* Browser storage is optional for this prototype. */ }
+    this.persist()
     this.listeners.forEach((listener) => listener())
+  }
+
+  private persist(): void {
+    if (!savePlatformSnapshot(this.storage, this.state, this.effects) && this.storage) {
+      this.state = { ...this.state, recoveryNotice: 'No se pudieron guardar los datos sintéticos en este navegador. La simulación solo estará disponible durante esta sesión.' }
+    }
   }
 
   private schedule(id: string, steps: Array<() => void>): void {

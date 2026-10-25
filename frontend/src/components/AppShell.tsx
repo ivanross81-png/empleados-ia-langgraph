@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Activity, ArrowUpRight, Bell, Bot, BriefcaseBusiness, CheckCheck, CircleHelp, Command, Gauge, Layers3, Menu, Moon, PlugZap, Search, Settings2, Sun, X } from 'lucide-react'
-import { usePlatformState } from '../hooks/usePlatform'
+import { usePlatformService, usePlatformState } from '../hooks/usePlatform'
 import { Button } from './primitives'
 
 const navGroups = [
@@ -19,11 +19,16 @@ const navGroups = [
 
 const titles: Record<string, string> = { '/': 'Resumen', '/empleados': 'Empleados digitales', '/ejecuciones': 'Ejecuciones', '/aprobaciones': 'Aprobaciones', '/integraciones': 'Integraciones', '/configuracion': 'Configuración' }
 
+function readSavedTheme(): boolean {
+  try { return localStorage.getItem('dep-theme') === 'dark' } catch { return false }
+}
+
 export function AppShell() {
   const state = usePlatformState()
+  const platform = usePlatformService()
   const location = useLocation()
   const navigate = useNavigate()
-  const [dark, setDark] = useState(() => localStorage.getItem('dep-theme') === 'dark')
+  const [dark, setDark] = useState(readSavedTheme)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [showHelp, setShowHelp] = useState(false)
   const pendingCount = state.approvals.filter((approval) => approval.status === 'PENDING').length
@@ -31,7 +36,7 @@ export function AppShell() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = dark ? 'dark' : 'light'
-    localStorage.setItem('dep-theme', dark ? 'dark' : 'light')
+    try { localStorage.setItem('dep-theme', dark ? 'dark' : 'light') } catch { /* Theme preference is session-local when browser storage is unavailable. */ }
   }, [dark])
 
   useEffect(() => {
@@ -57,7 +62,7 @@ export function AppShell() {
     </aside>
     <main className="main-area">
       <header className="topbar"><div className="topbar-left"><button className="mobile-menu icon-button" aria-label="Abrir menú" onClick={() => setMobileOpen(true)}><Menu size={19} /></button><div className="breadcrumb"><span>Northstar Studio</span><span className="breadcrumb-slash">/</span><strong>{selectedTitle}</strong></div></div><div className="topbar-actions"><button className="search-trigger" onClick={() => navigate('/ejecuciones?focusSearch=1')}><Search size={15} /><span>Buscar ejecuciones</span><kbd><Command size={11} /> K</kbd></button><button className="icon-button theme-toggle" title={dark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'} aria-label={dark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'} onClick={() => setDark((value) => !value)}>{dark ? <Sun size={17} /> : <Moon size={17} />}</button><button className="icon-button notification-button" aria-label={`${pendingCount} aprobaciones pendientes`} onClick={() => navigate('/aprobaciones')}><Bell size={17} />{pendingCount > 0 && <i />}</button><span className="topbar-divider" /><button className="help-top" onClick={() => setShowHelp(true)}>Ayuda <ArrowUpRight size={13} /></button></div></header>
-      <div className="page-container"><Outlet /></div>
+      <div className="page-container">{state.recoveryNotice && <div className="recovery-notice" role="status"><CircleHelp size={16} /><span>{state.recoveryNotice}</span><button className="icon-button" aria-label="Cerrar aviso de recuperación" onClick={() => platform.dismissRecoveryNotice()}><X size={15} /></button></div>}<Outlet /></div>
       <footer className="app-footer"><span>Digital Employee Platform <span className="footer-dot">·</span> Prototipo interactivo</span><span>v0.1.0 <span className="footer-dot">·</span> Solo datos sintéticos</span></footer>
     </main>
     {showHelp && <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setShowHelp(false) }}><section className="modal help-modal" role="dialog" aria-modal="true" aria-labelledby="help-title"><button className="modal-close icon-button" aria-label="Cerrar" onClick={() => setShowHelp(false)}><X size={17} /></button><div className="modal-mark"><CircleHelp size={20} /></div><h2 id="help-title">Acerca de esta consola</h2><p>Este prototipo usa datos sintéticos y un servicio local del navegador. No conecta con Temporal, LangGraph, OPA, MCP ni sistemas empresariales.</p><div className="help-note"><strong>¿Necesitas orientación?</strong><span>Recorre una ejecución de demostración o abre el Centro de aprobaciones para probar una decisión humana.</span></div><Button variant="primary" onClick={() => setShowHelp(false)}>Entendido</Button></section></div>}

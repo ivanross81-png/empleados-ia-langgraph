@@ -510,6 +510,9 @@ svg { flex: 0 0 auto; }
 .trace-card-icon { display: grid; width: 25px; height: 25px; flex: 0 0 auto; place-items: center; border-radius: 6px; color: var(--blue); background: var(--blue-soft); }
 .trace-card strong { color: var(--ink); font-size: 8px; }
 .trace-card p { margin: 4px 0 0; color: var(--muted); font-size: 8px; line-height: 1.5; }
+.recovery-notice { display: flex; align-items: center; gap: 9px; margin: 0 0 14px; padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--blue), transparent 82%); border-radius: 7px; color: var(--blue); background: var(--blue-soft); font-size: 11px; line-height: 1.45; }
+.recovery-notice > span { flex: 1; }
+.recovery-notice .icon-button { width: 25px; height: 25px; color: inherit; }
 .inline-error, .form-error, .form-warning { padding: 9px 11px; border: 1px solid color-mix(in srgb, var(--red), transparent 82%); border-radius: 6px; color: var(--red); background: var(--red-soft); font-size: 9px; }
 .form-warning { margin-top: 9px; }
 

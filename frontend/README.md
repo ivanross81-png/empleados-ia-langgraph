@@ -38,7 +38,17 @@ En **Nueva ejecución**, elige un perfil y uno de estos recorridos:
 - **Fallo simulado:** muestra un error tipado y ningún efecto.
 - **Respuesta incierta:** simula un efecto registrado cuyo acuse se perdió. Reconciliar o reintentar con la misma clave recupera el resultado sin duplicar el efecto.
 
-La consola parte de ejecuciones sintéticas para que el dashboard y la bandeja se puedan explorar desde el primer inicio. La información de interacción se conserva en el `localStorage` de este navegador bajo `digital-employee-prototype-v1`; se puede borrar desde las herramientas del navegador para volver a cargar los datos iniciales.
+La consola parte de ejecuciones sintéticas para que el dashboard y la bandeja se puedan explorar desde el primer inicio. La información se conserva en un snapshot `schemaVersion: 2` del `localStorage` bajo `digital-employee-prototype-v2`; el esquema anterior `digital-employee-prototype-v1` se valida y migra de forma controlada.
+
+### Qué ocurre si recargas durante una simulación
+
+- Una ejecución `PENDING` o `RUNNING` sin efecto en el ledger se cierra con el error tipado `MOCK_EXECUTION_INTERRUPTED_ON_RELOAD`; no queda procesando para siempre.
+- Si el ledger ya registró el efecto, se restaura el resultado a partir de su clave de idempotencia sin repetirlo.
+- Una aprobación `PENDING` permanece pendiente y nunca se resuelve por tiempo. Si ya estaba aprobada, se reanuda solo tras volver a validar acción, huella, rol y versión de política.
+- Un resultado `OUTCOME_UNCERTAIN` permanece incierto si su efecto consta en el ledger; se reconcilia explícitamente. Si falta ese registro, el reintento se bloquea y se muestra un fallo controlado.
+- JSON corrupto, estructura inválida o versión incompatible restaura los datos sintéticos iniciales y muestra un aviso.
+
+El ledger de efectos simulados es independiente de los registros de ejecución. Es almacenamiento local del navegador, no una base de datos ni durabilidad de Temporal. Para iniciar de cero, usa la consola de desarrollo del navegador y borra las claves `digital-employee-prototype-v2` y `digital-employee-prototype-v1`.
 
 ## Dependencias
 
